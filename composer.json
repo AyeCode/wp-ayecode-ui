@@ -1,0 +1,24 @@
+{
+  "name": "ayecode/wp-bootstrap-settings",
+  "version": "0.0.1",
+  "type": "library",
+  "description": "Settings page for Bootstrap in WordPress",
+  "keywords": ["bootstrap","boot"],
+  "homepage": "https://github.com/AyeCode/wp-bootstrap-settings",
+  "license": "GPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "AyeCode Ltd",
+      "email": "contact@ayecode.io",
+      "homepage": "https://ayecode.io/",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": ">=5.3.0",
+    "composer/installers": "~1.0"
+  },
+  "autoload": {
+    "files": ["wp-bootstrap-loader.php"]
+  }
+}
