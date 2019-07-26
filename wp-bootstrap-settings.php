@@ -145,6 +145,48 @@ if ( ! class_exists( 'WP_Bootstrap_Settings' ) ) {
 				$url = $this->url.'assets/css/bootstrap-bundle.css';
 				wp_register_style( 'bootstrap-bundle', $url, array(), $this->latest );
 				wp_enqueue_style( 'bootstrap-bundle' );
+
+
+				// fix some wp-admin issues
+				if(is_admin()){
+					$custom_css = "
+                body{
+                    background-color: #f1f1f1;
+                    font-family: -apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Oxygen-Sans,Ubuntu,Cantarell,\"Helvetica Neue\",sans-serif;
+                    font-size:13px;
+                }
+                a {
+				    color: #0073aa;
+				    text-decoration: underline;
+				}
+                label {
+				    display: initial;
+				    margin-bottom: 0;
+				}
+				input, select {
+				    margin: 1px;
+				    line-height: initial;
+				}
+				th, td, div, h2 {
+				    box-sizing: content-box;
+				}
+				p {
+				    font-size: 13px;
+				    line-height: 1.5;
+				    margin: 1em 0;
+				}
+				h1, h2, h3, h4, h5, h6 {
+				    display: block;
+				    font-weight: 600;
+				}
+				h2,h3 {
+				    font-size: 1.3em;
+				    margin: 1em 0
+				}
+                ";
+					wp_add_inline_style( 'bootstrap-bundle', $custom_css );
+				}
+
 			}elseif($this->settings['css']=='helpers'){
 				$url = $this->url.'assets/css/bootstrap-helpers.css';
 				wp_register_style( 'bootstrap-helpers', $url, array(), $this->latest );
@@ -283,7 +325,6 @@ if ( ! class_exists( 'WP_Bootstrap_Settings' ) ) {
 
 			<?php
 		}
-				
 
 	}
 

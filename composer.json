@@ -1,6 +1,6 @@
 {
   "name": "ayecode/wp-bootstrap-settings",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "library",
   "description": "Settings page for Bootstrap in WordPress",
   "keywords": ["bootstrap","boot"],
