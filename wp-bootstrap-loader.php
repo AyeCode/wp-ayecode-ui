@@ -28,6 +28,7 @@ add_action('after_setup_theme', function () {
 add_action('after_setup_theme', function () {
 	global $wp_bootstrap_file_key;
 	if($wp_bootstrap_file_key &&  $wp_bootstrap_file_key == wp_hash( __FILE__ )){
+		include_once( dirname( __FILE__ ) . '/includes/class-bsui.php' );
 		include_once( dirname( __FILE__ ) . '/wp-bootstrap-settings.php' );
 	}
 },1);
