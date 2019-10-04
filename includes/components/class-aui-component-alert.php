@@ -4,8 +4,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
+/**
+ * A component class for rendering a bootstrap alert.
+ *
+ * @since 1.0.0
+ */
 class AUI_Component_Alert {
 
+	/**
+	 * Build the component.
+	 * 
+	 * @param array $args
+	 *
+	 * @return string The rendered component.
+	 */
 	public static function get($args = array()){
 		$defaults = array(
 			'type'       => 'info',
@@ -75,5 +87,5 @@ class AUI_Component_Alert {
 
 		return $output;
 	}
-	
+
 }

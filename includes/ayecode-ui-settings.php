@@ -4,7 +4,7 @@
  *
  * This class can be added to any plugin or theme and will add a settings screen to WordPress to control Bootstrap settings.
  *
- * @link https://github.com/AyeCode/ayecode-ui-settings
+ * @link https://github.com/AyeCode/wp-ayecode-ui
  *
  * @internal This file should not be edited directly but pulled from the github repo above.
  */
@@ -24,7 +24,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 	/**
 	 * A Class to be able to change settings for Font Awesome.
 	 *
-	 * Class WP_Bootstrap_Settings
+	 * Class AyeCode_UI_Settings
 	 * @ver 1.0.0
 	 * @todo decide how to implement textdomain
 	 */
