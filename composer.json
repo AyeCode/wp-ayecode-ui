@@ -1,10 +1,10 @@
 {
-  "name": "ayecode/wp-bootstrap-ui",
+  "name": "ayecode/wp-ayecode-ui",
   "version": "0.0.5",
   "type": "library",
   "description": "A Bootstrap UI for WordPress plugins and themes.",
-  "keywords": ["bootstrap","boot"],
-  "homepage": "https://github.com/AyeCode/wp-bootstrap-ui",
+  "keywords": ["bootstrap","boot","ayecode"],
+  "homepage": "https://github.com/AyeCode/wp-ayecode-ui",
   "license": "GPL-3.0-or-later",
   "authors": [
     {
@@ -19,6 +19,6 @@
     "composer/installers": "~1.0"
   },
   "autoload": {
-    "files": ["wp-bootstrap-loader.php"]
+    "files": ["ayecode-ui-loader.php"]
   }
 }

@@ -8,8 +8,8 @@
 @import "variables";
 @import "mixins";
 @import "root";
-//@import "reboot";
-//@import "type";
+@import "reboot";
+@import "type";
 @import "images";
 @import "code";
 @import "grid";
@@ -24,8 +24,7 @@
 @import "nav";
 @import "navbar";
 @import "card";
-//@import "breadcrumb";
-@import "breadcrumb_custom";
+@import "breadcrumb";
 @import "pagination";
 @import "badge";
 @import "jumbotron";
@@ -36,8 +35,7 @@
 @import "close";
 @import "toasts";
 @import "modal";
-//@import "tooltip";
-@import "tooltip_custom";
+@import "tooltip";
 @import "popover";
 @import "carousel";
 @import "spinners";

@@ -4,14 +4,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
+class AUI_Component_Alert {
 
-class BSUI {
-
-	public static function alert( $args = array() ) {
+	public static function get($args = array()){
 		$defaults = array(
 			'type'       => 'info',
 			'class'      => '',
-			'icon_class' => '',
+			'icon' => '',
 			'heading'    => '',
 			'content'    => '',
 			'footer'     => '',
@@ -25,12 +24,24 @@ class BSUI {
 		$args   = wp_parse_args( $args, $defaults );
 		$output = '';
 		if ( ! empty( $args['content'] ) ) {
+			$type = sanitize_html_class( $args['type'] );
+			if($type=='error'){$type='danger';}
+			$icon = !empty($args['icon']) ? "<i class='".esc_attr($args['icon'])."'></i>" : '';
+
+			// set default icon
+			if(!$icon && $args['icon']!==false && $type){
+				if($type=='danger'){$icon = '<i class="fas fa-exclamation-circle"></i>';}
+				elseif($type=='warning'){$icon = '<i class="fas fa-exclamation-triangle"></i>';}
+				elseif($type=='success'){$icon = '<i class="fas fa-check-circle"></i>';}
+				elseif($type=='info'){$icon = '<i class="fas fa-info-circle"></i>';}
+			}
+
 			$data = '';
 			$class = !empty($args['class']) ? esc_attr($args['class']) : '';
 			if($args['dismissible']){$class .= " alert-dismissible fade show";}
 
 			// open
-			$output .= '<div class="alert alert-' . sanitize_html_class( $args['type'] ) . ' '.$class.'" role="alert" '.$data.'>';
+			$output .= '<div class="alert alert-' . $type . ' '.$class.'" role="alert" '.$data.'>';
 
 			// heading
 			if ( ! empty( $args['heading'] ) ) {
@@ -38,8 +49,8 @@ class BSUI {
 			}
 
 			// icon
-			if ( ! empty( $args['icon_class'] ) ) {
-				$output .= '<i class="' . $args['icon_class'] . '"></i>';
+			if ( ! empty( $icon) ) {
+				$output .= $icon." ";
 			}
 
 			// content
@@ -64,5 +75,5 @@ class BSUI {
 
 		return $output;
 	}
-
+	
 }
