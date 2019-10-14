@@ -60,6 +60,21 @@ class AUI {
 		}
 	}
 
+	public static function render($items = array()){
+		$output = '';
+
+		if(!empty($items)){
+			foreach($items as $args){
+				$render = isset($args['render']) ? $args['render'] : '';
+				if($render && method_exists(__CLASS__,$render)){
+					$output .= self::$render($args);
+				}
+			}
+		}
+
+		return $output;
+	}
+
 	/**
 	 * Render and return a bootstrap alert component.
 	 *
@@ -71,6 +86,49 @@ class AUI {
 		return AUI_Component_Alert::get($args);
 	}
 
+	/**
+	 * Render and return a bootstrap input component.
+	 *
+	 * @since 1.0.0
+	 * @param array $args
+	 * @return string The rendered component.
+	 */
+	public function input( $args = array() ) {
+		return AUI_Component_Input::input($args);
+	}
+
+	/**
+	 * Render and return a bootstrap textarea component.
+	 *
+	 * @since 1.0.0
+	 * @param array $args
+	 * @return string The rendered component.
+	 */
+	public function textarea( $args = array() ) {
+		return AUI_Component_Input::textarea($args);
+	}
+
+	/**
+	 * Render and return a bootstrap button component.
+	 *
+	 * @since 1.0.0
+	 * @param array $args
+	 * @return string The rendered component.
+	 */
+	public function button( $args = array() ) {
+		return AUI_Component_Button::get($args);
+	}
+
+	/**
+	 * Render and return a bootstrap dropdown component.
+	 *
+	 * @since 1.0.0
+	 * @param array $args
+	 * @return string The rendered component.
+	 */
+	public function dropdown( $args = array() ) {
+		return AUI_Component_Dropdown::get($args);
+	}
 
 
 }
