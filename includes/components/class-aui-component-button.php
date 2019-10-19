@@ -30,6 +30,7 @@ class AUI_Component_Button {
 			'icon'       => '',
 			'hover_content' => '',
 			'hover_icon'    => '',
+			'new_line_after' => true,
 		);
 
 		/**
@@ -104,6 +105,12 @@ class AUI_Component_Button {
 			}else{
 				$output .= '</button>';
 			}
+
+			// maybe new line after?  This adds better spacing between buttons.
+			if(!empty($args['new_line_after'])){
+				$output .= PHP_EOL;
+			}
+
 
 		}
 

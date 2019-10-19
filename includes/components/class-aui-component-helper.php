@@ -18,11 +18,12 @@ class AUI_Component_Helper {
 	 *
 	 * @return string
 	 */
-	public static function name($text){
+	public static function name($text,$multiple = false){
 		$output = '';
 
 		if($text){
-			$output = ' name="'.sanitize_html_class($text).'" ';
+			$is_multiple = $multiple ? '[]' : '';
+			$output = ' name="'.sanitize_html_class($text).$is_multiple.'" ';
 		}
 
 		return $output;
