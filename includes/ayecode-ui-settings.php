@@ -57,7 +57,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 * @var string
 		 */
 		public $select2_version = "4.0.11";
-		
+
 		/**
 		 * The title.
 		 *
@@ -107,6 +107,10 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 					add_action( 'admin_menu', array( self::$instance, 'menu_item' ) );
 					add_action( 'admin_init', array( self::$instance, 'register_settings' ) );
 				}
+
+				add_action( 'customize_register', array( self::$instance, 'customizer_settings' ));
+
+				add_action( 'wp_head' , array( self::$instance , 'header_output' ) );
 
 				do_action( 'ayecode_ui_settings_loaded' );
 			}
@@ -199,7 +203,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 
 		/**
 		 * Get inline script used if bootstrap enqueued
-		 * 
+		 *
 		 * If this remains small then its best to use this than to add another JS file.
 		 */
 		public function inline_script(){
@@ -213,13 +217,118 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 					jQuery("select.aui-select2").select2();
 				}
 
-				// run on doc ready
+				/**
+				 * A function to convert a time value to a "ago" time text.
+				 *
+				 * @param selector string The .class selector
+				 */
+				function aui_time_ago(selector) {
+
+					var templates = {
+						prefix: "",
+						suffix: " ago",
+						seconds: "less than a minute",
+						minute: "about a minute",
+						minutes: "%d minutes",
+						hour: "about an hour",
+						hours: "about %d hours",
+						day: "a day",
+						days: "%d days",
+						month: "about a month",
+						months: "%d months",
+						year: "about a year",
+						years: "%d years"
+					};
+					var template = function (t, n) {
+						return templates[t] && templates[t].replace(/%d/i, Math.abs(Math.round(n)));
+					};
+
+					var timer = function (time) {
+						if (!time)
+							return;
+						time = time.replace(/\.\d+/, ""); // remove milliseconds
+						time = time.replace(/-/, "/").replace(/-/, "/");
+						time = time.replace(/T/, " ").replace(/Z/, " UTC");
+						time = time.replace(/([\+\-]\d\d)\:?(\d\d)/, " $1$2"); // -04:00 -> -0400
+						time = new Date(time * 1000 || time);
+
+						var now = new Date();
+						var seconds = ((now.getTime() - time) * .001) >> 0;
+						var minutes = seconds / 60;
+						var hours = minutes / 60;
+						var days = hours / 24;
+						var years = days / 365;
+
+						return templates.prefix + (
+								seconds < 45 && template('seconds', seconds) ||
+								seconds < 90 && template('minute', 1) ||
+								minutes < 45 && template('minutes', minutes) ||
+								minutes < 90 && template('hour', 1) ||
+								hours < 24 && template('hours', hours) ||
+								hours < 42 && template('day', 1) ||
+								days < 30 && template('days', days) ||
+								days < 45 && template('month', 1) ||
+								days < 365 && template('months', days / 30) ||
+								years < 1.5 && template('year', 1) ||
+								template('years', years)
+							) + templates.suffix;
+					};
+
+					var elements = document.getElementsByClassName(selector);
+					for (var i in elements) {
+						var $this = elements[i];
+						if (typeof $this === 'object') {
+							$this.innerHTML = '<i class="far fa-clock"></i> ' + timer($this.getAttribute('title') || $this.getAttribute('datetime'));
+						}
+					}
+					// update time every minute
+					setTimeout(aui_time_ago, 60000);
+
+				}
+
+				/**
+				 * Initiate tooltips on the page.
+				 */
+				function aui_init_tooltips(){
+					jQuery('[data-toggle="tooltip"]').tooltip();
+				}
+
+				// run on window loaded
 				jQuery(window).load(function() {
 					// init tooltips
-					jQuery('[data-toggle="tooltip"]').tooltip();
+					aui_init_tooltips();
 
 					// init select2
 					aui_init_select2();
+
+					// Set times to time ago
+					aui_time_ago('timeago');
+				});
+			</script>
+			<?php
+			$output = ob_get_clean();
+
+			/*
+			 * We only add the <script> tags for code highlighting, so we strip them from the output.
+			 */
+			return str_replace( array(
+				'<script>',
+				'</script>'
+			), '', $output );
+		}
+
+		/**
+		 * Get inline script used if bootstrap file browser enqueued.
+		 *
+		 * If this remains small then its best to use this than to add another JS file.
+		 */
+		public function inline_script_file_browser(){
+			ob_start();
+			?>
+			<script>
+				// run on doc ready
+				jQuery(document).ready(function () {
+					bsCustomFileInput.init();
 				});
 			</script>
 			<?php
@@ -239,11 +348,17 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 */
 		public function enqueue_scripts() {
 
-			// select2
-			$url = $this->url.'assets/js/select2.min.js';
-			wp_register_script( 'aui-select2', $url, array(), $this->select2_version );
+			// Priority nav https://github.com/gijsroge/priority-navigation/t
+			wp_register_script( 'aui-priority-nav', $this->url.'assets/js/priority-nav.min.js', array(), '1.0.13' );
 
-			
+			// select2
+			wp_register_script( 'aui-select2', $this->url.'assets/js/select2.min.js', array(), $this->select2_version );
+
+			// Bootstrap file browser
+			wp_register_script( 'aui-custom-file-input', $url = $this->url.'assets/js/bs-custom-file-input.min.js', array('jquery'), $this->select2_version );
+			wp_add_inline_script( 'aui-custom-file-input', $this->inline_script_file_browser() );
+
+
 			if($this->settings['js']=='core-popper'){
 				// Bootstrap bundle
 				$url = $this->url.'assets/js/bootstrap.bundle.min.js';
@@ -256,8 +371,8 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				wp_register_script( 'bootstrap-js-popper', $url, array(), $this->latest );
 				wp_enqueue_script( 'bootstrap-js-popper' );
 			}
-			
-			
+
+
 		}
 
 		/**
@@ -374,6 +489,56 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				<div id="wpbs-version"><?php echo $this->version; ?></div>
 			</div>
 
+			<?php
+		}
+
+		public function customizer_settings($wp_customize){
+			$wp_customize->add_section('aui_settings', array(
+				'title'    => __('AyeCode UI', 'themename'),
+				'priority' => 120,
+			));
+
+			//  =============================
+			//  = Color Picker              =
+			//  =============================
+			$wp_customize->add_setting('aui_options[color_primary]', array(
+				'default'           => '#1927eb',
+				'sanitize_callback' => 'sanitize_hex_color',
+				'capability'        => 'edit_theme_options',
+				'type'              => 'option',
+				'transport'         => 'postMessage',
+			));
+			$wp_customize->add_control( new WP_Customize_Color_Control($wp_customize, 'color_primary', array(
+				'label'    => __('Primary Color', 'themename'),
+				'section'  => 'aui_settings',
+				'settings' => 'aui_options[color_primary]',
+			)));
+		}
+
+		/**
+		 * This will output the custom WordPress settings to the live theme's WP head.
+		 *
+		 * Used by hook: 'wp_head'
+		 *
+		 * @see add_action('wp_head',$func)
+		 * @since MyTheme 1.0
+		 */
+		public static function header_output() {
+			$settings = get_option('aui_options');
+//			print_r($settings);echo '###';
+
+			?>
+			<!--Customizer CSS-->
+			<style type="text/css">
+				:root {
+				<?php
+					if(!empty($settings['color_primary'])){
+						echo '--primary: '.sanitize_hex_color($settings['color_primary']).';';
+					}
+                ?>
+				}
+			</style>
+			<!--/Customizer CSS-->
 			<?php
 		}
 
