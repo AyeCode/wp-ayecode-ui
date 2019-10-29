@@ -110,8 +110,6 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 
 				add_action( 'customize_register', array( self::$instance, 'customizer_settings' ));
 
-				add_action( 'wp_head' , array( self::$instance , 'header_output' ) );
-
 				do_action( 'ayecode_ui_settings_loaded' );
 			}
 
@@ -153,6 +151,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		public function enqueue_style() {
 
 			if($this->settings['css']){
+				$compatibility = $this->settings['css']=='core' ? false : true;
 				$url = $this->settings['css']=='core' ? $this->url.'assets/css/ayecode-ui.css' : $this->url.'assets/css/ayecode-ui-compatibility.css';
 				wp_register_style( 'ayecode-ui', $url, array(), $this->latest );
 				wp_enqueue_style( 'ayecode-ui' );
@@ -198,6 +197,9 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 					wp_add_inline_style( 'ayecode-ui', $custom_css );
 				}
 
+				// custom changes
+				wp_add_inline_style( 'ayecode-ui', self::custom_css($compatibility) );
+
 			}
 		}
 
@@ -210,6 +212,85 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			ob_start();
 			?>
 			<script>
+
+				/**
+				 * An AUI bootstrap adaptation of GreedyNav.js ( by Luke Jackson ).
+				 *
+				 * Simply add the class `greedy` to any <nav> menu and it will do the rest.
+				 * Licensed under the MIT license - http://opensource.org/licenses/MIT
+				 * @ver 0.0.1
+				 */
+				function aui_init_greedy_nav(){
+					jQuery('nav.greedy').each(function(i, obj) {
+
+						// Check if already initialized, if so continue.
+						if(jQuery(this).hasClass("being-greedy")){return true;}
+
+						// Make sure its always expanded
+						jQuery(this).addClass('navbar-expand');
+
+						// vars
+						var $vlinks = jQuery(this).find('.navbar-nav').addClass("being-greedy w-100");
+						jQuery($vlinks).append('<li class="nav-item list-unstyled ml-auto greedy-btn d-none ">' +
+							'<a href="javascript:void(0)" data-toggle="dropdown" class="nav-link"><i class="fas fa-ellipsis-h"></i> <span class="greedy-count badge badge-dark badge-pill"></span></a>' +
+							'<div class="dropdown"><ul class="greedy-links dropdown-menu  dropdown-menu-right"></ul></div>' +
+							'</li>');
+						var $hlinks = jQuery(this).find('.greedy-links');
+						var $btn = jQuery(this).find('.greedy-btn');
+
+						var numOfItems = 0;
+						var totalSpace = 0;
+						var closingTime = 1000;
+						var breakWidths = [];
+
+						// Get initial state
+						$vlinks.children().outerWidth(function(i, w) {
+							totalSpace += w;
+							numOfItems += 1;
+							breakWidths.push(totalSpace);
+						});
+
+						var availableSpace, numOfVisibleItems, requiredSpace, buttonSpace ,timer;
+
+						/*
+						 The check function.
+						 */
+						function check() {
+
+							// Get instant state
+							buttonSpace = $btn.width();
+							availableSpace = $vlinks.width() - 10;
+							numOfVisibleItems = $vlinks.children().length;
+							requiredSpace = breakWidths[numOfVisibleItems - 1];
+
+							// There is not enough space
+							if (numOfVisibleItems > 1 && requiredSpace > availableSpace) {
+								$vlinks.children().last().prev().prependTo($hlinks);
+								numOfVisibleItems -= 1;
+								check();
+								// There is more than enough space
+							} else if (availableSpace > breakWidths[numOfVisibleItems]) {
+								$hlinks.children().first().insertBefore($btn);
+								numOfVisibleItems += 1;
+								check();
+							}
+							// Update the button accordingly
+							jQuery($btn).find(".greedy-count").html( numOfItems - numOfVisibleItems);
+							if (numOfVisibleItems === numOfItems) {
+								$btn.addClass('d-none');
+							} else $btn.removeClass('d-none');
+						}
+
+						// Window listeners
+						jQuery(window).resize(function() {
+							check();
+						});
+
+						// do initial check
+						check();
+					});
+				}
+
 				/**
 				 * Initiate Select2 items.
 				 */
@@ -301,6 +382,9 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 					// init select2
 					aui_init_select2();
 
+					// init Greedy nav
+					aui_init_greedy_nav();
+
 					// Set times to time ago
 					aui_time_ago('timeago');
 				});
@@ -348,11 +432,8 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 */
 		public function enqueue_scripts() {
 
-			// Priority nav https://github.com/gijsroge/priority-navigation/t
-			wp_register_script( 'aui-priority-nav', $this->url.'assets/js/priority-nav.min.js', array(), '1.0.13' );
-
 			// select2
-			wp_register_script( 'aui-select2', $this->url.'assets/js/select2.min.js', array(), $this->select2_version );
+			wp_register_script( 'select2', $this->url.'assets/js/select2.min.js', array(), $this->select2_version );
 
 			// Bootstrap file browser
 			wp_register_script( 'aui-custom-file-input', $url = $this->url.'assets/js/bs-custom-file-input.min.js', array('jquery'), $this->select2_version );
@@ -362,7 +443,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			if($this->settings['js']=='core-popper'){
 				// Bootstrap bundle
 				$url = $this->url.'assets/js/bootstrap.bundle.min.js';
-				wp_register_script( 'bootstrap-js-bundle', $url, array('aui-select2'), $this->latest );
+				wp_register_script( 'bootstrap-js-bundle', $url, array('select2'), $this->latest );
 				wp_enqueue_script( 'bootstrap-js-bundle' );
 				$script = $this->inline_script();
 				wp_add_inline_script( 'bootstrap-js-bundle', $script );
@@ -506,7 +587,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				'sanitize_callback' => 'sanitize_hex_color',
 				'capability'        => 'edit_theme_options',
 				'type'              => 'option',
-				'transport'         => 'postMessage',
+				'transport'         => 'refresh',
 			));
 			$wp_customize->add_control( new WP_Customize_Color_Control($wp_customize, 'color_primary', array(
 				'label'    => __('Primary Color', 'themename'),
@@ -515,31 +596,197 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			)));
 		}
 
-		/**
-		 * This will output the custom WordPress settings to the live theme's WP head.
-		 *
-		 * Used by hook: 'wp_head'
-		 *
-		 * @see add_action('wp_head',$func)
-		 * @since MyTheme 1.0
-		 */
-		public static function header_output() {
+
+		public static function custom_css($compatibility = true) {
 			$settings = get_option('aui_options');
 //			print_r($settings);echo '###';
 
+			ob_start();
 			?>
-			<!--Customizer CSS-->
-			<style type="text/css">
-				:root {
+			<style>
 				<?php
 					if(!empty($settings['color_primary'])){
-						echo '--primary: '.sanitize_hex_color($settings['color_primary']).';';
+						echo self::css_primary($settings['color_primary'],$compatibility);
 					}
                 ?>
-				}
 			</style>
-			<!--/Customizer CSS-->
 			<?php
+
+
+			/*
+			 * We only add the <script> tags for code highlighting, so we strip them from the output.
+			 */
+			return str_replace( array(
+				'<style>',
+				'</style>'
+			), '', ob_get_clean());
+		}
+
+		public static function css_primary($color_code,$compatibility){;
+			$color_code = sanitize_hex_color($color_code);
+			if(!$color_code){return '';}
+			/**
+			 * c = color, b = background color, o = border-color, f = fill
+			 */
+			$selectors = array(
+				'a' => array('c'),
+				'.btn-primary' => array('b','o'),
+				'.btn-primary.disabled' => array('b','o'),
+				'.btn-primary:disabled' => array('b','o'),
+				'.btn-outline-primary' => array('c','o'),
+				'.btn-outline-primary:hover' => array('b','o'),
+				'.btn-outline-primary:not(:disabled):not(.disabled).active' => array('b','o'),
+				'.btn-outline-primary:not(:disabled):not(.disabled):active' => array('b','o'),
+				'.show>.btn-outline-primary.dropdown-toggle' => array('b','o'),
+				'.btn-link' => array('c'),
+				'.dropdown-item.active' => array('b'),
+				'.custom-control-input:checked~.custom-control-label::before' => array('b','o'),
+				'.custom-checkbox .custom-control-input:indeterminate~.custom-control-label::before' => array('b','o'),
+//				'.custom-range::-webkit-slider-thumb' => array('b'), // these break the inline rules...
+//				'.custom-range::-moz-range-thumb' => array('b'),
+//				'.custom-range::-ms-thumb' => array('b'),
+				'.nav-pills .nav-link.active' => array('b'),
+				'.nav-pills .show>.nav-link' => array('b'),
+				'.page-link' => array('c'),
+				'.page-item.active .page-link' => array('b','o'),
+				'.badge-primary' => array('b'),
+				'.alert-primary' => array('b','o'),
+				'.progress-bar' => array('b'),
+				'.list-group-item.active' => array('b','o'),
+				'.bg-primary' => array('b','f'),
+				'.btn-link.btn-primary' => array('c'),
+				'.select2-container .select2-results__option--highlighted.select2-results__option[aria-selected=true]' => array('b'),
+			);
+
+			$important_selectors = array(
+				'.bg-primary' => array('b','f'),
+				'.border-primary' => array('o'),
+				'.text-primary' => array('c'),
+			);
+
+			$color = array();
+			$color_i = array();
+			$background = array();
+			$background_i = array();
+			$border = array();
+			$border_i = array();
+			$fill = array();
+			$fill_i = array();
+
+			$output = '';
+
+			// build rules into each type
+			foreach($selectors as $selector => $types){
+				$selector = $compatibility ? ".bsui ".$selector : $selector;
+				$types = array_combine($types,$types);
+				if(isset($types['c'])){$color[] = $selector;}
+				if(isset($types['b'])){$background[] = $selector;}
+				if(isset($types['o'])){$border[] = $selector;}
+				if(isset($types['f'])){$fill[] = $selector;}
+			}
+
+			// build rules into each type
+			foreach($important_selectors as $selector => $types){
+				$selector = $compatibility ? ".bsui ".$selector : $selector;
+				$types = array_combine($types,$types);
+				if(isset($types['c'])){$color_i[] = $selector;}
+				if(isset($types['b'])){$background_i[] = $selector;}
+				if(isset($types['o'])){$border_i[] = $selector;}
+				if(isset($types['f'])){$fill_i[] = $selector;}
+			}
+
+			// add any color rules
+			if(!empty($color)){
+				$output .= implode(",",$color) . "{color: $color_code;} ";
+			}
+			if(!empty($color_i)){
+				$output .= implode(",",$color_i) . "{color: $color_code !important;} ";
+			}
+
+			// add any background color rules
+			if(!empty($background)){
+				$output .= implode(",",$background) . "{background-color: $color_code;} ";
+			}
+			if(!empty($background_i)){
+				$output .= implode(",",$background_i) . "{background-color: $color_code !important;} ";
+			}
+
+			// add any border color rules
+			if(!empty($border)){
+				$output .= implode(",",$border) . "{border-color: $color_code;} ";
+			}
+			if(!empty($border_i)){
+				$output .= implode(",",$border_i) . "{border-color: $color_code !important;} ";
+			}
+
+			// add any fill color rules
+			if(!empty($fill)){
+				$output .= implode(",",$fill) . "{fill: $color_code;} ";
+			}
+			if(!empty($fill_i)){
+				$output .= implode(",",$fill_i) . "{fill: $color_code !important;} ";
+			}
+
+
+			$prefix = $compatibility ? ".bsui " : "";
+
+			// darken
+			$darker_075 = self::css_hex_lighten_darken($color_code,"-0.075");
+			$darker_10 = self::css_hex_lighten_darken($color_code,"-0.10");
+			$darker_125 = self::css_hex_lighten_darken($color_code,"-0.125");
+
+			// lighten
+			$lighten_25 = self::css_hex_lighten_darken($color_code,"0.25");
+
+			// opacity see https://css-tricks.com/8-digit-hex-codes/
+			$op_25 = $color_code."40"; // 25% opacity
+
+
+			// button states
+			$output .= $prefix ." .btn-primary:hover{background-color: ".$darker_075.";    border-color: ".$darker_10.";} ";
+			$output .= $prefix ." .btn-outline-primary:not(:disabled):not(.disabled):active:focus, $prefix .btn-outline-primary:not(:disabled):not(.disabled).active:focus, .show>$prefix .btn-outline-primary.dropdown-toggle:focus{box-shadow: 0 0 0 0.2rem $op_25;} ";
+			$output .= $prefix ." .btn-primary:not(:disabled):not(.disabled):active, $prefix .btn-primary:not(:disabled):not(.disabled).active, .show>$prefix .btn-primary.dropdown-toggle{background-color: ".$darker_10.";    border-color: ".$darker_125.";} ";
+			$output .= $prefix ." .btn-primary:not(:disabled):not(.disabled):active:focus, $prefix .btn-primary:not(:disabled):not(.disabled).active:focus, .show>$prefix .btn-primary.dropdown-toggle:focus {box-shadow: 0 0 0 0.2rem $op_25;} ";
+
+
+			// dropdown's
+			$output .= $prefix ." .dropdown-item.active, $prefix .dropdown-item:active{background-color: $color_code;} ";
+
+
+			// input states
+			$output .= $prefix ." .form-control:focus{border-color: ".$lighten_25.";box-shadow: 0 0 0 0.2rem $op_25;} ";
+
+			// page link
+			$output .= $prefix ." .page-link:focus{box-shadow: 0 0 0 0.2rem $op_25;} ";
+
+			return $output;
+		}
+
+		/**
+		 * Increases or decreases the brightness of a color by a percentage of the current brightness.
+		 *
+		 * @param   string  $hexCode        Supported formats: `#FFF`, `#FFFFFF`, `FFF`, `FFFFFF`
+		 * @param   float   $adjustPercent  A number between -1 and 1. E.g. 0.3 = 30% lighter; -0.4 = 40% darker.
+		 *
+		 * @return  string
+		 */
+		public static function css_hex_lighten_darken($hexCode, $adjustPercent) {
+			$hexCode = ltrim($hexCode, '#');
+
+			if (strlen($hexCode) == 3) {
+				$hexCode = $hexCode[0] . $hexCode[0] . $hexCode[1] . $hexCode[1] . $hexCode[2] . $hexCode[2];
+			}
+
+			$hexCode = array_map('hexdec', str_split($hexCode, 2));
+
+			foreach ($hexCode as & $color) {
+				$adjustableLimit = $adjustPercent < 0 ? $color : 255 - $color;
+				$adjustAmount = ceil($adjustableLimit * $adjustPercent);
+
+				$color = str_pad(dechex($color + $adjustAmount), 2, '0', STR_PAD_LEFT);
+			}
+
+			return '#' . implode($hexCode);
 		}
 
 	}
