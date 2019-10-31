@@ -1,6 +1,6 @@
 {
   "name": "ayecode/wp-ayecode-ui",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "library",
   "description": "A Bootstrap UI for WordPress plugins and themes.",
   "keywords": ["bootstrap","boot","ayecode"],
