@@ -478,7 +478,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 
 			$url = '';
 			// check if we are inside a plugin
-			$file_dir = str_replace("/includes","", dirname( __FILE__ ));
+			$file_dir = str_replace( "/includes","", wp_normalize_path( dirname( __FILE__ ) ) );
 
 			$dir_parts = explode("/wp-content/",$file_dir);
 			$url_parts = explode("/wp-content/",plugins_url());
