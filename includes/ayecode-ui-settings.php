@@ -489,7 +489,12 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			if( stripos( $this_file, $theme_root ) ) {
 
 				//Fetch a relative path to this file (which might be in a parent or child theme)
-				$relative_path = dirname( str_ireplace( $theme_root, '', $this_file ) );
+				$relative_path = ltrim( str_ireplace( $theme_root, '', $this_file ), '/' );
+
+				//Remove the theme's directory name from the path
+				$relative_path = explode('/', $relative_path);
+				array_shift( $relative_path );
+				$relative_path = implode('/', $relative_path);
 
 				//Convert it into an absolute url path
 				$url           = get_theme_file_uri(  $relative_path );
