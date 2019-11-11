@@ -476,18 +476,33 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 */
 		public function get_url() {
 
-			$url = '';
-			// check if we are inside a plugin
-			$file_dir = str_replace( "/includes","", wp_normalize_path( dirname( __FILE__ ) ) );
+			// Get the theme root folder
+			$theme_root = get_theme_root();  
 
-			$dir_parts = explode("/wp-content/",$file_dir);
-			$url_parts = explode("/wp-content/",plugins_url());
+			// Normalize the theme folder path...
+			$theme_root = wp_normalize_path( $theme_root );
 
-			if(!empty($url_parts[0]) && !empty($dir_parts[1])){
-				$url = trailingslashit( $url_parts[0]."/wp-content/".$dir_parts[1] );
+			//... and this file's path
+			$this_file = wp_normalize_path( __FILE__ );
+			
+			//If we are inside a theme
+			if( stripos( $this_file, $theme_root ) ) {
+
+				//Fetch a relative path to this file (which might be in a parent or child theme)
+				$relative_path = dirname( str_ireplace( $theme_root, '', $this_file ) );
+
+				//Convert it into an absolute url path
+				$url           = get_theme_file_uri(  $relative_path );
+
+				//We need a url to the directory's parent
+				$url           = dirname( dirname( $url ) );
+			} else {
+
+				$url = plugin_dir_url( $this_file );
+				$url = dirname( $url );
 			}
 
-			return $url;
+			return trailingslashit( $url );
 		}
 
 		/**
