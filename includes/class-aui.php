@@ -89,7 +89,7 @@ class AUI {
 	 * @param array $args
 	 * @return string The rendered component.
 	 */
-	public function alert( $args = array() ) {
+	public static function alert( $args = array() ) {
 		return AUI_Component_Alert::get($args);
 	}
 
@@ -100,7 +100,7 @@ class AUI {
 	 * @param array $args
 	 * @return string The rendered component.
 	 */
-	public function input( $args = array() ) {
+	public static function input( $args = array() ) {
 		return AUI_Component_Input::input($args);
 	}
 
@@ -111,7 +111,7 @@ class AUI {
 	 * @param array $args
 	 * @return string The rendered component.
 	 */
-	public function textarea( $args = array() ) {
+	public static function textarea( $args = array() ) {
 		return AUI_Component_Input::textarea($args);
 	}
 
@@ -122,7 +122,7 @@ class AUI {
 	 * @param array $args
 	 * @return string The rendered component.
 	 */
-	public function button( $args = array() ) {
+	public static function button( $args = array() ) {
 		return AUI_Component_Button::get($args);
 	}
 
@@ -133,7 +133,7 @@ class AUI {
 	 * @param array $args
 	 * @return string The rendered component.
 	 */
-	public function dropdown( $args = array() ) {
+	public static function dropdown( $args = array() ) {
 		return AUI_Component_Dropdown::get($args);
 	}
 
@@ -144,7 +144,7 @@ class AUI {
 	 * @param array $args
 	 * @return string The rendered component.
 	 */
-	public function select( $args = array() ) {
+	public static function select( $args = array() ) {
 		return AUI_Component_Input::select($args);
 	}
 
@@ -155,7 +155,7 @@ class AUI {
 	 * @param array $args
 	 * @return string The rendered component.
 	 */
-	public function pagination( $args = array() ) {
+	public static function pagination( $args = array() ) {
 		return AUI_Component_Pagination::get($args);
 	}
 
