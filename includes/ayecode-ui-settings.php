@@ -554,6 +554,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 
 			$db_settings = get_option( 'ayecode-ui-settings' );
 			$js_default = 'core-popper';
+			$js_default_backend = $js_default;
 
 			// maybe set defaults (if no settings set)
 			if(empty($db_settings)){
