@@ -37,6 +37,7 @@ class AUI_Component_Input {
 			'input_group_left' => '',
 			'step'       => '',
 			'switch'     => false, // to show checkbox as a switch
+			'checked'   => false, // set a checkbox or radio as selected
 			'password_toggle' => true, // toggle view/hide password
 		);
 
@@ -91,6 +92,11 @@ class AUI_Component_Input {
 			// value
 			if(!empty($args['value'])){
 				$output .= ' value="'.sanitize_text_field($args['value']).'" ';
+			}
+
+			// checked, for radio and checkboxes
+			if( ( $type == 'checkbox' || $type == 'radio' ) && $args['checked'] ){
+				$output .= ' checked ';
 			}
 
 			// validation text
@@ -548,7 +554,12 @@ else{$eli.attr(\'type\',\'password\');}"
 					} else {
 						$option_label = isset($name['label']) ? $name['label'] : '';
 						$option_value = isset($name['value']) ? $name['value'] : '';
-						$selected = selected($option_value,stripslashes($args['value']), false);
+
+						if(!empty($args['multiple']) && !empty($args['value'])){
+							$selected = in_array($option_value, stripslashes_deep($args['value'])) ? "selected" : "";
+						} else {
+							$selected = selected($option_value,stripslashes_deep($args['value']), false);
+						}
 
 						$output .= '<option value="' . esc_attr($option_value) . '" ' . $selected . '>' . $option_label . '</option>';
 					}
