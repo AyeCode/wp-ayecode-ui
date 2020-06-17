@@ -1,0 +1,27 @@
+/*
+Set images and videos to fit a certain way.
+*/
+
+// Cover both height and width
+.embed-item-cover-xy{
+  object-fit: cover;
+  height: 100%;
+}
+
+// give priority to width
+.embed-item-cover-x{
+  height: auto;
+}
+
+// give priority to height
+.embed-item-cover-y{
+  object-fit: contain;
+  height: 100%;
+  width: auto;
+  max-width: none;
+}
+
+// Contain the image without distorting
+.embed-item-contain{
+  object-fit: contain;
+}
