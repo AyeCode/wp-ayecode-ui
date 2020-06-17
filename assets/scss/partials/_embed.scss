@@ -10,7 +10,7 @@ Set images and videos to fit a certain way.
 
 // give priority to width
 .embed-item-cover-x{
-  height: auto;
+  height: auto !important;
 }
 
 // give priority to height
