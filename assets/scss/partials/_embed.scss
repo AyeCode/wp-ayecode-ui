@@ -25,3 +25,30 @@ Set images and videos to fit a certain way.
 .embed-item-contain{
   object-fit: contain;
 }
+
+
+// embed item has action
+.embed-has-action{
+  transition: transform .5s;
+  transition-timing-function: ease-in-out;
+  i,svg.svg-inline--fa{
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 1.5em;
+    opacity: 0;
+  }
+
+  &:hover{
+    img{
+      filter: brightness(80%);
+    }
+    i,svg.svg-inline--fa{
+      display: block;
+      opacity: 0.8;
+    }
+  }
+}
