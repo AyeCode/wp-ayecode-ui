@@ -75,7 +75,7 @@ class AUI_Component_Input {
 
 			// name
 			if(!empty($args['name'])){
-				$output .= ' name="'.sanitize_html_class($args['name']).'" ';
+				$output .= ' name="'.esc_attr($args['name']).'" ';
 			}
 
 			// id
@@ -386,9 +386,9 @@ else{$eli.attr(\'type\',\'password\');}"
 			$output .= '>';
 
 
-			// title
+			// title, don't escape as can contain html
 			if(!empty($args['title'])){
-				$output .= esc_attr($args['title']);
+				$output .= $args['title'];
 			}
 
 			// close wrap
@@ -480,6 +480,7 @@ else{$eli.attr(\'type\',\'password\');}"
 			'multiple'   => false,
 			'select2'    => false,
 			'no_wrap'    => false,
+			'extra_attributes'  => array() // an array of extra attributes
 		);
 
 		/**
@@ -543,6 +544,11 @@ else{$eli.attr(\'type\',\'password\');}"
 
 		// aria-attributes
 		$output .= AUI_Component_Helper::aria_attributes($args);
+
+		// extra attributes
+		if(!empty($args['extra_attributes'])){
+			$output .= AUI_Component_Helper::extra_attributes($args['extra_attributes']);
+		}
 
 		// required
 		if(!empty($args['required'])){

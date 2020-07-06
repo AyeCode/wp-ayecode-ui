@@ -1,3 +1,9 @@
+= 0.1.13 =
+* Badge hover actions not working due to wrong nesting when using compatibility mode - FIXED
+* Classes added for badge absolute and angled positioning - ADDED
+* WP admin bar overlaps modal when open - FIXED
+* Select not using vendor prefix to hide default arrow - FIXED
+
 = 0.1.11 =
 * IOS scroll bar class .scrollbars-ios added - ADDED
 
