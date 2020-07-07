@@ -1,8 +1,0 @@
-body{
-  &.modal-open{
-    // Hide the WP Admin bar when modal is open.
-    #wpadminbar{
-      z-index: 999;
-    }
-  }
-}
