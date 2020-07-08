@@ -386,9 +386,9 @@ else{$eli.attr(\'type\',\'password\');}"
 			$output .= '>';
 
 
-			// title, don't escape as can contain html
+			// title, don't escape fully as can contain html
 			if(!empty($args['title'])){
-				$output .= $args['title'];
+				$output .= wp_kses_post($args['title']);
 			}
 
 			// close wrap
