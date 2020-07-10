@@ -175,6 +175,9 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				wp_register_style( 'ayecode-ui', $url, array(), $this->latest );
 				wp_enqueue_style( 'ayecode-ui' );
 
+				// flatpickr
+				wp_register_style( 'flatpickr', $this->url.'assets/css/flatpickr.min.css', array(), $this->latest );
+
 
 				// fix some wp-admin issues
 				if(is_admin()){
@@ -476,6 +479,9 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			// select2
 			wp_register_script( 'select2', $this->url.'assets/js/select2.min.js', array('jquery'), $this->select2_version );
 
+			// flatpickr
+			wp_register_style( 'flatpickr', $this->url.'assets/js/flatpickr.min.js', array(), $this->latest );
+
 			// Bootstrap file browser
 			wp_register_script( 'aui-custom-file-input', $url = $this->url.'assets/js/bs-custom-file-input.min.js', array('jquery'), $this->select2_version );
 			wp_add_inline_script( 'aui-custom-file-input', $this->inline_script_file_browser() );
@@ -506,6 +512,14 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				wp_add_inline_script( 'bootstrap-dummy', $script  );
 			}
 			
+		}
+
+		/**
+		 * Enqueue flatpickr if called.
+		 */
+		public function enqueue_flatpickr(){
+			wp_enqueue_style( 'flatpickr' );
+			wp_enqueue_script( 'flatpickr' );
 		}
 
 		/**

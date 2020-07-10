@@ -188,6 +188,19 @@ class AUI {
 	}
 
 	/**
+	 * Render and return a bootstrap radio component.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array $args
+	 *
+	 * @return string The rendered component.
+	 */
+	public function radio( $args = array() ) {
+		return AUI_Component_Input::radio( $args );
+	}
+
+	/**
 	 * Render and return a bootstrap pagination component.
 	 *
 	 * @since 1.0.0

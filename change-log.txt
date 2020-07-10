@@ -1,4 +1,6 @@
 = 0.1.15 =
+* Radio inputs now available - ADDED
+* Flatickr date/time picker script - ADDED
 * Use wp_kses_post() on label output instead of esc_attr() - CHANGED
 
 = 0.1.14 =
