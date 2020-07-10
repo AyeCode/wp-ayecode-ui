@@ -71,9 +71,9 @@ class AUI_Component_Input {
 			}elseif($type=='checkbox'){
 				$args['label_after'] = true; // if type file we need the label after
 				$args['class'] .= ' custom-control-input ';
-			}elseif($type=='datepicker'){
+			}elseif($type=='datepicker' || $type=='timepicker'){
 				$type = 'text';
-				$args['class'] .= ' flatpickr ';
+				$args['class'] .= ' aui-flatpickr bg-initial ';
 
 				// enqueue the script
 				$aui_settings = AyeCode_UI_Settings::instance();

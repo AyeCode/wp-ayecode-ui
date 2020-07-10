@@ -1,3 +1,7 @@
+= 0.1.16 =
+* bg-initial and bg-inherit background classes added - ADDED
+* Init flatpickr with class aui-flatpickr - ADDED
+
 = 0.1.15 =
 * Radio inputs now available - ADDED
 * Flatickr date/time picker script - ADDED
