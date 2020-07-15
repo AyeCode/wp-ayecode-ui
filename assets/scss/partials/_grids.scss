@@ -3,6 +3,12 @@
   .row {
     &.row-cols-md-0 {
       display: block;
+
+      & > * {
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+
       .card{
         width: 100%;
         display: inline-flex;
@@ -92,6 +98,21 @@ Grid view hide secondary info.
   .gv-hide-s-2,.gv-hide-s-3,.gv-hide-s-4,.gv-hide-s-5{
     .gv-secondary{
       display: none;
+    }
+  }
+}
+
+// hide if on small breakpoint
+@media (max-width: 576px) {
+  .row {
+    .gv-hide-2,.gv-hide-3,.gv-hide-4,.gv-hide-5{
+      display: none;
+    }
+
+    .gv-hide-s-2,.gv-hide-s-3,.gv-hide-s-4,.gv-hide-s-5{
+      .gv-secondary{
+        display: none;
+      }
     }
   }
 }
