@@ -96,7 +96,7 @@ class AUI_Component_Input {
 			}
 
 			// placeholder
-			if(!empty($args['placeholder'])){
+			if(isset($args['placeholder'])){
 				$output .= ' placeholder="'.esc_attr($args['placeholder']).'" ';
 			}
 
@@ -864,7 +864,7 @@ else{$eli.attr(\'type\',\'password\');}"
 		}
 
 		// value
-		if(!empty($args['value'])){
+		if(isset($args['value'])){
 			$output .= ' value="'.sanitize_text_field($args['value']).'" ';
 		}
 
