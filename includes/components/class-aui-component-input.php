@@ -96,7 +96,7 @@ class AUI_Component_Input {
 			}
 
 			// placeholder
-			if(isset($args['placeholder'])){
+			if(isset($args['placeholder']) && '' != $args['placeholder'] ){
 				$output .= ' placeholder="'.esc_attr($args['placeholder']).'" ';
 			}
 
@@ -355,7 +355,7 @@ else{$eli.attr(\'type\',\'password\');}"
 			}
 
 			// placeholder
-			if(!empty($args['placeholder'])){
+			if(isset($args['placeholder']) && '' != $args['placeholder']){
 				$output .= ' placeholder="'.esc_attr($args['placeholder']).'" ';
 			}
 
@@ -595,9 +595,9 @@ else{$eli.attr(\'type\',\'password\');}"
 		}
 
 		// select2 placeholder
-		if($is_select2 && !empty($args['placeholder']) && empty($args['data-placeholder'])){
+		if($is_select2 && isset($args['placeholder']) && '' != $args['placeholder'] && empty($args['data-placeholder'])){
 			$args['data-placeholder'] = esc_attr($args['placeholder']);
-			$args['data-allow-clear'] = empty($args['data-allow-clear']) ? true : esc_attr($args['data-allow-clear']);
+			$args['data-allow-clear'] = isset($args['data-allow-clear']) ? (bool) $args['data-allow-clear'] : true;
 		}
 
 		// label
@@ -669,7 +669,7 @@ else{$eli.attr(\'type\',\'password\');}"
 		$output .= ' >';
 
 		// placeholder
-		if(!empty($args['placeholder']) && !$is_select2){
+		if(isset($args['placeholder']) && '' != $args['placeholder'] && !$is_select2){
 			$output .= '<option value="" disabled selected hidden>'.esc_attr($args['placeholder']).'</option>';
 		}
 
