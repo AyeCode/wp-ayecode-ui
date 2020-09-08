@@ -106,6 +106,9 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				if ( is_admin() ) {
 					add_action( 'admin_menu', array( self::$instance, 'menu_item' ) );
 					add_action( 'admin_init', array( self::$instance, 'register_settings' ) );
+
+					// Maybe show example page
+					add_action( 'template_redirect', array( self::$instance,'maybe_show_examples' ) );
 				}
 
 				add_action( 'customize_register', array( self::$instance, 'customizer_settings' ));
@@ -131,7 +134,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			if ( $this->settings['css'] ) {
 				add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_style' ), 1 );
 			}
-			if ( $this->settings['css_backend'] ) {
+			if ( $this->settings['css_backend'] && $this->load_admin_scripts() ) {
 				add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_style' ), 1 );
 			}
 
@@ -139,7 +142,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			if ( $this->settings['js'] ) {
 				add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ), 1 );
 			}
-			if ( $this->settings['js_backend'] ) {
+			if ( $this->settings['js_backend'] && $this->load_admin_scripts() ) {
 				add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ), 1 );
 			}
 
@@ -149,6 +152,26 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			}
 
 
+		}
+
+		/**
+		 * Check if we should load the admin scripts or not.
+		 *
+		 * @return bool
+		 */
+		public function load_admin_scripts(){
+			$result = true;
+
+			if(!empty($this->settings['disable_admin'])){
+				$url_parts = explode("\n",$this->settings['disable_admin']);
+				foreach($url_parts as $part){
+					if( strpos($_SERVER['REQUEST_URI'], trim($part)) !== false ){
+						return false; // return early, no point checking further
+					}
+				}
+			}
+
+			return $result;
 		}
 
 		/**
@@ -163,7 +186,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 * Adds the Font Awesome styles.
 		 */
 		public function enqueue_style() {
-			
+
 			$css_setting = current_action() == 'wp_enqueue_scripts' ? 'css' : 'css_backend';
 
 			if($this->settings[$css_setting]){
@@ -171,6 +194,9 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				$url = $this->settings[$css_setting]=='core' ? $this->url.'assets/css/ayecode-ui.css' : $this->url.'assets/css/ayecode-ui-compatibility.css';
 				wp_register_style( 'ayecode-ui', $url, array(), $this->latest );
 				wp_enqueue_style( 'ayecode-ui' );
+
+				// flatpickr
+				wp_register_style( 'flatpickr', $this->url.'assets/css/flatpickr.min.css', array(), $this->latest );
 
 
 				// fix some wp-admin issues
@@ -210,6 +236,13 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				    margin: 1em 0
 				}
                 ";
+
+					// @todo, remove once fixed :: fix for this bug https://github.com/WordPress/gutenberg/issues/14377
+					$custom_css .= "
+						.edit-post-sidebar input[type=color].components-text-control__input{
+						    padding: 0;
+						}
+					";
 					wp_add_inline_style( 'ayecode-ui', $custom_css );
 				}
 
@@ -246,11 +279,22 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 						jQuery(this).addClass('navbar-expand');
 
 						// vars
-						var $vlinks = jQuery(this).find('.navbar-nav').addClass("being-greedy w-100");
-						jQuery($vlinks).append('<li class="nav-item list-unstyled ml-auto greedy-btn d-none ">' +
+						var $vlinks = '';
+						var $dDownClass = '';
+						if(jQuery(this).find('.navbar-nav').length){
+							$vlinks = jQuery(this).find('.navbar-nav').addClass("being-greedy w-100");
+						}else if(jQuery(this).find('.nav').length){
+							$vlinks = jQuery(this).find('.nav').addClass("being-greedy w-100");
+							$dDownClass = ' mt-2 ';
+						}else{
+							return false;
+						}
+
+						jQuery($vlinks).append('<li class="nav-item list-unstyled ml-auto greedy-btn d-none dropdown ">' +
 							'<a href="javascript:void(0)" data-toggle="dropdown" class="nav-link"><i class="fas fa-ellipsis-h"></i> <span class="greedy-count badge badge-dark badge-pill"></span></a>' +
-							'<div class="dropdown"><ul class="greedy-links dropdown-menu  dropdown-menu-right"></ul></div>' +
+							'<ul class="greedy-links dropdown-menu  dropdown-menu-right '+$dDownClass+'"></ul>' +
 							'</li>');
+
 						var $hlinks = jQuery(this).find('.greedy-links');
 						var $btn = jQuery(this).find('.greedy-btn');
 
@@ -392,21 +436,139 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 					jQuery('[data-toggle="popover-html"]').popover({
 						html: true
 					});
+
+					// fix popover container compatibility
+					jQuery('[data-toggle="popover"],[data-toggle="popover-html"]').on('inserted.bs.popover', function () {
+						jQuery('body > .popover').wrapAll("<div class='bsui' />");
+					});
 				}
 
-				// run on window loaded
-				jQuery(window).load(function() {
+				/**
+				 * Initiate flatpickrs on the page.
+				 */
+				$aui_doing_init_flatpickr = false;
+				function aui_init_flatpickr(){
+					if ( jQuery.isFunction(jQuery.fn.flatpickr) && !$aui_doing_init_flatpickr) {
+						$aui_doing_init_flatpickr = true;
+						jQuery('input[data-aui-init="flatpickr"]:not(.flatpickr-input)').flatpickr();
+					}
+					$aui_doing_init_flatpickr = false;
+				}
+
+				function aui_modal($title,$body,$footer,$dismissible,$class,$dialog_class) {
+					if(!$class){$class = '';}
+					if(!$dialog_class){$dialog_class = '';}
+					if(!$body){$body = '<div class="text-center"><div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div></div>';}
+					// remove it first
+					jQuery('.aui-modal').modal('hide').modal('dispose').remove();
+					jQuery('.modal-backdrop').remove();
+
+					var $modal = '';
+
+					$modal += '<div class="modal aui-modal fade shadow bsui '+$class+'" tabindex="-1">'+
+						'<div class="modal-dialog modal-dialog-centered '+$dialog_class+'">'+
+							'<div class="modal-content">';
+
+					if($title) {
+						$modal += '<div class="modal-header">' +
+						'<h5 class="modal-title">' + $title + '</h5>';
+
+						if ($dismissible) {
+							$modal += '<button type="button" class="close" data-dismiss="modal" aria-label="Close">' +
+								'<span aria-hidden="true">&times;</span>' +
+								'</button>';
+						}
+
+						$modal += '</div>';
+					}
+					$modal += '<div class="modal-body">'+
+									$body+
+								'</div>';
+
+					if($footer){
+						$modal += '<div class="modal-footer">'+
+							$footer +
+							'</div>';
+					}
+
+					$modal +='</div>'+
+						'</div>'+
+					'</div>';
+
+					jQuery('body').append($modal);
+
+					jQuery('.aui-modal').modal('hide').modal({
+						//backdrop: 'static'
+					});
+				}
+
+				/**
+				 * Show / hide fields depending on conditions.
+				 */
+				function aui_conditional_fields(form){
+					jQuery(form).find(".aui-conditional-field").each(function () {
+
+						var $element_require = jQuery(this).data('element-require');
+
+						if ($element_require) {
+
+							$element_require = $element_require.replace("&#039;", "'"); // replace single quotes
+							$element_require = $element_require.replace("&quot;", '"'); // replace double quotes
+
+							if (eval($element_require)) {
+								jQuery(this).removeClass('d-none');
+							} else {
+								jQuery(this).addClass('d-none');
+							}
+						}
+					});
+				}
+
+				/**
+				 * A function to determine if a element is on screen.
+				 */
+				jQuery.fn.aui_isOnScreen = function(){
+
+					var win = jQuery(window);
+
+					var viewport = {
+						top : win.scrollTop(),
+						left : win.scrollLeft()
+					};
+					viewport.right = viewport.left + win.width();
+					viewport.bottom = viewport.top + win.height();
+
+					var bounds = this.offset();
+					bounds.right = bounds.left + this.outerWidth();
+					bounds.bottom = bounds.top + this.outerHeight();
+
+					return (!(viewport.right < bounds.left || viewport.left > bounds.right || viewport.bottom < bounds.top || viewport.top > bounds.bottom));
+
+				};
+
+				/**
+				 * Initiate all AUI JS.
+				 */
+				function aui_init(){
 					// init tooltips
 					aui_init_tooltips();
 
 					// init select2
 					aui_init_select2();
 
+					// init flatpickr
+					aui_init_flatpickr();
+
 					// init Greedy nav
 					aui_init_greedy_nav();
 
 					// Set times to time ago
 					aui_time_ago('timeago');
+				}
+
+				// run on window loaded
+				jQuery(window).load(function() {
+					aui_init();
 				});
 			</script>
 			<?php
@@ -453,9 +615,12 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		public function enqueue_scripts() {
 
 			$js_setting = current_action() == 'wp_enqueue_scripts' ? 'js' : 'js_backend';
-			
+
 			// select2
 			wp_register_script( 'select2', $this->url.'assets/js/select2.min.js', array('jquery'), $this->select2_version );
+
+			// flatpickr
+			wp_register_script( 'flatpickr', $this->url.'assets/js/flatpickr.min.js', array(), $this->latest );
 
 			// Bootstrap file browser
 			wp_register_script( 'aui-custom-file-input', $url = $this->url.'assets/js/bs-custom-file-input.min.js', array('jquery'), $this->select2_version );
@@ -467,7 +632,8 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				// Bootstrap bundle
 				$url = $this->url.'assets/js/bootstrap.bundle.min.js';
 				wp_register_script( 'bootstrap-js-bundle', $url, array('select2','jquery'), $this->latest );
-				wp_enqueue_script( 'bootstrap-js-bundle' );
+				// if in admin then add to footer for compatibility.
+				is_admin() ? wp_enqueue_script( 'bootstrap-js-bundle', '', null, null, true ) : wp_enqueue_script( 'bootstrap-js-bundle');
 				$script = $this->inline_script();
 				wp_add_inline_script( 'bootstrap-js-bundle', $script );
 			}elseif($this->settings[$js_setting]=='popper'){
@@ -486,7 +652,15 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				$script = $this->inline_script();
 				wp_add_inline_script( 'bootstrap-dummy', $script  );
 			}
-			
+
+		}
+
+		/**
+		 * Enqueue flatpickr if called.
+		 */
+		public function enqueue_flatpickr(){
+			wp_enqueue_style( 'flatpickr' );
+			wp_enqueue_script( 'flatpickr' );
 		}
 
 		/**
@@ -533,7 +707,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 
 		/**
 		 * Get a list of themes and their default JS settings.
-		 * 
+		 *
 		 * @return array
 		 */
 		public function theme_js_settings(){
@@ -572,7 +746,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				'html_font_size'        => '16', // js to load, core-popper, popper
 				'css_backend'       => 'compatibility', // core, compatibility
 				'js_backend'        => $js_default_backend, // js to load, core-popper, popper
-
+				'disable_admin'     =>  '', // URL snippets to disable loading on admin
 			);
 
 			$settings = wp_parse_args( $db_settings, $defaults );
@@ -645,9 +819,9 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 					<table class="form-table wpbs-table-settings">
 						<tr valign="top">
 							<th scope="row"><label
-									for="wpbs-css"><?php _e( 'Load CSS', 'aui' ); ?></label></th>
+									for="wpbs-css-admin"><?php _e( 'Load CSS', 'aui' ); ?></label></th>
 							<td>
-								<select name="ayecode-ui-settings[css_backend]" id="wpbs-css">
+								<select name="ayecode-ui-settings[css_backend]" id="wpbs-css-admin">
 									<option	value="compatibility" <?php selected( $this->settings['css_backend'], 'compatibility' ); ?>><?php _e( 'Compatibility Mode', 'aui' ); ?></option>
 									<option value="core" <?php selected( $this->settings['css_backend'], 'core' ); ?>><?php _e( 'Full Mode', 'aui' ); ?></option>
 									<option	value="" <?php selected( $this->settings['css_backend'], '' ); ?>><?php _e( 'Disabled', 'aui' ); ?></option>
@@ -657,14 +831,24 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 
 						<tr valign="top">
 							<th scope="row"><label
-									for="wpbs-js"><?php _e( 'Load JS', 'aui' ); ?></label></th>
+									for="wpbs-js-admin"><?php _e( 'Load JS', 'aui' ); ?></label></th>
 							<td>
-								<select name="ayecode-ui-settings[js_backend]" id="wpbs-js">
+								<select name="ayecode-ui-settings[js_backend]" id="wpbs-js-admin">
 									<option	value="core-popper" <?php selected( $this->settings['js_backend'], 'core-popper' ); ?>><?php _e( 'Core + Popper (default)', 'aui' ); ?></option>
 									<option value="popper" <?php selected( $this->settings['js_backend'], 'popper' ); ?>><?php _e( 'Popper', 'aui' ); ?></option>
 									<option value="required" <?php selected( $this->settings['js_backend'], 'required' ); ?>><?php _e( 'Required functions only', 'aui' ); ?></option>
 									<option	value="" <?php selected( $this->settings['js_backend'], '' ); ?>><?php _e( 'Disabled (not recommended)', 'aui' ); ?></option>
 								</select>
+							</td>
+						</tr>
+
+						<tr valign="top">
+							<th scope="row"><label
+									for="wpbs-disable-admin"><?php _e( 'Disable load on URL', 'aui' ); ?></label></th>
+							<td>
+								<p><?php _e( 'If you have backend conflict you can enter a partial URL argument that will disable the loading of AUI on those pages. Add each argument on a new line.', 'aui' ); ?></p>
+								<textarea name="ayecode-ui-settings[disable_admin]" rows="10" cols="50" id="wpbs-disable-admin" class="large-text code" spellcheck="false" placeholder="myplugin.php &#10;action=go"><?php echo $this->settings['disable_admin'];?></textarea>
+
 							</td>
 						</tr>
 
@@ -906,7 +1090,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				'.badge-secondary' => array('b'),
 				'.alert-secondary' => array('b','o'),
 				'.btn-link.btn-secondary' => array('c'),
-				);
+			);
 
 			$important_selectors = array(
 				'.bg-secondary' => array('b','f'),
@@ -1027,6 +1211,123 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			}
 
 			return '#' . implode($hexCode);
+		}
+
+		/**
+		 * Check if we should display examples.
+		 */
+		public function maybe_show_examples(){
+			if(current_user_can('manage_options') && isset($_REQUEST['preview-aui'])){
+				echo "<head>";
+				wp_head();
+				echo "</head>";
+				echo "<body>";
+				echo $this->get_examples();
+				echo "</body>";
+				exit;
+			}
+		}
+
+		/**
+		 * Get developer examples.
+		 *
+		 * @return string
+		 */
+		public function get_examples(){
+			$output = '';
+
+
+			// open form
+			$output .= "<form class='p-5 m-5 border rounded'>";
+
+			// input example
+			$output .= aui()->input(array(
+				'type'  =>  'text',
+				'id'    =>  'text-example',
+				'name'    =>  'text-example',
+				'placeholder'   => 'text placeholder',
+				'title'   => 'Text input example',
+				'value' =>  '',
+				'required'  => false,
+				'help_text' => 'help text',
+				'label' => 'Text input example label'
+			));
+
+			// input example
+			$output .= aui()->input(array(
+				'type'  =>  'url',
+				'id'    =>  'text-example2',
+				'name'    =>  'text-example',
+				'placeholder'   => 'url placeholder',
+				'title'   => 'Text input example',
+				'value' =>  '',
+				'required'  => false,
+				'help_text' => 'help text',
+				'label' => 'Text input example label'
+			));
+
+			// checkbox example
+			$output .= aui()->input(array(
+				'type'  =>  'checkbox',
+				'id'    =>  'checkbox-example',
+				'name'    =>  'checkbox-example',
+				'placeholder'   => 'checkbox-example',
+				'title'   => 'Checkbox example',
+				'value' =>  '1',
+				'checked'   => true,
+				'required'  => false,
+				'help_text' => 'help text',
+				'label' => 'Checkbox checked'
+			));
+
+			// checkbox example
+			$output .= aui()->input(array(
+				'type'  =>  'checkbox',
+				'id'    =>  'checkbox-example2',
+				'name'    =>  'checkbox-example2',
+				'placeholder'   => 'checkbox-example',
+				'title'   => 'Checkbox example',
+				'value' =>  '1',
+				'checked'   => false,
+				'required'  => false,
+				'help_text' => 'help text',
+				'label' => 'Checkbox un-checked'
+			));
+
+			// switch example
+			$output .= aui()->input(array(
+				'type'  =>  'checkbox',
+				'id'    =>  'switch-example',
+				'name'    =>  'switch-example',
+				'placeholder'   => 'checkbox-example',
+				'title'   => 'Switch example',
+				'value' =>  '1',
+				'checked'   => true,
+				'switch'    => true,
+				'required'  => false,
+				'help_text' => 'help text',
+				'label' => 'Switch on'
+			));
+
+			// switch example
+			$output .= aui()->input(array(
+				'type'  =>  'checkbox',
+				'id'    =>  'switch-example2',
+				'name'    =>  'switch-example2',
+				'placeholder'   => 'checkbox-example',
+				'title'   => 'Switch example',
+				'value' =>  '1',
+				'checked'   => false,
+				'switch'    => true,
+				'required'  => false,
+				'help_text' => 'help text',
+				'label' => 'Switch off'
+			));
+
+			// close form
+			$output .= "</form>";
+
+			return $output;
 		}
 
 	}

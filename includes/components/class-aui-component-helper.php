@@ -22,7 +22,7 @@ class AUI_Component_Helper {
 		$output = '';
 
 		if($text){
-			$is_multiple = $multiple ? '[]' : '';
+			$is_multiple = strpos($text, '[]') !== false ? '[]' : '';
 			$output = ' name="'.sanitize_html_class($text).$is_multiple.'" ';
 		}
 
@@ -165,23 +165,92 @@ class AUI_Component_Helper {
 
 	/**
 	 * Build a font awesome icon from a class.
-	 * 
+	 *
 	 * @param $class
 	 * @param bool $space_after
+	 * @param array $extra_attributes An array of extra attributes.
 	 *
 	 * @return string
 	 */
-	public static function icon($class,$space_after = false){
+	public static function icon($class,$space_after = false, $extra_attributes = array()){
 		$output = '';
 
 		if($class){
 			$classes = self::esc_classes($class);
 			if(!empty($classes)){
-				$output = '<i class="'.$classes.'" ></i>';
+				$output = '<i class="'.$classes.'" ';
+				// extra attributes
+				if(!empty($extra_attributes)){
+					$output .= AUI_Component_Helper::extra_attributes($extra_attributes);
+				}
+				$output .= '></i>';
 				if($space_after){
 					$output .= " ";
 				}
 			}
+		}
+
+		return $output;
+	}
+
+	/**
+	 * @param $args
+	 *
+	 * @return string
+	 */
+	public static function extra_attributes($args){
+		$output = '';
+
+		if(!empty($args)){
+
+			if( is_array($args) ){
+				foreach($args as $key => $val){
+					$output .= ' '.sanitize_html_class($key).'="'.esc_attr($val).'" ';
+				}
+			}else{
+				$output .= ' '.$args.' ';
+			}
+
+		}
+
+		return $output;
+	}
+
+	/**
+	 * @param $args
+	 *
+	 * @return string
+	 */
+	public static function help_text($text){
+		$output = '';
+
+		if($text){
+			$output .= '<small class="form-text text-muted">'.wp_kses_post($text).'</small>';
+		}
+
+
+		return $output;
+	}
+
+	/**
+	 * Replace element require context with JS.
+	 *
+	 * @param $input
+	 *
+	 * @return string|void
+	 */
+	public static function element_require( $input ) {
+
+		$input = str_replace( "'", '"', $input );// we only want double quotes
+
+		$output = esc_attr( str_replace( array( "[%", "%]", "%:checked]" ), array(
+			"jQuery(form).find('[data-argument=\"",
+			"\"]').find('input,select,textarea').val()",
+			"\"]').find('input:checked').val()",
+		), $input ) );
+
+		if($output){
+			$output = ' data-element-require="'.$output.'" ';
 		}
 
 		return $output;
