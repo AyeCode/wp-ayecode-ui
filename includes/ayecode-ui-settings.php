@@ -272,6 +272,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				function aui_init_greedy_nav(){
 					jQuery('nav.greedy').each(function(i, obj) {
 
+						console.log(1);
 						// Check if already initialized, if so continue.
 						if(jQuery(this).hasClass("being-greedy")){return true;}
 
@@ -282,8 +283,10 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 						var $vlinks = '';
 						var $dDownClass = '';
 						if(jQuery(this).find('.navbar-nav').length){
+							if(jQuery(this).find('.navbar-nav').hasClass("being-greedy")){return true;}
 							$vlinks = jQuery(this).find('.navbar-nav').addClass("being-greedy w-100");
 						}else if(jQuery(this).find('.nav').length){
+							if(jQuery(this).find('.nav').hasClass("being-greedy")){return true;}
 							$vlinks = jQuery(this).find('.nav').addClass("being-greedy w-100");
 							$dDownClass = ' mt-2 ';
 						}else{
@@ -458,7 +461,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				function aui_modal($title,$body,$footer,$dismissible,$class,$dialog_class) {
 					if(!$class){$class = '';}
 					if(!$dialog_class){$dialog_class = '';}
-					if(!$body){$body = '<div class="text-center"><div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div></div>';}
+					if(!$body){$body = '<div class="text-center"><div class="spinner-border" role="status"></div></div>';}
 					// remove it first
 					jQuery('.aui-modal').modal('hide').modal('dispose').remove();
 					jQuery('.modal-backdrop').remove();
