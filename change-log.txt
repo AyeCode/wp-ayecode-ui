@@ -1,7 +1,5 @@
 = 0.1.25 =
 * Primary and Secondary default colors can be set via PHP constant - ADDED
-
-= 0.1.25 =
 * Replace jQuery deprecated load() function - CHANGED
 
 = 0.1.24 =
