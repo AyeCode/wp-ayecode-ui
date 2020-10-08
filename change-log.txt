@@ -1,3 +1,6 @@
+= 0.1.27 =
+* Allow menus to have multiple submenus with by adding class .navbar-multi-sub-menus - ADDED
+
 = 0.1.26 =
 * List view image not fully taking up column - FIXED
 * clear-both class added - ADDED

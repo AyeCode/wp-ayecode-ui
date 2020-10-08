@@ -673,12 +673,44 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 						aui_carousel_maybe_show_multiple_items(this);
 					});
 				}
+
+				/**
+				 * Allow navs to use multiple sub menus.
+				 */
+				function init_nav_sub_menus(){
+					jQuery( '.navbar-multi-sub-menus .dropdown-menu a.dropdown-toggle' ).on( 'click', function ( e ) {
+						var $el = jQuery( this );
+						$el.toggleClass('active-dropdown');
+						var $parent = jQuery( this ).offsetParent( ".dropdown-menu" );
+						if ( !jQuery( this ).next().hasClass( 'show' ) ) {
+							jQuery( this ).parents( '.dropdown-menu' ).first().find( '.show' ).removeClass( "show" );
+						}
+						var $subMenu = jQuery( this ).next( ".dropdown-menu" );
+						$subMenu.toggleClass( 'show' );
+
+						jQuery( this ).parent( "li" ).toggleClass( 'show' );
+
+						jQuery( this ).parents( 'li.nav-item.dropdown.show' ).on( 'hidden.bs.dropdown', function ( e ) {
+							jQuery( '.dropdown-menu .show' ).removeClass( "show" );
+							$el.removeClass('active-dropdown');
+						} );
+
+						if ( !$parent.parent().hasClass( 'navbar-nav' ) ) {
+							$el.next().addClass('position-relative border-top border-bottom');
+						}
+
+						return false;
+					} );
+				}
 				
 
 				/**
 				 * Initiate all AUI JS.
 				 */
 				function aui_init(){
+					// nav menu submenus
+					init_nav_sub_menus();
+					
 					// init tooltips
 					aui_init_tooltips();
 
@@ -702,6 +734,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				jQuery(window).on("load",function() {
 					aui_init();
 				});
+
 			</script>
 			<?php
 			$output = ob_get_clean();
