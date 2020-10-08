@@ -529,13 +529,23 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 							$element_require = $element_require.replace("&#039;", "'"); // replace single quotes
 							$element_require = $element_require.replace("&quot;", '"'); // replace double quotes
 
-							if (eval($element_require)) {
+							if (aui_check_form_condition($element_require,form)) {
 								jQuery(this).removeClass('d-none');
 							} else {
 								jQuery(this).addClass('d-none');
 							}
 						}
 					});
+				}
+
+				/**
+				 * Check form condition
+				 */
+				function aui_check_form_condition(condition,form) {
+					if(form){
+						condition = condition.replace("(form)", "('"+form+"')");
+					}
+					return new Function("return " + condition+";")();
 				}
 
 				/**

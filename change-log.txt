@@ -1,3 +1,6 @@
+= 0.1.29 =
+* Changes for theme check - CHANGED
+
 = 0.1.28 =
 * Allow menus to have multiple submenus with by adding class .navbar-multi-sub-menus - ADDED
 
