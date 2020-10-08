@@ -678,29 +678,40 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				 * Allow navs to use multiple sub menus.
 				 */
 				function init_nav_sub_menus(){
-					jQuery( '.navbar-multi-sub-menus .dropdown-menu a.dropdown-toggle' ).on( 'click', function ( e ) {
-						var $el = jQuery( this );
-						$el.toggleClass('active-dropdown');
-						var $parent = jQuery( this ).offsetParent( ".dropdown-menu" );
-						if ( !jQuery( this ).next().hasClass( 'show' ) ) {
-							jQuery( this ).parents( '.dropdown-menu' ).first().find( '.show' ).removeClass( "show" );
-						}
-						var $subMenu = jQuery( this ).next( ".dropdown-menu" );
-						$subMenu.toggleClass( 'show' );
 
-						jQuery( this ).parent( "li" ).toggleClass( 'show' );
+					jQuery('.navbar-multi-sub-menus').each(function(i, obj) {
+						// Check if already initialized, if so continue.
+						if(jQuery(this).hasClass("has-sub-sub-menus")){return true;}
 
-						jQuery( this ).parents( 'li.nav-item.dropdown.show' ).on( 'hidden.bs.dropdown', function ( e ) {
-							jQuery( '.dropdown-menu .show' ).removeClass( "show" );
-							$el.removeClass('active-dropdown');
+						// Make sure its always expanded
+						jQuery(this).addClass('has-sub-sub-menus');
+
+						jQuery(this).find( '.dropdown-menu a.dropdown-toggle' ).on( 'click', function ( e ) {
+							var $el = jQuery( this );
+							$el.toggleClass('active-dropdown');
+							var $parent = jQuery( this ).offsetParent( ".dropdown-menu" );
+							if ( !jQuery( this ).next().hasClass( 'show' ) ) {
+								jQuery( this ).parents( '.dropdown-menu' ).first().find( '.show' ).removeClass( "show" );
+							}
+							var $subMenu = jQuery( this ).next( ".dropdown-menu" );
+							$subMenu.toggleClass( 'show' );
+
+							jQuery( this ).parent( "li" ).toggleClass( 'show' );
+
+							jQuery( this ).parents( 'li.nav-item.dropdown.show' ).on( 'hidden.bs.dropdown', function ( e ) {
+								jQuery( '.dropdown-menu .show' ).removeClass( "show" );
+								$el.removeClass('active-dropdown');
+							} );
+
+							if ( !$parent.parent().hasClass( 'navbar-nav' ) ) {
+								$el.next().addClass('position-relative border-top border-bottom');
+							}
+
+							return false;
 						} );
 
-						if ( !$parent.parent().hasClass( 'navbar-nav' ) ) {
-							$el.next().addClass('position-relative border-top border-bottom');
-						}
+					});
 
-						return false;
-					} );
 				}
 				
 
