@@ -529,13 +529,23 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 							$element_require = $element_require.replace("&#039;", "'"); // replace single quotes
 							$element_require = $element_require.replace("&quot;", '"'); // replace double quotes
 
-							if (eval($element_require)) {
+							if (aui_check_form_condition($element_require,form)) {
 								jQuery(this).removeClass('d-none');
 							} else {
 								jQuery(this).addClass('d-none');
 							}
 						}
 					});
+				}
+
+				/**
+				 * Check form condition
+				 */
+				function aui_check_form_condition(condition,form) {
+					if(form){
+						condition = condition.replace("(form)", "('"+form+"')");
+					}
+					return new Function("return " + condition+";")();
 				}
 
 				/**
@@ -1043,7 +1053,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 
 		public function customizer_settings($wp_customize){
 			$wp_customize->add_section('aui_settings', array(
-				'title'    => __('AyeCode UI'),
+				'title'    => __('AyeCode UI','aui'),
 				'priority' => 120,
 			));
 
@@ -1058,7 +1068,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				'transport'         => 'refresh',
 			));
 			$wp_customize->add_control( new WP_Customize_Color_Control($wp_customize, 'color_primary', array(
-				'label'    => __('Primary Color'),
+				'label'    => __('Primary Color','aui'),
 				'section'  => 'aui_settings',
 				'settings' => 'aui_options[color_primary]',
 			)));
@@ -1071,7 +1081,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				'transport'         => 'refresh',
 			));
 			$wp_customize->add_control( new WP_Customize_Color_Control($wp_customize, 'color_secondary', array(
-				'label'    => __('Secondary Color'),
+				'label'    => __('Secondary Color','aui'),
 				'section'  => 'aui_settings',
 				'settings' => 'aui_options[color_secondary]',
 			)));

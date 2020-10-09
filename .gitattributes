@@ -10,3 +10,4 @@ phpunit.xml export-ignore
 README.md export-ignore
 /tests/ export-ignore
 /.idea/ export-ignore
+*.map export-ignore
