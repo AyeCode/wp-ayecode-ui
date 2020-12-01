@@ -542,8 +542,8 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				 * Check form condition
 				 */
 				function aui_check_form_condition(condition,form) {
-					if(form){
-						condition = condition.replace(/(form)/g, "('"+form+"')");
+					if (form) {
+						condition = condition.replace(/\(form\)/g, "('"+form+"')");
 					}
 					return new Function("return " + condition+";")();
 				}
