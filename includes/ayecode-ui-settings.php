@@ -49,7 +49,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 *
 		 * @var string
 		 */
-		public $latest = "4.3.1";
+		public $latest = "4.5.3";
 
 		/**
 		 * Current version of select2 being used.
@@ -195,15 +195,17 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		}
 
 		/**
-		 * Adds the Font Awesome styles.
+		 * Adds the styles.
 		 */
 		public function enqueue_style() {
 
 			$css_setting = current_action() == 'wp_enqueue_scripts' ? 'css' : 'css_backend';
 
+			$rtl = is_rtl() ? '-rtl' : '';
+
 			if($this->settings[$css_setting]){
 				$compatibility = $this->settings[$css_setting]=='core' ? false : true;
-				$url = $this->settings[$css_setting]=='core' ? $this->url.'assets/css/ayecode-ui.css' : $this->url.'assets/css/ayecode-ui-compatibility.css';
+				$url = $this->settings[$css_setting]=='core' ? $this->url.'assets/css/ayecode-ui'.$rtl.'.css' : $this->url.'assets/css/ayecode-ui-compatibility'.$rtl.'.css';
 				wp_register_style( 'ayecode-ui', $url, array(), $this->latest );
 				wp_enqueue_style( 'ayecode-ui' );
 
