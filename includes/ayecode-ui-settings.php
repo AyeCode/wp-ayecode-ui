@@ -1087,6 +1087,29 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			)));
 		}
 
+		public static function bs3_compat_css() {
+			ob_start();
+			?>
+			/* Bootstrap 3 compatibility */
+			body.modal-open .modal-backdrop.show:not(.in) {opacity:0.5;}
+			body.modal-open .modal.show:not(.in)  {opacity:1;z-index: 99999}
+			body.modal-open .modal.show:not(.in) .modal-content  {box-shadow: none;}
+			body.modal-open .modal.show:not(.in)  .modal-dialog {transform: initial;}
+
+			.collapse.show:not(.in){display: inherit;}
+
+			/* With Avada builder */
+			body.modal-open .modal.in  {opacity:1;z-index: 99999}
+			body.modal-open .modal.bsui.in .modal-content  {box-shadow: none;}
+			.bsui .collapse.in{display: inherit;}
+
+
+
+			body.modal-open .modal.bsui .modal-dialog{left: auto;}
+			<?php
+			return ob_get_clean();
+		}
+
 
 		public static function custom_css($compatibility = true) {
 			$settings = get_option('aui_options');
@@ -1098,7 +1121,14 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				//AUI_PRIMARY_COLOR_ORIGINAL
 			?>
 			<style>
+
+
+
 				<?php
+
+				// BS compat @todo add option check
+				//echo self::bs3_compat_css();
+
 					if(!is_admin() && $primary_color != AUI_PRIMARY_COLOR_ORIGINAL){
 						echo self::css_primary($primary_color,$compatibility);
 					}
