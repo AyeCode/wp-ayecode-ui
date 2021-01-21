@@ -1,3 +1,6 @@
+= 0.1.41 =
+* Time ago feature is not working - FIXED
+
 = 0.1.40 =
 * BS Full mode on backend causes style conflicts, warning added - ADDED
 
