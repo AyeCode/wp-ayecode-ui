@@ -207,11 +207,15 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			if ( is_admin() ) {
 				// Only enable on set pages
 				$aui_screens = array(
+					'page',
+					'post',
 					'settings_page_ayecode-ui-settings'
 				);
 				$screen_ids = apply_filters( 'aui_screen_ids', $aui_screens );
 
 				$screen = get_current_screen();
+
+//				echo '###'.$screen->id;
 				
 				if ( $screen && in_array( $screen->id, $screen_ids ) ) {
 					$load = true;
