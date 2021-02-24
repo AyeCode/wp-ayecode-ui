@@ -209,7 +209,8 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				$aui_screens = array(
 					'page',
 					'post',
-					'settings_page_ayecode-ui-settings'
+					'settings_page_ayecode-ui-settings',
+					'appearance_page_gutenberg-widgets'
 				);
 				$screen_ids = apply_filters( 'aui_screen_ids', $aui_screens );
 
@@ -282,6 +283,9 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				h2,h3 {
 				    font-size: 1.3em;
 				    margin: 1em 0
+				}
+				.blocks-widgets-container .bsui *{
+					box-sizing: border-box;
 				}
                 ";
 
