@@ -401,7 +401,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 						}
 
 						// Window listeners
-						jQuery(window).resize(function() {
+						jQuery(window).on("resize",function() {
 							check();
 						});
 
@@ -512,7 +512,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				 */
 				$aui_doing_init_flatpickr = false;
 				function aui_init_flatpickr(){
-					if ( jQuery.isFunction(jQuery.fn.flatpickr) && !$aui_doing_init_flatpickr) {
+					if ( typeof jQuery.fn.flatpickr === "function" && !$aui_doing_init_flatpickr) {
 						$aui_doing_init_flatpickr = true;
 						<?php if ( ! empty( $flatpickr_locale ) ) { ?>try{flatpickr.localize(<?php echo $flatpickr_locale; ?>);}catch(err){console.log(err.message);}<?php } ?>
 						jQuery('input[data-aui-init="flatpickr"]:not(.flatpickr-input)').flatpickr();
@@ -723,7 +723,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				 * Init Multiple item carousels.
 				 */ 
 				function aui_init_carousel_multiple_items(){
-					jQuery(window).resize(function(){
+					jQuery(window).on("resize",function(){
 						jQuery('.carousel-multiple-items').each(function () {
 							aui_carousel_maybe_show_multiple_items(this);
 						});
