@@ -312,11 +312,13 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 *
 		 * If this remains small then its best to use this than to add another JS file.
 		 */
-		public function inline_script(){
+		public function inline_script() {
+			// Flatpickr calendar locale
+			$flatpickr_locale = self::flatpickr_locale();
+
 			ob_start();
 			?>
 			<script>
-				
 				/**
 				 * An AUI bootstrap adaptation of GreedyNav.js ( by Luke Jackson ).
 				 *
@@ -512,6 +514,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				function aui_init_flatpickr(){
 					if ( jQuery.isFunction(jQuery.fn.flatpickr) && !$aui_doing_init_flatpickr) {
 						$aui_doing_init_flatpickr = true;
+						<?php if ( ! empty( $flatpickr_locale ) ) { ?>try{flatpickr.localize(<?php echo $flatpickr_locale; ?>);}catch(err){console.log(err.message);}<?php } ?>
 						jQuery('input[data-aui-init="flatpickr"]:not(.flatpickr-input)').flatpickr();
 					}
 					$aui_doing_init_flatpickr = false;
@@ -1656,6 +1659,167 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			return $output;
 		}
 
+		/**
+		 * Calendar params.
+		 *
+		 * @since 0.1.44
+		 *
+		 * @return array Calendar params.
+		 */
+		public static function calendar_params() {
+			$params = array(
+				'month_long_1' => __( 'January' ),
+				'month_long_2' => __( 'February' ),
+				'month_long_3' => __( 'March' ),
+				'month_long_4' => __( 'April' ),
+				'month_long_5' => __( 'May' ),
+				'month_long_6' => __( 'June' ),
+				'month_long_7' => __( 'July' ),
+				'month_long_8' => __( 'August' ),
+				'month_long_9' => __( 'September' ),
+				'month_long_10' => __( 'October' ),
+				'month_long_11' => __( 'November' ),
+				'month_long_12' => __( 'December' ),
+				'month_s_1' => _x( 'Jan', 'January abbreviation' ),
+				'month_s_2' => _x( 'Feb', 'February abbreviation' ),
+				'month_s_3' => _x( 'Mar', 'March abbreviation' ),
+				'month_s_4' => _x( 'Apr', 'April abbreviation' ),
+				'month_s_5' => _x( 'May', 'May abbreviation' ),
+				'month_s_6' => _x( 'Jun', 'June abbreviation' ),
+				'month_s_7' => _x( 'Jul', 'July abbreviation' ),
+				'month_s_8' => _x( 'Aug', 'August abbreviation' ),
+				'month_s_9' => _x( 'Sep', 'September abbreviation' ),
+				'month_s_10' => _x( 'Oct', 'October abbreviation' ),
+				'month_s_11' => _x( 'Nov', 'November abbreviation' ),
+				'month_s_12' => _x( 'Dec', 'December abbreviation' ),
+				'day_s1_1' => _x( 'S', 'Sunday initial' ),
+				'day_s1_2' => _x( 'M', 'Monday initial' ),
+				'day_s1_3' => _x( 'T', 'Tuesday initial' ),
+				'day_s1_4' => _x( 'W', 'Wednesday initial' ),
+				'day_s1_5' => _x( 'T', 'Friday initial' ),
+				'day_s1_6' => _x( 'F', 'Thursday initial' ),
+				'day_s1_7' => _x( 'S', 'Saturday initial' ),
+				'day_s2_1' => __( 'Su', 'aui' ),
+				'day_s2_2' => __( 'Mo', 'aui' ),
+				'day_s2_3' => __( 'Tu', 'aui' ),
+				'day_s2_4' => __( 'We', 'aui' ),
+				'day_s2_5' => __( 'Th', 'aui' ),
+				'day_s2_6' => __( 'Fr', 'aui' ),
+				'day_s2_7' => __( 'Sa', 'aui' ),
+				'day_s3_1' => __( 'Sun' ),
+				'day_s3_2' => __( 'Mon' ),
+				'day_s3_3' => __( 'Tue' ),
+				'day_s3_4' => __( 'Wed' ),
+				'day_s3_5' => __( 'Thu' ),
+				'day_s3_6' => __( 'Fri' ),
+				'day_s3_7' => __( 'Sat' ),
+				'day_s5_1' => __( 'Sunday' ),
+				'day_s5_2' => __( 'Monday' ),
+				'day_s5_3' => __( 'Tuesday' ),
+				'day_s5_4' => __( 'Wednesday' ),
+				'day_s5_5' => __( 'Thursday' ),
+				'day_s5_6' => __( 'Friday' ),
+				'day_s5_7' => __( 'Saturday' ),
+				'am_lower' => __( 'am' ),
+				'pm_lower' => __( 'pm' ),
+				'am_upper' => __( 'AM' ),
+				'pm_upper' => __( 'PM' ),
+				'firstDayOfWeek' => (int) get_option( 'start_of_week' ),
+				'time_24hr' => false,
+				'year' => __( 'Year', 'aui' ),
+				'hour' => __( 'Hour', 'aui' ),
+				'minute' => __( 'Minute', 'aui' ),
+				'weekAbbreviation' => __( 'Wk', 'aui' ),
+				'rangeSeparator' => __( ' to ', 'aui' ),
+				'scrollTitle' => __( 'Scroll to increment', 'aui' ),
+				'toggleTitle' => __( 'Click to toggle', 'aui' )
+			);
+
+			return apply_filters( 'ayecode_ui_calendar_params', $params );
+		}
+
+		/**
+		 * Flatpickr calendar localize.
+		 *
+		 * @since 0.1.44
+		 *
+		 * @return string Calendar locale.
+		 */
+		public static function flatpickr_locale() {
+			$params = self::calendar_params();
+
+			if ( is_string( $params ) ) {
+				$params = html_entity_decode( $params, ENT_QUOTES, 'UTF-8' );
+			} else {
+				foreach ( (array) $params as $key => $value ) {
+					if ( ! is_scalar( $value ) ) {
+						continue;
+					}
+
+					$params[ $key ] = html_entity_decode( (string) $value, ENT_QUOTES, 'UTF-8' );
+				}
+			}
+
+			$day_s3 = array();
+			$day_s5 = array();
+
+			for ( $i = 1; $i <= 7; $i ++ ) {
+				$day_s3[] = addslashes( $params[ 'day_s3_' . $i ] );
+				$day_s5[] = addslashes( $params[ 'day_s3_' . $i ] );
+			}
+
+			$month_s = array();
+			$month_long = array();
+
+			for ( $i = 1; $i <= 12; $i ++ ) {
+				$month_s[] = addslashes( $params[ 'month_s_' . $i ] );
+				$month_long[] = addslashes( $params[ 'month_long_' . $i ] );
+			}
+
+ob_start();
+if ( 0 ) { ?><script><?php } ?>
+{
+	weekdays: {
+		shorthand: ['<?php echo implode( "','", $day_s3 ); ?>'],
+		longhand: ['<?php echo implode( "','", $day_s5 ); ?>'],
+	},
+	months: {
+		shorthand: ['<?php echo implode( "','", $month_s ); ?>'],
+		longhand: ['<?php echo implode( "','", $month_long ); ?>'],
+	},
+	daysInMonth: [31,28,31,30,31,30,31,31,30,31,30,31],
+	firstDayOfWeek: <?php echo (int) $params[ 'firstDayOfWeek' ]; ?>,
+	ordinal: function (nth) {
+		var s = nth % 100;
+		if (s > 3 && s < 21)
+			return "th";
+		switch (s % 10) {
+			case 1:
+				return "st";
+			case 2:
+				return "nd";
+			case 3:
+				return "rd";
+			default:
+				return "th";
+		}
+	},
+	rangeSeparator: '<?php echo addslashes( $params[ 'rangeSeparator' ] ); ?>',
+	weekAbbreviation: '<?php echo addslashes( $params[ 'weekAbbreviation' ] ); ?>',
+	scrollTitle: '<?php echo addslashes( $params[ 'scrollTitle' ] ); ?>',
+	toggleTitle: '<?php echo addslashes( $params[ 'toggleTitle' ] ); ?>',
+	amPM: ['<?php echo addslashes( $params[ 'am_upper' ] ); ?>','<?php echo addslashes( $params[ 'pm_upper' ] ); ?>'],
+	yearAriaLabel: '<?php echo addslashes( $params[ 'year' ] ); ?>',
+	hourAriaLabel: '<?php echo addslashes( $params[ 'hour' ] ); ?>',
+	minuteAriaLabel: '<?php echo addslashes( $params[ 'minute' ] ); ?>',
+	time_24hr: <?php echo ( $params[ 'time_24hr' ] ? 'true' : 'false' ) ; ?>
+}
+<?php if ( 0 ) { ?></script><?php } ?>
+<?php
+			$locale = ob_get_clean();
+
+			return apply_filters( 'ayecode_ui_flatpickr_locale', trim( $locale ) );
+		}
 	}
 
 	/**
