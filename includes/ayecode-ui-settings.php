@@ -410,11 +410,55 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 					});
 				}
 
+				function aui_select2_locale() {
+					var aui_select2_params = <?php echo self::select2_locale(); ?>;
+
+					return {
+						'language': {
+							errorLoading: function() {
+								// Workaround for https://github.com/select2/select2/issues/4355 instead of i18n_ajax_error.
+								return aui_select2_params.i18n_searching;
+							},
+							inputTooLong: function(args) {
+								var overChars = args.input.length - args.maximum;
+								if (1 === overChars) {
+									return aui_select2_params.i18n_input_too_long_1;
+								}
+								return aui_select2_params.i18n_input_too_long_n.replace('%item%', overChars);
+							},
+							inputTooShort: function(args) {
+								var remainingChars = args.minimum - args.input.length;
+								if (1 === remainingChars) {
+									return aui_select2_params.i18n_input_too_short_1;
+								}
+								return aui_select2_params.i18n_input_too_short_n.replace('%item%', remainingChars);
+							},
+							loadingMore: function() {
+								return aui_select2_params.i18n_load_more;
+							},
+							maximumSelected: function(args) {
+								if (args.maximum === 1) {
+									return aui_select2_params.i18n_selection_too_long_1;
+								}
+								return aui_select2_params.i18n_selection_too_long_n.replace('%item%', args.maximum);
+							},
+							noResults: function() {
+								return aui_select2_params.i18n_no_matches;
+							},
+							searching: function() {
+								return aui_select2_params.i18n_searching;
+							}
+						}
+					};
+				}
+
 				/**
 				 * Initiate Select2 items.
 				 */
 				function aui_init_select2(){
-					jQuery("select.aui-select2").select2();
+					var select2_args = jQuery.extend({}, aui_select2_locale());
+
+					jQuery("select.aui-select2").select2(select2_args);
 				}
 
 				/**
@@ -1819,6 +1863,54 @@ if ( 0 ) { ?><script><?php } ?>
 			$locale = ob_get_clean();
 
 			return apply_filters( 'ayecode_ui_flatpickr_locale', trim( $locale ) );
+		}
+
+		/**
+		 * Select2 JS params.
+		 *
+		 * @since 0.1.44
+		 *
+		 * @return array Select2 JS params.
+		 */
+		public static function select2_params() {
+			$params = array(
+				'i18n_select_state_text'    => esc_attr__( 'Select an option&hellip;', 'aui' ),
+				'i18n_no_matches'           => _x( 'No matches found', 'enhanced select', 'aui' ),
+				'i18n_ajax_error'           => _x( 'Loading failed', 'enhanced select', 'aui' ),
+				'i18n_input_too_short_1'    => _x( 'Please enter 1 or more characters', 'enhanced select', 'aui' ),
+				'i18n_input_too_short_n'    => _x( 'Please enter %item% or more characters', 'enhanced select', 'aui' ),
+				'i18n_input_too_long_1'     => _x( 'Please delete 1 character', 'enhanced select', 'aui' ),
+				'i18n_input_too_long_n'     => _x( 'Please delete %item% characters', 'enhanced select', 'aui' ),
+				'i18n_selection_too_long_1' => _x( 'You can only select 1 item', 'enhanced select', 'aui' ),
+				'i18n_selection_too_long_n' => _x( 'You can only select %item% items', 'enhanced select', 'aui' ),
+				'i18n_load_more'            => _x( 'Loading more results&hellip;', 'enhanced select', 'aui' ),
+				'i18n_searching'            => _x( 'Searching&hellip;', 'enhanced select', 'aui' )
+			);
+
+			return apply_filters( 'ayecode_ui_select2_params', $params );
+		}
+
+		/**
+		 * Select2 JS localize.
+		 *
+		 * @since 0.1.44
+		 *
+		 * @return string Select2 JS locale.
+		 */
+		public static function select2_locale() {
+			$params = self::select2_params();
+
+			foreach ( (array) $params as $key => $value ) {
+				if ( ! is_scalar( $value ) ) {
+					continue;
+				}
+
+				$params[ $key ] = html_entity_decode( (string) $value, ENT_QUOTES, 'UTF-8' );
+			}
+
+			$locale = json_encode( $params );
+
+			return apply_filters( 'ayecode_ui_select2_locale', trim( $locale ) );
 		}
 	}
 
