@@ -35,7 +35,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 *
 		 * @var string
 		 */
-		public $version = '0.1.44';
+		public $version = '0.1.45';
 
 		/**
 		 * Class textdomain.
@@ -1082,7 +1082,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			?>
 			<div class="wrap">
 				<h1><?php echo $this->name; ?></h1>
-				<p><?php _e("Here you can adjust settings if you are having compatibility issues.","aui");?></p>
+				<p><?php _e("Here you can adjust settings if you are having compatibility issues.",'aui');?></p>
 				<form method="post" action="options.php">
 					<?php
 					settings_fields( 'ayecode-ui-settings' );
@@ -1121,7 +1121,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 									for="wpbs-font_size"><?php _e( 'HTML Font Size (px)', 'aui' ); ?></label></th>
 							<td>
 								<input type="number" name="ayecode-ui-settings[html_font_size]" id="wpbs-font_size" value="<?php echo absint( $this->settings['html_font_size']); ?>" placeholder="16" />
-								<p class="description" ><?php _e("Our font sizing is rem (responsive based) here you can set the html font size in-case your theme is setting it too low.","aui");?></p>
+								<p class="description" ><?php _e("Our font sizing is rem (responsive based) here you can set the html font size in-case your theme is setting it too low.",'aui');?></p>
 							</td>
 						</tr>
 
@@ -1712,37 +1712,37 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 */
 		public static function calendar_params() {
 			$params = array(
-				'month_long_1' => __( 'January' ),
-				'month_long_2' => __( 'February' ),
-				'month_long_3' => __( 'March' ),
-				'month_long_4' => __( 'April' ),
-				'month_long_5' => __( 'May' ),
-				'month_long_6' => __( 'June' ),
-				'month_long_7' => __( 'July' ),
-				'month_long_8' => __( 'August' ),
-				'month_long_9' => __( 'September' ),
-				'month_long_10' => __( 'October' ),
-				'month_long_11' => __( 'November' ),
-				'month_long_12' => __( 'December' ),
-				'month_s_1' => _x( 'Jan', 'January abbreviation' ),
-				'month_s_2' => _x( 'Feb', 'February abbreviation' ),
-				'month_s_3' => _x( 'Mar', 'March abbreviation' ),
-				'month_s_4' => _x( 'Apr', 'April abbreviation' ),
-				'month_s_5' => _x( 'May', 'May abbreviation' ),
-				'month_s_6' => _x( 'Jun', 'June abbreviation' ),
-				'month_s_7' => _x( 'Jul', 'July abbreviation' ),
-				'month_s_8' => _x( 'Aug', 'August abbreviation' ),
-				'month_s_9' => _x( 'Sep', 'September abbreviation' ),
-				'month_s_10' => _x( 'Oct', 'October abbreviation' ),
-				'month_s_11' => _x( 'Nov', 'November abbreviation' ),
-				'month_s_12' => _x( 'Dec', 'December abbreviation' ),
-				'day_s1_1' => _x( 'S', 'Sunday initial' ),
-				'day_s1_2' => _x( 'M', 'Monday initial' ),
-				'day_s1_3' => _x( 'T', 'Tuesday initial' ),
-				'day_s1_4' => _x( 'W', 'Wednesday initial' ),
-				'day_s1_5' => _x( 'T', 'Friday initial' ),
-				'day_s1_6' => _x( 'F', 'Thursday initial' ),
-				'day_s1_7' => _x( 'S', 'Saturday initial' ),
+				'month_long_1' => __( 'January', 'aui' ),
+				'month_long_2' => __( 'February', 'aui' ),
+				'month_long_3' => __( 'March', 'aui' ),
+				'month_long_4' => __( 'April', 'aui' ),
+				'month_long_5' => __( 'May', 'aui' ),
+				'month_long_6' => __( 'June', 'aui' ),
+				'month_long_7' => __( 'July', 'aui' ),
+				'month_long_8' => __( 'August', 'aui' ),
+				'month_long_9' => __( 'September', 'aui' ),
+				'month_long_10' => __( 'October', 'aui' ),
+				'month_long_11' => __( 'November', 'aui' ),
+				'month_long_12' => __( 'December', 'aui' ),
+				'month_s_1' => _x( 'Jan', 'January abbreviation', 'aui' ),
+				'month_s_2' => _x( 'Feb', 'February abbreviation', 'aui' ),
+				'month_s_3' => _x( 'Mar', 'March abbreviation', 'aui' ),
+				'month_s_4' => _x( 'Apr', 'April abbreviation', 'aui' ),
+				'month_s_5' => _x( 'May', 'May abbreviation', 'aui' ),
+				'month_s_6' => _x( 'Jun', 'June abbreviation', 'aui' ),
+				'month_s_7' => _x( 'Jul', 'July abbreviation', 'aui' ),
+				'month_s_8' => _x( 'Aug', 'August abbreviation', 'aui' ),
+				'month_s_9' => _x( 'Sep', 'September abbreviation', 'aui' ),
+				'month_s_10' => _x( 'Oct', 'October abbreviation', 'aui' ),
+				'month_s_11' => _x( 'Nov', 'November abbreviation', 'aui' ),
+				'month_s_12' => _x( 'Dec', 'December abbreviation', 'aui' ),
+				'day_s1_1' => _x( 'S', 'Sunday initial', 'aui' ),
+				'day_s1_2' => _x( 'M', 'Monday initial', 'aui' ),
+				'day_s1_3' => _x( 'T', 'Tuesday initial', 'aui' ),
+				'day_s1_4' => _x( 'W', 'Wednesday initial', 'aui' ),
+				'day_s1_5' => _x( 'T', 'Friday initial', 'aui' ),
+				'day_s1_6' => _x( 'F', 'Thursday initial', 'aui' ),
+				'day_s1_7' => _x( 'S', 'Saturday initial', 'aui' ),
 				'day_s2_1' => __( 'Su', 'aui' ),
 				'day_s2_2' => __( 'Mo', 'aui' ),
 				'day_s2_3' => __( 'Tu', 'aui' ),
@@ -1750,24 +1750,24 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				'day_s2_5' => __( 'Th', 'aui' ),
 				'day_s2_6' => __( 'Fr', 'aui' ),
 				'day_s2_7' => __( 'Sa', 'aui' ),
-				'day_s3_1' => __( 'Sun' ),
-				'day_s3_2' => __( 'Mon' ),
-				'day_s3_3' => __( 'Tue' ),
-				'day_s3_4' => __( 'Wed' ),
-				'day_s3_5' => __( 'Thu' ),
-				'day_s3_6' => __( 'Fri' ),
-				'day_s3_7' => __( 'Sat' ),
-				'day_s5_1' => __( 'Sunday' ),
-				'day_s5_2' => __( 'Monday' ),
-				'day_s5_3' => __( 'Tuesday' ),
-				'day_s5_4' => __( 'Wednesday' ),
-				'day_s5_5' => __( 'Thursday' ),
-				'day_s5_6' => __( 'Friday' ),
-				'day_s5_7' => __( 'Saturday' ),
-				'am_lower' => __( 'am' ),
-				'pm_lower' => __( 'pm' ),
-				'am_upper' => __( 'AM' ),
-				'pm_upper' => __( 'PM' ),
+				'day_s3_1' => __( 'Sun', 'aui' ),
+				'day_s3_2' => __( 'Mon', 'aui' ),
+				'day_s3_3' => __( 'Tue', 'aui' ),
+				'day_s3_4' => __( 'Wed', 'aui' ),
+				'day_s3_5' => __( 'Thu', 'aui' ),
+				'day_s3_6' => __( 'Fri', 'aui' ),
+				'day_s3_7' => __( 'Sat', 'aui' ),
+				'day_s5_1' => __( 'Sunday', 'aui' ),
+				'day_s5_2' => __( 'Monday', 'aui' ),
+				'day_s5_3' => __( 'Tuesday', 'aui' ),
+				'day_s5_4' => __( 'Wednesday', 'aui' ),
+				'day_s5_5' => __( 'Thursday', 'aui' ),
+				'day_s5_6' => __( 'Friday', 'aui' ),
+				'day_s5_7' => __( 'Saturday', 'aui' ),
+				'am_lower' => __( 'am', 'aui' ),
+				'pm_lower' => __( 'pm', 'aui' ),
+				'am_upper' => __( 'AM', 'aui' ),
+				'pm_upper' => __( 'PM', 'aui' ),
 				'firstDayOfWeek' => (int) get_option( 'start_of_week' ),
 				'time_24hr' => false,
 				'year' => __( 'Year', 'aui' ),
