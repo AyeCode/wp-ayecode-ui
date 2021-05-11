@@ -467,21 +467,22 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				 * @param selector string The .class selector
 				 */
 				function aui_time_ago(selector) {
+					var aui_timeago_params = <?php echo self::timeago_locale(); ?>;
 
 					var templates = {
-						prefix: "",
-						suffix: " ago",
-						seconds: "less than a minute",
-						minute: "about a minute",
-						minutes: "%d minutes",
-						hour: "about an hour",
-						hours: "about %d hours",
-						day: "a day",
-						days: "%d days",
-						month: "about a month",
-						months: "%d months",
-						year: "about a year",
-						years: "%d years"
+						prefix: aui_timeago_params.prefix_ago,
+						suffix: aui_timeago_params.suffix_ago,
+						seconds: aui_timeago_params.seconds,
+						minute: aui_timeago_params.minute,
+						minutes: aui_timeago_params.minutes,
+						hour: aui_timeago_params.hour,
+						hours: aui_timeago_params.hours,
+						day: aui_timeago_params.day,
+						days: aui_timeago_params.days,
+						month: aui_timeago_params.month,
+						months: aui_timeago_params.months,
+						year: aui_timeago_params.year,
+						years: aui_timeago_params.years
 					};
 					var template = function (t, n) {
 						return templates[t] && templates[t].replace(/%d/i, Math.abs(Math.round(n)));
@@ -2039,6 +2040,47 @@ if ( 0 ) { ?><script><?php } ?>
 			$locale = json_encode( $params );
 
 			return apply_filters( 'ayecode_ui_select2_locale', trim( $locale ) );
+		}
+
+		/**
+		 * Time ago JS localize.
+		 *
+		 * @since 0.1.47
+		 *
+		 * @return string Time ago JS locale.
+		 */
+		public static function timeago_locale() {
+			$params = array(
+				'prefix_ago' => '',
+				'suffix_ago' => ' ' . _x( 'ago', 'time ago', 'aui' ),
+				'prefix_after' => _x( 'after', 'time ago', 'aui' ) . ' ',
+				'suffix_after' => '',
+				'seconds' => _x( 'less than a minute', 'time ago', 'aui' ),
+				'minute' => _x( 'about a minute', 'time ago', 'aui' ),
+				'minutes' => _x( '%d minutes', 'time ago', 'aui' ),
+				'hour' => _x( 'about an hour', 'time ago', 'aui' ),
+				'hours' => _x( 'about %d hours', 'time ago', 'aui' ),
+				'day' => _x( 'a day', 'time ago', 'aui' ),
+				'days' => _x( '%d days', 'time ago', 'aui' ),
+				'month' => _x( 'about a month', 'time ago', 'aui' ),
+				'months' => _x( '%d months', 'time ago', 'aui' ),
+				'year' => _x( 'about a year', 'time ago', 'aui' ),
+				'years' => _x( '%d years', 'time ago', 'aui' ),
+			);
+
+			$params = apply_filters( 'ayecode_ui_timeago_params', $params );
+
+			foreach ( (array) $params as $key => $value ) {
+				if ( ! is_scalar( $value ) ) {
+					continue;
+				}
+
+				$params[ $key ] = html_entity_decode( (string) $value, ENT_QUOTES, 'UTF-8' );
+			}
+
+			$locale = json_encode( $params );
+
+			return apply_filters( 'ayecode_ui_timeago_locale', trim( $locale ) );
 		}
 	}
 
