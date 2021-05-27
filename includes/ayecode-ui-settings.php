@@ -988,26 +988,19 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 					var ua = navigator.userAgent.toLowerCase();
 					var isiOS = ua.match(/(iphone|ipod|ipad)/);
 					if (isiOS) {
-						var pS = 0;
+						var pS = 0; pM = parseFloat($('body').css('marginTop'));
+
 						$(document).on('show.bs.modal', function() {
 							pS = window.scrollY;
-							$('.modal-open').css({
+							$('body').css({
 								marginTop: -pS,
 								overflow: 'hidden',
-								left: 0,
-								right: 0,
-								top: 0,
-								bottom: 0,
 								position: 'fixed',
 							});
 						}).on('hidden.bs.modal', function() {
-							$('.modal-open').css({
-								marginTop: 0,
+							$('body').css({
+								marginTop: pM,
 								overflow: 'visible',
-								left: 'auto',
-								right: 'auto',
-								top: 'auto',
-								bottom: 'auto',
 								position: 'inherit',
 							});
 							window.scrollTo(0, pS);
