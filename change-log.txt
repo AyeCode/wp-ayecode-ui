@@ -1,3 +1,6 @@
+= 0.1.51 =
+* Textarea "name" arg can't contain [square brackets] - FIXED
+
 = 0.1.50 =
 * Scroll within popup scrolls the modal background on iOS mobile device - FIXED
 
