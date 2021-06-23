@@ -210,15 +210,22 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 					'page',
 					'post',
 					'settings_page_ayecode-ui-settings',
-					'appearance_page_gutenberg-widgets'
+					'appearance_page_gutenberg-widgets',
+					'widgets'
 				);
 				$screen_ids = apply_filters( 'aui_screen_ids', $aui_screens );
 
 				$screen = get_current_screen();
 
 //				echo '###'.$screen->id;
-				
+
+				// check if we are on a AUI screen
 				if ( $screen && in_array( $screen->id, $screen_ids ) ) {
+					$load = true;
+				}
+
+				//load for widget previews in WP 5.8
+				if( !empty($_REQUEST['legacy-widget-preview'])){
 					$load = true;
 				}
 			}
