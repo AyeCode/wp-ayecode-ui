@@ -1,3 +1,6 @@
+= 0.1.54 =
+* Add unique CSS class to radio/checkbox wrapper - ADDED
+
 = 0.1.53 =
 * Better escaping for input values - CHANGED
 
