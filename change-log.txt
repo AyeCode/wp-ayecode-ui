@@ -1,5 +1,6 @@
-= 0.1.54 =
+= 0.1.55 =
 * Add unique CSS class to radio/checkbox wrapper - ADDED
+* Added wp_unslash() to value output helper - ADDED
 
 = 0.1.53 =
 * Better escaping for input values - CHANGED
