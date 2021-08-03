@@ -1444,7 +1444,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 					}
 
 					// Set admin bar z-index lower when modal is open.
-					echo ' body.modal-open #wpadminbar{z-index:999}';
+					echo ' body.modal-open #wpadminbar{z-index:999}.embed-responsive-16by9 .fluid-width-video-wrapper{padding:0 !important;position:initial}';
                 ?>
 			</style>
 			<?php
