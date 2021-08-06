@@ -35,7 +35,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 *
 		 * @var string
 		 */
-		public $version = '0.1.57';
+		public $version = '0.1.58';
 
 		/**
 		 * Class textdomain.
@@ -230,7 +230,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				}
 			}
 
-			return $load;
+			return apply_filters( 'aui_load_on_admin' , $load );
 		}
 
 		/**
