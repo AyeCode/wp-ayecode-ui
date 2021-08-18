@@ -950,7 +950,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				 */
 				function aui_init_lightbox_embed(){
 					// Open a lightbox for embeded items
-					jQuery('.aui-lightbox-image, .aui-lightbox-iframe').unbind('click').click(function(ele) {
+					jQuery('.aui-lightbox-image, .aui-lightbox-iframe').off('click').on("click",function(ele) {
 						aui_lightbox_embed(this,ele);
 					});
 				}
