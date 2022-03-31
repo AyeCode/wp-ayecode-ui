@@ -1,13 +1,15 @@
-# Items to ignore when downloading release
+# Items to ignore when downloading release (vendor folder not needed currently)
 
 .gitattributes export-ignore
 .gitignore export-ignore
 .scrutinizer.yml export-ignore
+phpcs.xml.dist export-ignore
 composer.json export-ignore
 composer.lock export-ignore
 CONTRIBUTING.md export-ignore
 phpunit.xml export-ignore
 README.md export-ignore
 /tests/ export-ignore
+/vendor/ export-ignore
 /.idea/ export-ignore
 *.map export-ignore
