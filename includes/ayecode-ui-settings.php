@@ -35,7 +35,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 *
 		 * @var string
 		 */
-		public $version = '0.1.72';
+		public $version = '0.1.75';
 
 		/**
 		 * Class textdomain.
@@ -964,12 +964,14 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 
 							// image
 							var css_height = window.innerWidth > window.innerHeight ? '90vh' : 'auto';
-							var img = jQuery(a).find('img').clone().removeClass().addClass('mx-auto d-block w-auto mw-100 rounded').css('height',css_height).get(0).outerHTML;
+							var img = jQuery(a).find('img').clone().removeClass().addClass('mx-auto d-block w-auto mw-100 rounded').css('max-height',css_height).get(0).outerHTML;
 							$carousel  += img;
 							// captions
 							if(jQuery(a).parent().find('.carousel-caption').length ){
 								$carousel  += jQuery(a).parent().find('.carousel-caption').clone().removeClass('sr-only').get(0).outerHTML;
-							}
+							}else if(jQuery(a).parent().find('.figure-caption').length ){
+                                $carousel  += jQuery(a).parent().find('.figure-caption').clone().removeClass('sr-only').addClass('carousel-caption').get(0).outerHTML;
+                            }
 							$carousel  += '</div></div>';
 							$i++;
 
@@ -1107,12 +1109,60 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 					jQuery('#'+uniqid).toast('show');
 					setTimeout(function(){ $aui_doing_toast = false; }, 500);
 				}
+
+                /**
+                 * Animate a number.
+                 */
+                function aui_init_counters(){
+
+                    const animNum = (EL) => {
+
+                        if (EL._isAnimated) return; // Animate only once!
+                        EL._isAnimated = true;
+
+                        let end = EL.dataset.auiend;
+                        let start = EL.dataset.auistart;
+                        let duration = EL.dataset.auiduration ? EL.dataset.auiduration : 2000;
+                        let seperator = EL.dataset.auisep ? EL.dataset.auisep: '';
+
+                        jQuery(EL).prop('Counter', start).animate({
+                            Counter: end
+                        }, {
+                            duration: Math.abs(duration),
+                            easing: 'swing',
+                            step: function(now) {
+                                const text = seperator ?  (Math.ceil(now)).toLocaleString('en-US') : Math.ceil(now);
+                                const html = seperator ? text.split(",").map(n => `<span class="count">${n}</span>`).join(",") : text;
+                                if(seperator && seperator!=','){
+                                    html.replace(',',seperator);
+                                }
+                                jQuery(this).html(html);
+                            }
+                        });
+                    };
+
+                    const inViewport = (entries, observer) => {
+                        // alert(1);
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) animNum(entry.target);
+                        });
+                    };
+
+                    jQuery("[data-auicounter]").each((i, EL) => {
+                        const observer = new IntersectionObserver(inViewport);
+                        observer.observe(EL);
+                    });
+                }
 				
 
 				/**
 				 * Initiate all AUI JS.
 				 */
 				function aui_init(){
+
+                    // init counters
+                    aui_init_counters();
+
 					// nav menu submenus
 					init_nav_sub_menus();
 					
@@ -1196,7 +1246,24 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 					$modal = aui_modal('',$body,'',false,'',sizeClass);
 
 					return deferred.promise();
-				}
+				};
+
+                /**
+                 * Add a window scrolled data element.
+                 */
+                window.onscroll = function () {
+                    aui_set_data_scroll()
+                };
+
+                /**
+                 * Set scroll data element.
+                 */
+                function aui_set_data_scroll(){
+                    document.documentElement.dataset.scroll = window.scrollY;
+                }
+
+                // call data scroll function ASAP.
+                aui_set_data_scroll();
 			</script>
 			<?php
 			$output = ob_get_clean();
@@ -1279,7 +1346,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				wp_register_script( 'flatpickr', $this->url . 'assets/js/flatpickr.min.js', array(), $this->version );
 
 				// flatpickr
-				wp_register_script( 'iconpicker', $this->url . 'assets/js/fontawesome-iconpicker.min.js', array(), $this->version );
+				wp_register_script( 'iconpicker', $this->url . 'assets/js/fa-iconpicker.min.js', array(), $this->version );
 				
 				// Bootstrap file browser
 				wp_register_script( 'aui-custom-file-input', $url = $this->url . 'assets/js/bs-custom-file-input.min.js', array( 'jquery' ), $this->select2_version );
