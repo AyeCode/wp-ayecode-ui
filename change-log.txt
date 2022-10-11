@@ -1,4 +1,4 @@
-= 0.1.78 =
+= 0.1.79 =
 * Hover animations class tweaks - CHANGED
 
 = 0.1.77 =
