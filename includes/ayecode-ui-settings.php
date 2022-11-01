@@ -428,8 +428,20 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				if($this->settings[$css_setting]){
 					$compatibility = $this->settings[$css_setting]=='core' ? false : true;
 					$url = $this->settings[$css_setting]=='core' ? $this->url.'assets/css/ayecode-ui'.$rtl.'.css' : $this->url.'assets/css/ayecode-ui-compatibility'.$rtl.'.css';
-					wp_register_style( 'ayecode-ui', $url, array(), $this->version );
+
+
+
+                    wp_register_style( 'ayecode-ui', $url, array(), $this->version );
 					wp_enqueue_style( 'ayecode-ui' );
+
+
+//					if ( is_admin() && !empty($_REQUEST['postType']) ) {
+                    if ( is_admin() && defined( 'BLOCKSTRAP_VERSION' ) && !empty($_REQUEST['postType']) ) {
+						$url = $this->url.'assets/css/ayecode-ui-fse.css';
+						wp_register_style( 'ayecode-ui-fse', $url, array(), $this->version );
+						wp_enqueue_style( 'ayecode-ui-fse' );
+					}
+
 
 					// flatpickr
 					wp_register_style( 'flatpickr', $this->url.'assets/css/flatpickr.min.css', array(), $this->version );
