@@ -35,7 +35,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 *
 		 * @var string
 		 */
-		public $version = '0.1.81';
+		public $version = '0.1.82';
 
 		/**
 		 * Class textdomain.
@@ -436,7 +436,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 
 
 //					if ( is_admin() && !empty($_REQUEST['postType']) ) {
-                    if ( is_admin() && defined( 'BLOCKSTRAP_VERSION' ) && !empty($_REQUEST['postType']) ) {
+                    if ( is_admin() && !empty($_REQUEST['postType']) && ( defined( 'BLOCKSTRAP_VERSION' ) || defined( 'AUI_FSE' ) )  ) {
 						$url = $this->url.'assets/css/ayecode-ui-fse.css';
 						wp_register_style( 'ayecode-ui-fse', $url, array(), $this->version );
 						wp_enqueue_style( 'ayecode-ui-fse' );
