@@ -1,3 +1,6 @@
+= 0.1.83 =
+* Filter for default settings - ADDED
+
 = 0.1.82 =
 * Added CSS build file for FSE to fix consistency issues - ADDED
 * Increased spacer options from 5 to 12 - ADDED
