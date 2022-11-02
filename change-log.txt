@@ -1,3 +1,6 @@
+= 0.1.84 =
+* Compatibility added for BlockStrap theme - ADDED
+
 = 0.1.83 =
 * Filter for default settings - ADDED
 
