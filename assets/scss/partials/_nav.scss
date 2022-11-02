@@ -4,3 +4,13 @@
     transform: rotate(-180deg);
   }
 }
+
+// Set position: absolute; when bg-transparent is applied to navbar, to avoid having a navbar with no (white) background.
+.navbar {
+  &.bg-transparent {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 9;
+  }
+}
