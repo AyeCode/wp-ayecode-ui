@@ -1,3 +1,7 @@
+= 0.1.86 =
+* Tweaks for FSE styles - ADDED
+* Added support for Bootstrap v5 - (NOT YET COMPLETE)
+
 = 0.1.85 =
 * Bootstrap updated to latest v4.6.2 - UPDATED
 
