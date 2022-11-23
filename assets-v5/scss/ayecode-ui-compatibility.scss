@@ -9,14 +9,15 @@
 
 // variables needed
 @import "1-frameworks/bootstrap/functions";
+@import "1-frameworks/bootstrap/mixins";
+@import "1-frameworks/bootstrap/mixins";
 
-@import "1-frameworks/bootstrap/variables";
 @import "1-frameworks/bootstrap/bootstrap-user-variables";
+@import "1-frameworks/bootstrap/variables";
+
+@import "1-frameworks/bootstrap/maps";
 
 // Modal can't be inside wrapper
-@import "1-frameworks/bootstrap/mixins";
-@import "1-frameworks/bootstrap/maps";
-@import "1-frameworks/bootstrap/mixins";
 @import "1-frameworks/bootstrap/root";
 @import "1-frameworks/bootstrap/modal";
 @import "1-frameworks/bootstrap/tooltip";

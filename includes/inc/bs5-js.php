@@ -736,39 +736,39 @@
 
         if ($type == 'success') {
             $op = "opacity:.92;";
-            $tClass = 'alert alert-success';
-            $thClass = 'bg-transparent border-0 alert-success';
-            $icon = "<div class='h5 m-0 p-0'><i class='fas fa-check-circle mr-2'></i></div>";
+            $tClass = 'alert bg-success w-auto';
+            $thClass = 'bg-transparent border-0 text-white';
+            $icon = "<div class='h5 m-0 p-0'><i class='fas fa-check-circle mr-2 me-2'></i></div>";
         } else if ($type == 'error' || $type == 'danger') {
             $op = "opacity:.92;";
-            $tClass = 'alert alert-danger';
-            $thClass = 'bg-transparent border-0 alert-danger';
-            $icon = "<div class='h5 m-0 p-0'><i class='far fa-times-circle mr-2'></i></div>";
+            $tClass = 'alert bg-danger  w-auto';
+            $thClass = 'bg-transparent border-0 text-white';
+            $icon = "<div class='h5 m-0 p-0'><i class='far fa-times-circle mr-2 me-2'></i></div>";
         } else if ($type == 'info') {
             $op = "opacity:.92;";
-            $tClass = 'alert alert-info';
-            $thClass = 'bg-transparent border-0 alert-info';
-            $icon = "<div class='h5 m-0 p-0'><i class='fas fa-info-circle mr-2'></i></div>";
+            $tClass = 'alert bg-info  w-auto';
+            $thClass = 'bg-transparent border-0 text-white';
+            $icon = "<div class='h5 m-0 p-0'><i class='fas fa-info-circle mr-2 me-2'></i></div>";
         } else if ($type == 'warning') {
             $op = "opacity:.92;";
-            $tClass = 'alert alert-warning';
-            $thClass = 'bg-transparent border-0 alert-warning';
-            $icon = "<div class='h5 m-0 p-0'><i class='fas fa-exclamation-triangle mr-2'></i></div>";
+            $tClass = 'alert bg-warning  w-auto';
+            $thClass = 'bg-transparent border-0 text-dark';
+            $icon = "<div class='h5 m-0 p-0'><i class='fas fa-exclamation-triangle mr-2 me-2'></i></div>";
         }
 
 
         // add container if not exist
         if(!document.getElementById("aui-toasts")){
-            jQuery('body').append('<div class="bsui" id="aui-toasts"><div class="position-fixed aui-toast-bottom-right pr-3 mb-1" style="z-index: 500000;right: 0;bottom: 0;'+$op+'"></div></div>');
+            jQuery('body').append('<div class="bsui" id="aui-toasts"><div class="position-fixed aui-toast-bottom-right pr-3 pe-3 mb-1" style="z-index: 500000;right: 0;bottom: 0;'+$op+'"></div></div>');
         }
 
-        $toast = '<div id="'+uniqid+'" class="toast fade hide shadow hover-shadow '+$tClass+'" style="" role="alert" aria-live="assertive" aria-atomic="true" data-delay="'+$time+'">';
+        $toast = '<div id="'+uniqid+'" class="toast fade hide shadow hover-shadow '+$tClass+'" style="" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="'+$time+'">';
         if($type || $title || $title_small){
             $toast += '<div class="toast-header '+$thClass+'">';
             if($icon ){$toast += $icon;}
-            if($title){$toast += '<strong class="mr-auto">'+$title+'</strong>';}
+            if($title){$toast += '<strong class="mr-auto me-auto">'+$title+'</strong>';}
             if($title_small){$toast += '<small>'+$title_small+'</small>';}
-            if($can_close){$toast += '<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close"><span aria-hidden="true">×</span></button>';}
+            if($can_close){$toast += '<button type="button" class="ml-2 ms-2 mb-1 close" data-bs-dismiss="toast" aria-label="Close"><span aria-hidden="true">×</span></button>';}
             $toast += '</div>';
         }
 

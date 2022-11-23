@@ -562,6 +562,7 @@ else{$eli.attr(\'type\',\'password\');}"
 		 */
 		$args   = wp_parse_args( $args, $defaults );
 		$output = '';
+		$label = '';
 
 		// hidden label option needs to be empty
 		$args['label_type'] = $args['label_type'] == 'hidden' ? '' : $args['label_type'];
@@ -589,13 +590,13 @@ else{$eli.attr(\'type\',\'password\');}"
 				'label_type' => $args['label_type'],
 				'label_col'  => $args['label_col']
 			);
-			$output .= self::label( $label_args );
+			$label .= self::label( $label_args );
 		}
 
 		// maybe horizontal label
 		if ( $args['label_type'] == 'horizontal' ) {
 			$input_col = AUI_Component_Helper::get_column_class( $args['label_col'], 'input' );
-			$output .= '<div class="' . $input_col . '">';
+			$label .= '<div class="' . $input_col . '">';
 		}
 
 		if ( ! empty( $args['wysiwyg'] ) ) {
@@ -729,6 +730,10 @@ else{$eli.attr(\'type\',\'password\');}"
 		// help text
 		if ( ! empty( $args['help_text'] ) ) {
 			$output .= AUI_Component_Helper::help_text( $args['help_text'] );
+		}
+
+		if ( ! $label_after ) {
+			$output = $label . $output;
 		}
 
 		// maybe horizontal label
