@@ -424,6 +424,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 * Adds the styles.
 		 */
 		public function enqueue_style() {
+            global $aui_bs5;
 
             $load_fse = false;
 
@@ -432,7 +433,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			}else{
 				$css_setting = current_action() == 'wp_enqueue_scripts' ? 'css' : 'css_backend';
 
-				$rtl = is_rtl() ? '-rtl' : '';
+				$rtl = is_rtl() && ! $aui_bs5 ? '-rtl' : '';
 
                 $bs_ver = $this->settings['bs_ver'] == '5' ? '-v5' : '';
 

@@ -1,11 +1,12 @@
 .select2-container--bootstrap-5 {
     .select2-selection--multiple {
+        padding-bottom: 0;
         // List items
         .select2-selection__rendered {
-            display: flex;
+            display: flex !important;
             flex-direction: row;
             flex-wrap: wrap;
-            padding-left: 0;
+            padding-left: 0 !important;
             margin: 0;
             list-style: none;
 
@@ -50,7 +51,7 @@
         // Input area
         .select2-search {
             display: block;
-            width: 100%;
+            width: auto;
             height: $s2bs5-height-inner;
 
             // Input field
@@ -62,6 +63,7 @@
                 font-family: $s2bs5-font-family;
                 line-height: $s2bs5-line-height;
                 background-color: transparent;
+                box-shadow: none;
             }
         }
 
