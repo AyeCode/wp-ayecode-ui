@@ -19,7 +19,7 @@ class AUI_Component_Pagination {
 	 * @return string The rendered component.
 	 */
 	public static function get( $args = array() ) {
-		global $wp_query;
+		global $wp_query, $aui_bs5;
 
 		$defaults = array(
 			'class'              => '',
@@ -27,8 +27,8 @@ class AUI_Component_Pagination {
 			'prev_text'          => '<i class="fas fa-chevron-left"></i>',
 			'next_text'          => '<i class="fas fa-chevron-right"></i>',
 			'screen_reader_text' => __( 'Posts navigation','aui' ),
-			'before_paging' => '',
-			'after_paging'  => '',
+			'before_paging'      => '',
+			'after_paging'       => '',
 			'type'               => 'array',
 			'total'              => isset( $wp_query->max_num_pages ) ? $wp_query->max_num_pages : 1,
 			'links'              => array() // an array of links if using custom links, this includes the a tag.
@@ -43,7 +43,6 @@ class AUI_Component_Pagination {
 
 		// Don't print empty markup if there's only one page.
 		if ( $args['total'] > 1 ) {
-
 			// Set up paginated links.
 			$links = !empty(  $args['links'] ) ? $args['links'] :  paginate_links( $args );
 
@@ -53,10 +52,16 @@ class AUI_Component_Pagination {
 			$links_html = "<ul class='pagination m-0 p-0 $class'>";
 			if ( ! empty( $links ) ) {
 				foreach ( $links as $link ) {
-					$active = strpos( $link, 'current' ) !== false ? 'active' : '';
-					$links_html .= "<li class='page-item $active'>";
-					$links_html .= str_replace( "page-numbers", "page-link", $link );
-					$links_html .= "</li>";
+					if ( $aui_bs5 ) {
+						$links_html .= "<li class='page-item mx-0'>";
+						$links_html .= str_replace( array( "page-numbers", " current" ), array( "page-link", " current active" ), $link );
+						$links_html .= "</li>";
+					} else {
+						$active = strpos( $link, 'current' ) !== false ? 'active' : '';
+						$links_html .= "<li class='page-item $active'>";
+						$links_html .= str_replace( "page-numbers", "page-link", $link );
+						$links_html .= "</li>";
+					}
 				}
 			}
 			$links_html .= "</ul>";
