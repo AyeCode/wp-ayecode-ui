@@ -267,6 +267,19 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		}
 
 		/**
+         * Add a body class to show when BS5 is active.
+         *
+		 * @param $classes
+		 *
+		 * @return mixed
+		 */
+        public function add_bs5_body_class( $classes ){
+	        $classes[] = 'aui_bs5';
+
+            return $classes;
+        }
+
+		/**
 		 * Initiate the settings and add the required action hooks.
 		 */
 		public function init() {
@@ -292,6 +305,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 
 			if ( $aui_bs5 ) {
 				include_once( dirname( __FILE__ ) . '/inc/bs-conversion.php' );
+				add_filter( 'body_class', array( $this, 'add_bs5_body_class' ) );
 			}
 
 			/**
@@ -1004,10 +1018,17 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 
 
 		public static function custom_css($compatibility = true) {
+            global $aui_bs5;
+
 			$colors = array();
 			if ( defined( 'BLOCKSTRAP_VERSION' ) ) {
 
 				$setting = wp_get_global_settings();
+
+//                print_r(wp_get_global_styles());exit;
+//                print_r(get_default_block_editor_settings());exit;
+
+//                print_r($setting);echo  '###';exit;
 				if(!empty($setting['color']['palette']['theme'])){
 					foreach($setting['color']['palette']['theme'] as $color){
 						$colors[$color['slug']] = esc_attr($color['color']);
@@ -1064,6 +1085,25 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 					if(is_admin()){
 						echo ' body.modal-open #adminmenuwrap{z-index:999} body.modal-open #wpadminbar{z-index:1025}';
 					}
+
+                    if( $aui_bs5 && defined( 'BLOCKSTRAP_VERSION' ) ){
+                        $css = '';
+                        $theme_settings = wp_get_global_styles();
+
+                        // font face
+                        if( !empty( $theme_settings['typography']['fontFamily'] ) ){
+                            $t_fontface = str_replace( array('var:preset|','font-family|'), array('--wp--preset--','font-family--'), $theme_settings['typography']['fontFamily']  ); //var(--wp--preset--font-family--poppins)
+                            $css .= '--bs-body-font-family: var(' . esc_attr($t_fontface) . ');';
+                        }
+
+                        // font size
+                        $css .= '--bs-body-font-size: var(--wp--preset--font-size--small);';
+
+
+                        if($css){
+                            echo 'body{' . $css . '}';
+                        }
+                    }
 				?>
             </style>
 			<?php

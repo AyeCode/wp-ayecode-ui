@@ -155,7 +155,7 @@ $link-hover-decoration:                   underline !default;
 //
 // $enable-caret:              true !default;
 // $enable-rounded:            true !default;
-// $enable-shadows:            false !default;
+ $enable-shadows:            true !default;
 //   $enable-gradients:          true !default;
 // $enable-transitions:        true !default;
 // $enable-hover-media-query:  false !default; // Deprecated, no longer affects any compiled CSS
@@ -233,14 +233,17 @@ $link-hover-decoration:                   underline !default;
 // // Define the minimum dimensions at which your layout will change,
 // // adapting to different screen sizes, for use in media queries.
 //
- $grid-breakpoints: (
-   xs: 0,
-   sm: 576px,
-   md: 768px,
-   lg: 992px,
-   xl: 1200px,
-   xxl: 1400px
- ) !default;
+// Override grid breaakpoints
+
+$grid-breakpoints: (
+        xs: 0,
+        sm: 500px,
+        md: 768px,
+        lg: 992px,
+        xl: 1200px,
+        xxl: 1400px
+) !default;
+
 //
 // @include _assert-ascending($grid-breakpoints, "$grid-breakpoints");
 // @include _assert-starts-at-zero($grid-breakpoints);

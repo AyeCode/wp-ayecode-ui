@@ -220,24 +220,7 @@
 }
 */
 
-// Jumbotron
-.jumbotron {
-    background-size:cover; 
-    padding: 7rem 1rem;
-}
-@include media-breakpoint-up(lg) {
-  .jumbotron-lg-withnav {padding-bottom: calc(10rem - 70px);}
-  .jumbotron-lg { padding:10rem 0;}
-  .jumbotron-xl { padding:15rem 0;}
-  .jumbotron-xl {min-height:100vh;}
-  .bottom-align-text-absolute {
-    position: absolute;
-    bottom: 30px;
-      margin:auto;
-       left: 0;
-      right:0;
-  }
-}
+
 
 // Backgrounds
 .bg-black { background-color: $black; }
@@ -333,3 +316,20 @@ ul.list-unstyled li {margin-bottom:1rem;}
     }
 }
 
+
+
+
+// Links
+a {
+  transition: $link-transition;
+  &:focus { outline: none; }
+  &:hover > .text-decoration-underline {
+    text-decoration: none !important;
+  }
+}
+
+// Background transition for links
+a[class^='bg-'],
+a[class*='bg-'] {
+  transition: background-color .25s ease;
+}

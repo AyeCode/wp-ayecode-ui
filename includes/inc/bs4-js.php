@@ -917,6 +917,42 @@
     };
 
     /**
+     * Flip the color scheem on scroll
+     * @param $value
+     * @param $iframe
+     */
+    function aui_flip_color_scheme_on_scroll($value, $iframe){
+        if(!$value) $value = window.scrollY;
+        console.log($value);
+        var navbar = $iframe ?  $iframe.querySelector('.color-scheme-flip-on-scroll') : document.querySelector('.color-scheme-flip-on-scroll');
+        if (navbar == null) return;
+
+        let cs_original = navbar.dataset.cso;
+        let cs_scroll = navbar.dataset.css;
+
+        if (!cs_scroll && !cs_original) {
+            if( navbar.classList.contains('navbar-light') ){
+                cs_original = 'navbar-light';
+                cs_scroll  = 'navbar-dark';
+            }else if( navbar.classList.contains('navbar-dark') ){
+                cs_original = 'navbar-dark';
+                cs_scroll  = 'navbar-light';
+            }
+
+            navbar.dataset.cso = cs_original
+            navbar.dataset.css = cs_scroll
+        }
+
+        if($value > 0 ){
+            navbar.classList.remove(cs_original);
+            navbar.classList.add(cs_scroll);
+        }else{
+            navbar.classList.remove(cs_scroll);
+            navbar.classList.add(cs_original);
+        }
+    }
+
+    /**
      * Add a window scrolled data element.
      */
     window.onscroll = function () {
@@ -932,6 +968,7 @@
 
     // call data scroll function ASAP.
     aui_set_data_scroll();
+    aui_flip_color_scheme_on_scroll();
 
 	<?php
 	// FSE tweaks.
@@ -943,6 +980,7 @@
         let iframe_doc = Iframe[0].contentWindow ? Iframe[0].contentWindow.document : Iframe[0].contentDocument;
         Iframe[0].contentWindow.onscroll = function () {
             iframe_doc.documentElement.dataset.scroll = Iframe[0].contentWindow.scrollY;
+            aui_flip_color_scheme_on_scroll(Iframe[0].contentWindow.scrollY,iframe_doc);
         };
     }
 
