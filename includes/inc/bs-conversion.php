@@ -38,6 +38,10 @@ function aui_bs_convert_sd_output( $output, $instance, $args, $sd ) {
 			'float-right'   => 'float-end',
 			'text-left'    => 'text-start',
 			'text-right'    => 'text-end',
+			'border-right'    => 'border-end',
+			'border-left'    => 'border-start',
+			'font-weight-'  => 'fw-',
+
 //			'custom-control custom-checkbox'    => 'form-check',
 			// data
 			' data-toggle=' => ' data-bs-toggle=',
