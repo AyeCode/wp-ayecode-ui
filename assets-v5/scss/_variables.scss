@@ -4,7 +4,7 @@
 
 
 // Import Bootstrap functions to use inside variables values
-@import 'functions';
+@import '1-frameworks/bootstrap/functions';
 
 
 //== Colors
@@ -175,6 +175,7 @@ $zindex-lightbox-content:      1110 !default;
 //$path-to-fonts:               'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap' !default;
 //$font-family-sans-serif:      'Poppins', sans-serif !default;
 //$headings-color:              $gray-900 !default;
+$headings-color:              null !default;
 
 $font-size-base:              1rem !default;
 $font-size-lg:                ($font-size-base * 1.125) !default;
@@ -274,7 +275,7 @@ $table-cell-padding-x-sm:     .375rem !default;
 
 $table-dark-color:            rgba($white, .75) !default;
 
-//$table-th-color:              $headings-color !default;
+$table-th-color:              $headings-color !default;
 $table-th-font-weight:        $headings-font-weight !default;
 
 $table-striped-bg-factor:     .0375 !default;
@@ -982,7 +983,7 @@ $icon-box-media-width:                3rem !default;
 $icon-box-media-border-radius:        $border-radius !default;
 $icon-box-media-transition:           background-color .22s ease-in-out, color .22s ease-in-out !default;
 
-//$icon-box-title-color:                $headings-color !default;
+$icon-box-title-color:                $headings-color !default;
 
 
 $icon-box-offset-y:                   $spacer !default;
