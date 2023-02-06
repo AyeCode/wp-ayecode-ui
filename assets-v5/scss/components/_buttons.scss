@@ -113,13 +113,13 @@
 
 // Translucent buttons
 
-@each $color, $value in map-remove($theme-faded-colors, 'secondary') {
+@each $color, $value in $theme-faded-colors {
   .btn-translucent-#{$color} {
     background-color: $value;
   }
 }
 
-@each $color, $value in map-remove($theme-colors, 'secondary', 'light') {
+@each $color, $value in $theme-colors {
   .btn-translucent-#{$color} {
     color: $value;
     &:hover, &:focus, &:active,
