@@ -1,3 +1,6 @@
+= 0.1.89 =
+* Prevent conditional fields execution twice on select2 - FIXED
+
 = 0.1.88 =
 * BS 4/5 functions split to separate files - CHANGED
 * Tweaks for FSE styles - ADDED
