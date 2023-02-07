@@ -228,14 +228,14 @@
      * Initiate tooltips on the page.
      */
     function aui_init_tooltips(){
-        jQuery('[data-toggle="tooltip"]').tooltip();
-        jQuery('[data-toggle="popover"]').popover();
-        jQuery('[data-toggle="popover-html"]').popover({
+        jQuery('[data-bs-toggle="tooltip"]').tooltip();
+        jQuery('[data-bs-toggle="popover"]').popover();
+        jQuery('[data-bs-toggle="popover-html"]').popover({
             html: true
         });
 
         // fix popover container compatibility
-        jQuery('[data-toggle="popover"],[data-toggle="popover-html"]').on('inserted.bs.popover', function () {
+        jQuery('[data-bs-toggle="popover"],[data-bs-toggle="popover-html"]').on('inserted.bs.popover', function () {
             jQuery('body > .popover').wrapAll("<div class='bsui' />");
         });
     }
@@ -307,12 +307,14 @@
         if(!$dialog_class){$dialog_class = '';}
         if(!$body){$body = '<div class="text-center"><div class="spinner-border" role="status"></div></div>';}
         // remove it first
-        jQuery('.aui-modal').modal('hide').modal('dispose').remove();
-        jQuery('.modal-backdrop').remove();
+       jQuery('.aui-modal').remove();
+       jQuery('.modal-backdrop').remove();
+
+        // var modal = document.getElementById('aui-modal');
 
         var $modal = '';
 
-        $modal += '<div class="modal aui-modal fade shadow bsui '+$class+'" tabindex="-1">'+
+        $modal += '<div id="aui-modal" class="modal aui-modal fade shadow bsui '+$class+'" tabindex="-1">'+
             '<div class="modal-dialog modal-dialog-centered '+$dialog_class+'">'+
             '<div class="modal-content border-0 shadow">';
 
@@ -344,9 +346,16 @@
 
         jQuery('body').append($modal);
 
-        return jQuery('.aui-modal').modal('hide').modal({
-            //backdrop: 'static'
-        });
+
+
+        // const ayeModal = modal ? bootstrap.Modal.getInstance( modal ) : new bootstrap.Modal('#aui-modal', {});
+        const ayeModal = new bootstrap.Modal('.aui-modal', {});
+        // ayeModal.hide().show();
+        ayeModal.show();
+
+        // return jQuery('.aui-modal').modal('hide').modal({
+        //     //backdrop: 'static'
+        // });
     }
 
     /**
@@ -411,11 +420,11 @@
 
         // maybe backup
         if(!jQuery($carousel).find('.carousel-inner-original').length){
-            jQuery($carousel).append('<div class="carousel-inner-original d-none">'+jQuery($carousel).find('.carousel-inner').html()+'</div>');
+            jQuery($carousel).append('<div class="carousel-inner-original d-none">'+jQuery($carousel).find('.carousel-inner').html().replaceAll('carousel-item','not-carousel-item')+'</div>');
         }
 
         // Get the original items html
-        jQuery($carousel).find('.carousel-inner-original .carousel-item').each(function () {
+        jQuery($carousel).find('.carousel-inner-original .not-carousel-item').each(function () {
             $items[$item_count] = jQuery(this).html();
             $item_count++;
         });
@@ -426,13 +435,14 @@
         if(jQuery(window).width() <= 576){
             // maybe restore original
             if(jQuery($carousel).find('.carousel-inner').hasClass('aui-multiple-items') && jQuery($carousel).find('.carousel-inner-original').length){
-                jQuery($carousel).find('.carousel-inner').removeClass('aui-multiple-items').html(jQuery($carousel).find('.carousel-inner-original').html());
+                jQuery($carousel).find('.carousel-inner').removeClass('aui-multiple-items').html(jQuery($carousel).find('.carousel-inner-original').html().replaceAll('not-carousel-item','carousel-item'));
                 jQuery($carousel).find(".carousel-indicators li").removeClass("d-none");
             }
 
         }else{
             // new items
             var $md_count = jQuery($carousel).data('limit_show');
+            var $md_cols_count = jQuery($carousel).data('cols_show');
             var $new_items = '';
             var $new_items_count = 0;
             var $new_item_count = 0;
@@ -447,8 +457,9 @@
 
                 // open
                 if(index == 0 || Number.isInteger(index/$md_count) ){
+                    $row_cols_class = $md_cols_count ? ' g-lg-4 g-3 row-cols-1 row-cols-lg-' + $md_cols_count  : '';
                     $active = index == 0 ? 'active' : '';
-                    $new_items += '<div class="carousel-item '+$active+'"><div class="row m-0">';
+                    $new_items += '<div class="carousel-item '+$active+'"><div class="row' + $row_cols_class + ' mb-3">'; //mb to account for shadows
                     $closed = false;
                     $new_items_count++;
                     $new_item_count = 0;
@@ -496,6 +507,8 @@
             jQuery($carousel).find(".carousel-indicators li:gt("+$hide_count+")").addClass("d-none");
         }
 
+        // bootstrap.Carousel.dispose($carousel);
+        // console.log( bootstrap.Carousel.getOrCreateInstance($carousel)._getItems() );
         // trigger a global action to say we have
         jQuery( window ).trigger( "aui_carousel_multiple" );
     }
@@ -916,8 +929,8 @@
         var $body = "";
         $body += "<h3 class='h4 py-3 text-center text-dark'>"+message+"</h3>";
         $body += "<div class='d-flex'>";
-        $body += "<button class='btn btn-outline-secondary w-50 btn-round' data-dismiss='modal'  onclick='deferred.resolve(false);'>"+cancelButtonText+"</button>";
-        $body += "<button class='btn "+btnClass+" ml-2 w-50 btn-round' data-dismiss='modal'  onclick='deferred.resolve(true);'>"+okButtonText+"</button>";
+        $body += "<button class='btn btn-outline-secondary w-50 btn-round' data-bs-dismiss='modal'  onclick='deferred.resolve(false);'>"+cancelButtonText+"</button>";
+        $body += "<button class='btn "+btnClass+" ms-2 w-50 btn-round' data-bs-dismiss='modal'  onclick='deferred.resolve(true);'>"+okButtonText+"</button>";
         $body += "</div>";
         $modal = aui_modal('',$body,'',false,'',sizeClass);
 
@@ -931,7 +944,7 @@
      */
     function aui_flip_color_scheme_on_scroll($value, $iframe){
         if(!$value) $value = window.scrollY;
-        console.log($value);
+
         var navbar = $iframe ?  $iframe.querySelector('.color-scheme-flip-on-scroll') : document.querySelector('.color-scheme-flip-on-scroll');
         if (navbar == null) return;
 

@@ -263,7 +263,7 @@ $hr-opacity:                  1 !default;
 // Icons
 
 $icons-font-path:             '../fonts' !default;
-$icons-font-family:           'finder-icons' !default;
+$icons-font-family:           'Font Awesome 5 Free' !default;
 
 
 // Tables
@@ -665,8 +665,8 @@ $breadcrumb-padding-x:                    0 !default;
 $breadcrumb-font-size:                    $font-size-sm !default;
 $breadcrumb-bg:                           transparent !default;
 $breadcrumb-item-padding-x:               .625rem !default;
-$breadcrumb-divider:                      quote("\e952") !default;
-$breadcrumb-divider-flipped:              quote("\e951") !default;
+$breadcrumb-divider:                      quote("\f054") !default;
+$breadcrumb-divider-flipped:              quote("\f053") !default;
 
 $breadcrumb-color:                        $gray-600 !default;
 $breadcrumb-hover-color:                  $gray-800 !default;
@@ -843,23 +843,23 @@ $progress-light-bg:                 rgba(white, .15) !default;
 
 // Pagination
 
-$pagination-padding-y:                    0 !default;
-$pagination-padding-x:                    .25rem !default;
-$pagination-padding-y-sm:                 $pagination-padding-y !default;
-$pagination-padding-x-sm:                 .4rem !default;
-$pagination-padding-y-lg:                 $pagination-padding-y !default;
-$pagination-padding-x-lg:                 .55rem !default;
+//$pagination-padding-y:                    0 !default;
+//$pagination-padding-x:                    .25rem !default;
+//$pagination-padding-y-sm:                 $pagination-padding-y !default;
+//$pagination-padding-x-sm:                 .4rem !default;
+//$pagination-padding-y-lg:                 $pagination-padding-y !default;
+//$pagination-padding-x-lg:                 .55rem !default;
 
 $pagination-color:                        $gray-800 !default;
 $pagination-bg:                           transparent !default;
-$pagination-border-color:                 transparent !default;
+//$pagination-border-color:                 transparent !default;
 
 $pagination-focus-box-shadow:             none !default;
 $pagination-focus-bg:                     transparent;
 
 $pagination-hover-color:                  $primary !default;
 $pagination-hover-bg:                     transparent !default;
-$pagination-hover-border-color:           transparent !default;
+//$pagination-hover-border-color:           transparent !default;
 
 $pagination-active-color:                 $white !default;
 $pagination-active-bg:                    $primary !default;
@@ -868,8 +868,8 @@ $pagination-active-border-radius:         $border-radius-pill !default;
 $pagination-active-font-weight:           $font-weight-semibold !default;
 
 $pagination-disabled-color:               rgba($pagination-color, .4) !default;
-$pagination-disabled-bg:                  transparent !default;
-$pagination-disabled-border-color:        transparent !default;
+//$pagination-disabled-bg:                  transparent !default;
+//$pagination-disabled-border-color:        transparent !default;
 
 // Light version
 $pagination-light-color:                  rgba($white, .7) !default;

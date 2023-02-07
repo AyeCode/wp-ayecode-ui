@@ -133,6 +133,26 @@ $theme-colors: map-merge(
                 $theme-colors
 );
 
+// Faded colors map
+$theme-faded-colors: (
+        "primary":    rgba($primary, .1),
+        "secondary":  rgba($secondary, .1),
+        "success":    rgba($success, .1),
+        "info":       rgba($info, .1),
+        "warning":    rgba($warning, .1),
+        "danger":     rgba($danger, .1),
+        "light":      rgba($light, .1),
+        "dark":       rgba($dark, .1),
+        "white":      rgba($white, .1),
+        "purple":     rgba($purple, .1),
+        "salmon":     rgba($salmon, .1),
+        "cyan":       rgba($cyan, .1),
+        "gray":       rgba($gray-400, .1),
+        "gray-dark":  rgba($gray-600, .1),
+        "indigo":     rgba($indigo, .1),
+        "orange":     rgba($orange, .1)
+) !default;
+
 $enable-negative-margins:     true;
 $link-decoration:                         none !default;
 $link-hover-decoration:                   underline !default;
