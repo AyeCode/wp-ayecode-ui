@@ -114,11 +114,17 @@ class AUI_Component_Input {
 				$label_after = true; // if type file we need the label after
 				$args['class'] .= $aui_bs5 ? ' form-check-input' : ' custom-control-input ';
 			} elseif ( $type == 'datepicker' || $type == 'timepicker' ) {
+				$orig_type = $type;
 				$type = 'text';
 				$args['class'] .= ' bg-initial '; // @todo not sure why we have this?
 				$clear_function .= "jQuery(this).parent().parent().find('input[name=\'" . esc_attr( $args['name'] ) . "\']').trigger('change');";
 
 				$args['extra_attributes']['data-aui-init'] = 'flatpickr';
+
+				// Disable native datetime inputs.
+				if ( ( $orig_type == 'timepicker' || ! empty( $args['extra_attributes']['data-enable-time'] ) ) && ! isset( $args['extra_attributes']['data-disable-mobile'] ) ) {
+					$args['extra_attributes']['data-disable-mobile'] = 'true';
+				}
 
 				// set a way to clear field if empty
 				if ( $args['input_group_right'] === '' && $args['clear_icon'] !== false ) {
