@@ -267,17 +267,30 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		}
 
 		/**
-         * Add a body class to show when BS5 is active.
-         *
+		 * Add admin body class to show when BS5 is active.
+		 *
 		 * @param $classes
 		 *
 		 * @return mixed
 		 */
-        public function add_bs5_body_class( $classes ){
-	        $classes[] = 'aui_bs5';
+		public function add_bs5_admin_body_class( $classes = '' ) {
+			$classes .= ' aui_bs5';
 
-            return $classes;
-        }
+			return $classes;
+		}
+
+		/**
+		 * Add a body class to show when BS5 is active.
+		 *
+		 * @param $classes
+		 *
+		 * @return mixed
+		 */
+		public function add_bs5_body_class( $classes ) {
+			$classes[] = 'aui_bs5';
+
+			return $classes;
+		}
 
 		/**
 		 * Initiate the settings and add the required action hooks.
@@ -305,6 +318,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 
 			if ( $aui_bs5 ) {
 				include_once( dirname( __FILE__ ) . '/inc/bs-conversion.php' );
+				add_filter( 'admin_body_class', array( $this, 'add_bs5_admin_body_class' ), 99, 1 );
 				add_filter( 'body_class', array( $this, 'add_bs5_body_class' ) );
 			}
 
