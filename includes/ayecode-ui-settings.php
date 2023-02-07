@@ -267,17 +267,30 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		}
 
 		/**
-         * Add a body class to show when BS5 is active.
-         *
+		 * Add admin body class to show when BS5 is active.
+		 *
 		 * @param $classes
 		 *
 		 * @return mixed
 		 */
-        public function add_bs5_body_class( $classes ){
-	        $classes[] = 'aui_bs5';
+		public function add_bs5_admin_body_class( $classes = '' ) {
+			$classes .= ' aui_bs5';
 
-            return $classes;
-        }
+			return $classes;
+		}
+
+		/**
+		 * Add a body class to show when BS5 is active.
+		 *
+		 * @param $classes
+		 *
+		 * @return mixed
+		 */
+		public function add_bs5_body_class( $classes ) {
+			$classes[] = 'aui_bs5';
+
+			return $classes;
+		}
 
 		/**
 		 * Initiate the settings and add the required action hooks.
@@ -305,6 +318,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 
 			if ( $aui_bs5 ) {
 				include_once( dirname( __FILE__ ) . '/inc/bs-conversion.php' );
+				add_filter( 'admin_body_class', array( $this, 'add_bs5_admin_body_class' ), 99, 1 );
 				add_filter( 'body_class', array( $this, 'add_bs5_body_class' ) );
 			}
 
@@ -2100,14 +2114,12 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
                     }
                     $('input.select2-search__field').attr('data-ignore-rule','');
                     $('[data-rule-key]').on('change keypress keyup gdclear', 'input, textarea', function() {
-                        aui_cf_field_apply_rules($(this));
+                        if (!$(this).hasClass('select2-search__field')) {
+                            aui_cf_field_apply_rules($(this));
+                        }
                     });
 
-                    $('[data-rule-key]').on('change gdclear', 'select', function() {
-                        aui_cf_field_apply_rules($(this));
-                    });
-
-                    $('[data-rule-key]').on('change.select2', 'select', function() {
+                    $('[data-rule-key]').on('change change.select2 gdclear', 'select', function() {
                         aui_cf_field_apply_rules($(this));
                     });
 
