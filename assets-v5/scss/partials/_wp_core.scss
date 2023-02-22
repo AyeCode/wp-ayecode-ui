@@ -78,5 +78,19 @@ html[data-scroll='0'],html:not([data-scroll]){
   }
 }
 
+//
+.editor-styles-wrapper {
+  .wp-block-blockstrap-blockstrap-widget-post-info,
+  .wp-block-geodirectory-geodir-widget-post-fav{
+    position: unset !important;
+  }
+
+  .wp-block-blockstrap-blockstrap-widget-container{
+    .card{
+
+    }
+  }
+}
+
 /* Fix conflicts calendar year selector */
 body>.flatpickr-calendar .flatpickr-month .flatpickr-current-month>*{display:inline-block}
