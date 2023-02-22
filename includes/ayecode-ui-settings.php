@@ -329,6 +329,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			 */
 			if ( $this->settings['css'] ) {
 				$priority = $this->is_bs3_compat() ? 100 : 1;
+                $priority = $aui_bs5 ? 10 : $priority;
 				add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_style' ), $priority );
 			}
 			if ( $this->settings['css_backend'] && $this->load_admin_scripts() ) {
@@ -1159,7 +1160,8 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			if(!sanitize_hex_color($color_code)){
 				$color_code = esc_attr($color_code);
 				$is_var = true;
-//                echo '###1'.$color_code;//exit;
+//				$color_code = "rgba($color_code, 0.5)";
+//                echo '###1'.$color_code.'###';//exit;
 			}
 			if(!$color_code){return '';}
 
