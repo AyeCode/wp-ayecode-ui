@@ -2753,9 +2753,13 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
                             if ((typeof field.value === 'object' || typeof field.value === 'array') && !field.value.length && $el.find('select option:first').text() == '') {
                                 $el.find('select option:first').remove(); // Clear first option to show placeholder.
                             }
-                            jQuery.each(field.value, function(i, v) {
-                                $el.find('select').find('option[value="' + v + '"]').attr('selected', true);
-                            });
+                            if (typeof field.value === 'string') {
+                                $el.find('select').val(field.value);
+                            } else {
+                                jQuery.each(field.value, function(i, v) {
+                                    $el.find('select').find('option[value="' + v + '"]').attr('selected', true);
+                                });
+                            }
                             $el.find('select').trigger('change');
                             break;
                         case 'checkbox':
