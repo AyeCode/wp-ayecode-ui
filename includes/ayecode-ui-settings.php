@@ -35,7 +35,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 *
 		 * @var string
 		 */
-		public $version = '0.1.93';
+		public $version = '0.1.94';
 
 		/**
 		 * Class textdomain.
@@ -409,6 +409,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				// Only enable on set pages
 				$aui_screens = array(
 					'page',
+                    //'docs',
 					'post',
 					'settings_page_ayecode-ui-settings',
 					'appearance_page_gutenberg-widgets',
