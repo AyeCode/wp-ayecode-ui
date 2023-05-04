@@ -1,3 +1,6 @@
+= 0.1.95 =
+* BS4 to BS5 font italic class is not working - FIXED
+
 = 0.1.94 =
 * Fix conditional field for multiselect field type in search bar - FIXED
 
