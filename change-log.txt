@@ -1,4 +1,4 @@
-= 0.1.95 =
+= 0.1.96 =
 * BS4 to BS5 font italic class is not working - FIXED
 * Custom pallet colors not showing in BS5 when selected as a color in block - FIXED
 
