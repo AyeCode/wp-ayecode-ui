@@ -150,3 +150,9 @@ body.modal-open .modal{
     z-index: 1000000 !important
 }
 
+
+// Uploader in safari button overflowing
+.moxie-shim {
+  position: initial !important;
+}
+
