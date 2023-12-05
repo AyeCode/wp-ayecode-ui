@@ -1,4 +1,4 @@
-= 0.2.2 =
+= 0.2.3 =
 * iOS add listing add images button not working - FIXED
 
 = 0.2.1 =
