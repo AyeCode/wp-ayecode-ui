@@ -35,7 +35,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 *
 		 * @var string
 		 */
-		public $version = '0.2.4';
+		public $version = '0.2.5';
 
 		/**
 		 * Class textdomain.
@@ -514,11 +514,6 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				}
 				th, td, div, h2 {
 				    box-sizing: content-box;
-				}
-				p {
-				    font-size: 13px;
-				    line-height: 1.5;
-				    margin: 1em 0;
 				}
 				h1, h2, h3, h4, h5, h6 {
 				    display: block;
