@@ -1,3 +1,6 @@
+= 0.2.5 =
+* Update textdomain - CHANGED
+
 = 0.2.4 =
 * Last ios fix broke standard image select from library - FIXED
 
