@@ -2634,9 +2634,25 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
                                 $keys[condition.key][index] = false;
                             }
                         } else if (condition.condition === 'contains') {
+                            var avalues = condition.value;
+                            if (!Array.isArray(avalues)) {
+                                if (jQuery.isNumeric(avalues)) {
+                                    avalues = [avalues];
+                                } else {
+                                    avalues = avalues.split(",");
+                                }
+                            }
                             switch (field_type) {
                                 case 'multiselect':
-                                    if (current_value && ((!Array.isArray(current_value) && current_value.indexOf(condition.value) >= 0) || (Array.isArray(current_value) && aui_cf_field_in_array(condition.value, current_value)))) {
+                                    var found = false;
+                                    for (var key in avalues) {
+                                        var svalue = jQuery.isNumeric(avalues[key]) ? avalues[key] : (avalues[key]).trim();
+                                        if (!found && current_value && ((!Array.isArray(current_value) && current_value.indexOf(svalue) >= 0) || (Array.isArray(current_value) && aui_cf_field_in_array(svalue, current_value)))) {
+                                            found = true;
+                                        }
+                                    }
+                    
+                                    if (found) {
                                         $keys[condition.key][index] = true;
                                     } else {
                                         $keys[condition.key][index] = false;
