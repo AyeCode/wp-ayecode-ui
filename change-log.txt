@@ -1,6 +1,7 @@
-= 0.2.13 - TBD =
+= 0.2.13 - 2024-05-02 =
 * BS4 lightbox displays blurred image - FIXED
 * Fix PHP notice in HEX to RGB conversion - FIXED
+* Outline buttons not using correct text color when user adjusted colors in block themes - FIXED
 
 = 0.2.12 - 2024-04-25 =
 * Enhance BS4 to BS5 class replacements - CHANGED
