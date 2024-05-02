@@ -35,7 +35,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 *
 		 * @var string
 		 */
-		public $version = '0.2.12';
+		public $version = '0.2.13';
 
 		/**
 		 * Class textdomain.
@@ -1466,6 +1466,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			//  buttons outline
 			$output .= $prefix . ' .btn-outline-'.esc_attr($type).'{';
 			$output .= ' 
+			--bs-btn-color: '.esc_attr($color_code).';
             --bs-btn-border-color: '.esc_attr($color_code).';
             --bs-btn-hover-bg: rgba(var(--bs-'.esc_attr($type).'-rgb), .9);
             --bs-btn-hover-border-color: rgba(var(--bs-'.esc_attr($type).'-rgb), .9);
