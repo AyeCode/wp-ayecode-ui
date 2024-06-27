@@ -1,4 +1,4 @@
-= 0.2.18 - TBD =
+= 0.2.18 - 2024-06-27 =
 * Pagination style conflict on Hello Elementor theme - FIXED
 
 = 0.2.17 - 2024-06-20 =
