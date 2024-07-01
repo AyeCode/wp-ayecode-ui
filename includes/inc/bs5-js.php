@@ -277,7 +277,7 @@
         var sStyle = '';
         var $body = "", sClass = "w-100 p-0 m-0";
         if (responsive) {
-            $body += '<div class="embed-responsive embed-responsive-16by9">';
+            $body += '<div class="embed-responsive embed-responsive-16by9 ratio ratio-16x9">';
             wClass += ' h-100';
             sClass += ' embed-responsive-item';
         } else {
@@ -692,7 +692,7 @@
                 var a = this;
 
                 $active = $clicked_href == jQuery(this).attr('href') ? 'active' : '';
-                $carousel += '<div class="carousel-item '+ $active+'"><div class="modal-xl mx-auto embed-responsive embed-responsive-16by9">';
+                $carousel += '<div class="carousel-item '+ $active+'"><div class="modal-xl mx-auto embed-responsive embed-responsive-16by9 ratio ratio-16x9">';
 
                 // iframe
                 var css_height = window.innerWidth > window.innerHeight ? '95vh' : 'auto';
