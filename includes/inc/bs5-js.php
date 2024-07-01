@@ -611,7 +611,7 @@
 
         $clicked_href = jQuery($link).attr('href');
         $images = [];
-        $container.find('.aui-lightbox-image').each(function() {
+        $container.find('.aui-lightbox-image, .aui-lightbox-iframe').each(function() {
             var a = this;
             var href = jQuery(a).attr('href');
             if (href) {
@@ -626,7 +626,8 @@
             if($images.length > 1){
                 $i = 0;
                 $carousel  += '<ol class="carousel-indicators position-fixed">';
-                $container.find('.aui-lightbox-image').each(function() {
+                $container.find('.aui-lightbox-image, .aui-lightbox-iframe').each(function() {
+					console.log($clicked_href);
                     $active = $clicked_href == jQuery(this).attr('href') ? 'active' : '';
                     $carousel  += '<li data-bs-target="#aui-embed-slider-modal" data-bs-slide-to="'+$i+'" class="'+$active+'"></li>';
                     $i++;
@@ -690,12 +691,12 @@
 
             $container.find('.aui-lightbox-iframe').each(function() {
                 var a = this;
+                var css_height = window.innerWidth > window.innerHeight ? '90vh' : 'auto';
 
                 $active = $clicked_href == jQuery(this).attr('href') ? 'active' : '';
-                $carousel += '<div class="carousel-item '+ $active+'"><div class="modal-xl mx-auto embed-responsive embed-responsive-16by9 ratio ratio-16x9">';
+                $carousel += '<div class="carousel-item '+ $active+'"><div class="modal-xl mx-auto embed-responsive embed-responsive-16by9 ratio ratio-16x9" style="max-height:'+css_height+'">';
 
                 // iframe
-                var css_height = window.innerWidth > window.innerHeight ? '95vh' : 'auto';
                 var url = jQuery(a).attr('href');
                 var iframe = '<iframe class="embed-responsive-item" style="height:'+css_height +'" src="'+url+'?rel=0&amp;showinfo=0&amp;modestbranding=1&amp;autoplay=1" id="video" allow="autoplay"></iframe>';
                 var img = iframe ;//.css('height',css_height).get(0).outerHTML;
