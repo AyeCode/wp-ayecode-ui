@@ -1,4 +1,4 @@
-= 0.2.19 - TBD =
+= 0.2.19 - 2024-07-04 =
 * Video in lightbox is not working - FIXED
 * Stop video playing in slideshow on move to next slide - FIXED
 
