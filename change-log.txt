@@ -1,4 +1,4 @@
-= 0.2.22 - TBD =
+= 0.2.22 - 2024-08-01 =
 * Conditional field don't reset field value on hide element - FIXED
 
 = 0.2.21 - 2024-07-31 =
