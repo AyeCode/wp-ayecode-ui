@@ -1,0 +1,48 @@
+
+// Subtle
+$purple-bg-subtle-dark:        shade-color($purple, 80%) !default;
+$salmon-bg-subtle-dark:        shade-color($salmon, 80%) !default;
+$cyan-bg-subtle-dark:          shade-color($cyan, 80%) !default;
+$gray-bg-subtle-dark:          shade-color($gray-400, 80%) !default;
+$gray-dark-bg-subtle-dark:     shade-color($gray-600, 80%) !default;
+$indigo-bg-subtle-dark:        shade-color($indigo, 80%) !default;
+$orange-bg-subtle-dark:        shade-color($orange, 80%) !default;
+
+$utilities-bg-subtle: (
+        "primary-subtle": var(--#{$prefix}primary-bg-subtle),
+        "secondary-subtle": var(--#{$prefix}secondary-bg-subtle),
+        "success-subtle": var(--#{$prefix}success-bg-subtle),
+        "info-subtle": var(--#{$prefix}info-bg-subtle),
+        "warning-subtle": var(--#{$prefix}warning-bg-subtle),
+        "danger-subtle": var(--#{$prefix}danger-bg-subtle),
+        "light-subtle": var(--#{$prefix}light-bg-subtle),
+        "dark-subtle": var(--#{$prefix}dark-bg-subtle),
+        "purple-subtle": var(--#{$prefix}purple-bg-subtle),
+        "salmon-subtle": var(--#{$prefix}salmon-bg-subtle),
+        "cyan-subtle": var(--#{$prefix}cyan-bg-subtle),
+        "gray-subtle": var(--#{$prefix}gray-bg-subtle),
+        "gray-dark-subtle": var(--#{$prefix}gray-dark-bg-subtle),
+        "indigo-subtle": var(--#{$prefix}indigo-bg-subtle),
+        "orange-subtle": var(--#{$prefix}orange-bg-subtle)
+);
+
+// emphasis
+$purple-text-emphasis-dark:   tint-color($purple, 40%) !default;
+$salmon-text-emphasis-dark:   tint-color($salmon, 40%) !default;
+$cyan-text-emphasis-dark:   tint-color($cyan, 40%) !default;
+$gray-text-emphasis-dark:   tint-color($gray-400, 40%) !default;
+$gray-dark-text-emphasis-dark:   tint-color($gray-600, 40%) !default;
+$indigo-text-emphasis-dark:   tint-color($indigo, 40%) !default;
+$orange-text-emphasis-dark:   tint-color($orange, 40%) !default;
+
+
+
+$theme-colors-text-dark-user: (
+        "purple": $purple-text-emphasis-dark,
+        "salmon": $salmon-text-emphasis-dark,
+        "cyan": $cyan-text-emphasis-dark,
+        "gray": $gray-text-emphasis-dark,
+        "gray-dark": $gray-dark-text-emphasis-dark,
+        "indigo": $indigo-text-emphasis-dark,
+        "orange": $orange-text-emphasis-dark,
+);

@@ -11,6 +11,68 @@
 @import '1-frameworks/bootstrap/mixins';
 @import '1-frameworks/bootstrap/utilities';
 
+
+// subtle
+$theme-colors-bg-subtle: map-merge(
+                (
+                        "purple": $purple-bg-subtle,
+                        "salmon": $salmon-bg-subtle,
+                        "cyan": $cyan-bg-subtle,
+                        "gray": $gray-bg-subtle,
+                        "gray-dark": $gray-dark-bg-subtle,
+                        "indigo": $indigo-bg-subtle,
+                        "orange": $orange-bg-subtle,
+
+                ),
+                $theme-colors-bg-subtle
+);
+
+
+$theme-colors-bg-subtle-dark: map-merge(
+                (
+                        "purple": $purple-bg-subtle-dark,
+                        "salmon": $salmon-bg-subtle-dark,
+                        "cyan": $cyan-bg-subtle-dark,
+                        "gray": $gray-bg-subtle-dark,
+                        "gray-dark": $gray-dark-bg-subtle-dark,
+                        "indigo": $indigo-bg-subtle-dark,
+                        "orange": $orange-bg-subtle-dark,
+
+                ),
+                $theme-colors-bg-subtle-dark
+);
+
+$theme-colors-text: map-merge(
+$theme-colors-text-light,
+$theme-colors-text
+);
+
+$theme-colors-text-dark: map-merge(
+                $theme-colors-text-dark-user,
+                $theme-colors-text-dark
+);
+
+
+// emphasis
+$utilities-text-emphasis-colors: map-merge(
+                (
+                        "purple-emphasis": var(--#{$prefix}purple-text-emphasis),
+                        "salmon-emphasis": var(--#{$prefix}salmon-text-emphasis),
+                        "cyan-emphasis": var(--#{$prefix}cyan-text-emphasis),
+                        "gray-emphasis": var(--#{$prefix}gray-text-emphasis),
+                        "gray-dark-emphasis": var(--#{$prefix}gray-dark-text-emphasis),
+                        "indigo-emphasis": var(--#{$prefix}indigo-text-emphasis),
+                        "orange-emphasis": var(--#{$prefix}orange-text-emphasis),
+),
+                $utilities-text-emphasis-colors
+);
+
+// extend the link-body class so we dont have to change the way the nav works for links
+.link-body {
+  @extend .link-body-emphasis;
+}
+
+
 $utilities: map-merge(
   $utilities,
   (
@@ -76,6 +138,7 @@ $utilities: map-merge(
     'background-color': map-merge(
       map-get($utilities, 'background-color'),
       (
+              property: (background-color, fill),
         values: map-merge(
           map-get(map-get($utilities, 'background-color'), 'values'),
           (
@@ -83,6 +146,13 @@ $utilities: map-merge(
           )
         )
       )
+    ),
+
+          // add fill to the background colors so that it works on SVGs
+    "subtle-background-color": (
+            property: (background-color, fill),
+            class: bg,
+            values: $utilities-bg-subtle
     ),
 
     // Disable background

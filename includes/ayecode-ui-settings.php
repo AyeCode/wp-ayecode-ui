@@ -496,7 +496,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 					if(is_admin()){
 						$custom_css = "
                 body{
-                    background-color: #f1f1f1;
+                  /*  background-color: #f1f1f1; */
                     font-family: -apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Oxygen-Sans,Ubuntu,Cantarell,\"Helvetica Neue\",sans-serif;
                     font-size:13px;
                 }
@@ -1187,6 +1187,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
                             $css .= '--bs-body-font-weight: ' . esc_attr( $theme_settings['typography']['fontWeight'] ) . ';';
                         }
 
+//                         print_r($theme_settings);exit;
                         // Background
                          if( !empty( $theme_settings['color']['background'] ) ){
                             $css .= '--bs-body-bg: ' . esc_attr( $theme_settings['color']['background'] ) . ';';

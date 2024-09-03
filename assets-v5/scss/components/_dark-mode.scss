@@ -1,0 +1,12 @@
+//
+// Dark mode helpers
+// --------------------------------------------------
+
+
+// dark mode helpers
+[data-bs-theme=dark] .aui-dark-mode-hide{
+  display: none;
+}
+[data-bs-theme=light] .aui-light-mode-hide{
+  display: none;
+}

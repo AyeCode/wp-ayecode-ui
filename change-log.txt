@@ -1,3 +1,8 @@
+= 0.3.0 - 2024-TBD  =
+* iOS fixed images zoomed way in with background cover, changed to scroll for ios - CHANGED
+* Dark mode support added - ADDED
+* BootStrap updated to v5.3.3 - CHANGED
+
 = 0.2.16 - 2024-06-13  =
 * Buttons after click when still have :focus can have wrong box-shadow if colour has been changed - FIXED
 
