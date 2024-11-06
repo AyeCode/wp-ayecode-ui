@@ -1,4 +1,4 @@
-= 0.2.27 - TBD =
+= 0.2.27 - 2024-11-06 =
 * Don't apply custom colors to standard wp-admin pages - CHANGED
 * Carousel in BootStrap modal not working on RTL - FIXED
 * Update FlatPickr JS library to v4.6.13 - CHANGED
