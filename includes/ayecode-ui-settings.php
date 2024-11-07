@@ -35,7 +35,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 *
 		 * @var string
 		 */
-		public $version = '0.2.26';
+		public $version = '0.2.27';
 
 		/**
 		 * Class textdomain.
@@ -1118,7 +1118,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 
 			$custom_front = ! is_admin() ? true : apply_filters('ayecode_ui_custom_front', false );
 			$custom_admin = $is_fse || self::is_preview() ? true : apply_filters('ayecode_ui_custom_admin', false );
-			$bs_custom_css = apply_filters( 'ayecode_ui_bs_custom_css', $custom_admin || $custom_front );
+            $bs_custom_css = apply_filters( 'ayecode_ui_bs_custom_css', $custom_admin || $custom_front );
 			//$bs_custom_css = true; // Force true to fix any color issue.
 
 			$colors_css = '';
