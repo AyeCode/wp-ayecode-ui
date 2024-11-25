@@ -3370,8 +3370,10 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		}
 	}
 
+	global $ayecode_ui_settings;
+
 	/**
 	 * Run the class if found.
 	 */
-	AyeCode_UI_Settings::instance();
+	$ayecode_ui_settings = AyeCode_UI_Settings::instance();
 }
