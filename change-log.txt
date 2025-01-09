@@ -1,4 +1,4 @@
-= 0.2.31 - 2025-TBD =
+= 0.2.31 - 2025-01-09 =
 * Changes to the get_url() function for getting asset URLs to better support docker containers - CHANGED
 
 = 0.2.30 - 2024-12-12 =
