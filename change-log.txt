@@ -1,4 +1,4 @@
-= 0.2.37 - 2025-06-TBD =
+= 0.2.37 - 2025-06-12 =
 * Prevent running a query on every page load when not required - CHANGED
 
 = 0.2.36 - 2025-05-01 =
