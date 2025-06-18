@@ -314,7 +314,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			$this->url = $this->get_url();
 
             // define the version
-			$aui_bs5 = $this->settings['bs_ver'] === '5';
+			$aui_bs5 = $this->settings['bs_ver'] === '5' || $this->settings['bs_ver'] === '5dm';
 
 			if ( $aui_bs5 ) {
 				include_once( dirname( __FILE__ ) . '/inc/bs-conversion.php' );
@@ -465,7 +465,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			} else {
 				$css_setting = current_action() == 'wp_enqueue_scripts' ? 'css' : 'css_backend';
 				$rtl = is_rtl() && ! $aui_bs5 ? '-rtl' : '';
-                $bs_ver = $this->settings['bs_ver'] == '5' ? '-v5' : '';
+                $bs_ver = $this->settings['bs_ver'] === '5dm' ? '-v5-dm' : ($this->settings['bs_ver'] == '5' ? '-v5' : '');
 
 				if ( $this->settings[ $css_setting ] ) {
 					$compatibility = $this->settings[$css_setting]=='core' ? false : true;
@@ -631,9 +631,9 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			} else {
 				$js_setting = current_action() == 'wp_enqueue_scripts' ? 'js' : 'js_backend';
 
-				$bs_ver = $this->settings['bs_ver'] == '5' ? '-v5' : '';
+                $bs_ver = $this->settings['bs_ver'] === '5dm' ? '-v5-dm' : ($this->settings['bs_ver'] == '5' ? '-v5' : '');
 
-				// select2
+                // select2
 				wp_register_script( 'select2', $this->url . 'assets/js/select2.min.js', array( 'jquery' ), $this->select2_version );
 
 				// flatpickr
@@ -940,6 +940,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
                             <td>
                                 <select name="ayecode-ui-settings[bs_ver]" id="wpbs-css" <?php echo !empty($overrides['bs_ver']) ? 'disabled' : ''; ?>>
                                     <option	value="5" <?php selected( $this->settings['bs_ver'], '5' ); ?>><?php esc_html_e( 'v5 (recommended)', 'ayecode-connect' ); ?></option>
+                                    <option	value="5dm" <?php selected( $this->settings['bs_ver'], '5dm' ); ?>><?php esc_html_e( 'v5 (dark mode) BETA', 'ayecode-connect' ); ?></option>
                                     <option value="4" <?php selected( $this->settings['bs_ver'], '4' ); ?>><?php esc_html_e( 'v4 (legacy)', 'ayecode-connect' ); ?></option>
                                 </select>
                             </td>
