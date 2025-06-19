@@ -1,3 +1,6 @@
+= 0.2.38 - 2025-06-TBD =
+* Iframe in BootStrap modal don't load for single image - FIXED 
+
 = 0.2.37 - 2025-06-12 =
 * Prevent running a query on every page load when not required - CHANGED
 
