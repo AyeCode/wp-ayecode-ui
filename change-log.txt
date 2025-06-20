@@ -1,5 +1,6 @@
 = 0.2.38 - 2025-06-TBD =
-* Iframe in BootStrap modal don't load for single image - FIXED 
+* Iframe in BootStrap modal don't load for single image - FIXED
+* Sanitize FontAwesome icon in iconpicker - FIXED
 
 = 0.2.37 - 2025-06-12 =
 * Prevent running a query on every page load when not required - CHANGED
