@@ -1,23 +1,26 @@
 // User variables
-//@import 'user-variables';
+@import "user-variables";
 
-
-// Configuration & utilities
-@import 'variables';
-@import 'utilities';
+// // Configuration & utilities
+//@import "fonts";
+@import "variables";
+@import "variables-dark";
+@import "utilities";
 
 // Bootstrap
 @import '1-frameworks/index';
 
-// Layout & components
-@import 'reboot';
-@import 'components';
+// Layout, animations & components
+@import "root";
+@import "reboot";
+@import "animations";
+@import "components";
 
-@import "main";
-@import "partials/index"; // helpers
+// Partials
+@import "partials/index";
 
-@import "partials/wp_core"; // WP core
+// WP core (not loaded in index as needs to be outside wrapper)
+@import "partials/wp_core";
 
 // select2 can't be inside wrapper
 @import '1-frameworks/select2/core';
-

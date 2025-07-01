@@ -221,7 +221,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		}
 
 		public static function get_colors( $original = false){
-
+            global $aui_ver;
 			if ( ! defined( 'AUI_PRIMARY_COLOR' ) ) {
 				return array();
 			}
@@ -296,7 +296,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 * Initiate the settings and add the required action hooks.
 		 */
 		public function init() {
-            global $aui_bs5;
+            global $aui_bs5,$aui_ver;
 
 			// Maybe fix settings
 			if ( ! empty( $_REQUEST['aui-fix-admin'] ) && !empty($_REQUEST['nonce']) && wp_verify_nonce( $_REQUEST['nonce'], "aui-fix-admin" ) ) {
@@ -314,7 +314,8 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			$this->url = $this->get_url();
 
             // define the version
-			$aui_bs5 = $this->settings['bs_ver'] === '5' || $this->settings['bs_ver'] === '5dm';
+            $aui_bs5 = $this->settings['bs_ver'] === '5' || $this->settings['bs_ver'] === '5dm';
+            $aui_ver = $this->settings['bs_ver'] === '5dm' ? '5.3.6' : ($this->settings['bs_ver'] === '5' ? '5' : '4');;
 
 			if ( $aui_bs5 ) {
 				include_once( dirname( __FILE__ ) . '/inc/bs-conversion.php' );
@@ -487,7 +488,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 					// fix some wp-admin issues
 					if(is_admin()){
 						$custom_css = "
-                body{
+                body:not(.editor-styles-wrapper){
                     background-color: #f1f1f1;
                     font-family: -apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Oxygen-Sans,Ubuntu,Cantarell,\"Helvetica Neue\",sans-serif;
                     font-size:13px;
@@ -932,16 +933,25 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			                'content'=> esc_attr__("Some options are disabled as your current theme is overriding them.", 'ayecode-connect' )
 		                ));
 	                }
-	                ?>
+
+                        $bs_ver_options = apply_filters('ayecode_ui_versions', [
+                            '5' => __('v5 (recommended)', 'ayecode-connect'),
+                            '5dm' => __('v5 (dark mode) BETA', 'ayecode-connect'),
+                            '4' => __('v4 (legacy)', 'ayecode-connect')
+                        ], $this->settings, $overrides);
+
+                        ?>
                     </div>
                     <table class="form-table wpbs-table-version-settings">
                         <tr valign="top">
-                            <th scope="row"><label for="wpbs-css"><?php esc_html_e( 'Version', 'ayecode-connect' ); ?></label></th>
+                            <th scope="row"><label
+                                        for="wpbs-css"><?php esc_html_e('Version', 'ayecode-connect'); ?></label></th>
                             <td>
-                                <select name="ayecode-ui-settings[bs_ver]" id="wpbs-css" <?php echo !empty($overrides['bs_ver']) ? 'disabled' : ''; ?>>
-                                    <option	value="5" <?php selected( $this->settings['bs_ver'], '5' ); ?>><?php esc_html_e( 'v5 (recommended)', 'ayecode-connect' ); ?></option>
-                                    <option	value="5dm" <?php selected( $this->settings['bs_ver'], '5dm' ); ?>><?php esc_html_e( 'v5 (dark mode) BETA', 'ayecode-connect' ); ?></option>
-                                    <option value="4" <?php selected( $this->settings['bs_ver'], '4' ); ?>><?php esc_html_e( 'v4 (legacy)', 'ayecode-connect' ); ?></option>
+                                <select name="ayecode-ui-settings[bs_ver]"
+                                        id="wpbs-css" <?php echo !empty($overrides['bs_ver']) ? 'disabled' : ''; ?>>
+                                    <?php foreach ($bs_ver_options as $value => $label) : ?>
+                                        <option value="<?php echo esc_attr($value); ?>" <?php selected($this->settings['bs_ver'], $value); ?>><?php echo esc_html($label); ?></option>
+                                    <?php endforeach; ?>
                                 </select>
                             </td>
                         </tr>
@@ -1277,6 +1287,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 
 				$hs = array('h1','h2','h3','h4','h5','h6');
 
+                //print_r($theme_settings);exit;
 				foreach($hs as $hn){
 					$h_css = '';
 					 if( !empty( $theme_settings['elements'][$hn]['color']['text'] ) ){

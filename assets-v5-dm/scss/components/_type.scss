@@ -1,48 +1,62 @@
-//
-// Typography
-// --------------------------------------------------
+// Typography related styles
+
+// Headings
+/* stylelint-disable @stylistic/selector-list-comma-newline-after */
+
+h1, .h1 {
+  line-height: $h1-line-height;
+}
+
+h2, .h2 {
+  line-height: $h2-line-height;
+}
+
+h3, .h3 {
+  line-height: $h3-line-height;
+}
+
+h4, .h4 {
+  line-height: $h4-line-height;
+}
+
+h5, .h5 {
+  line-height: $h4-line-height;
+}
+
+h6, .h6 {
+  line-height: $h4-line-height;
+}
 
 
-// Heading line height
+// Link inside headings
 
-h1, .h1, .fs-1 { line-height: $h1-line-height; }
-h2, .h2, .fs-2 { line-height: $h2-line-height; }
-h3, .h3, .fs-3 { line-height: $h3-line-height; }
-h4, .h4, .fs-4 { line-height: $h4-line-height; }
-h5, .h5, .fs-5 { line-height: $h5-line-height; }
-h6, .h6, .fs-6 { line-height: $h6-line-height; }
-
-
-// Lists
-
-ul, ol, dt {
-  li {
-    margin-bottom: $spacer * .25;
+h1, .h1, h2, .h2, h3, .h3,
+h4, .h4, h5, .h5, h6, .h6 {
+  a {
+    color: var(--#{$prefix}heading-color);
+    text-decoration: none;
   }
 }
+/* stylelint-enable @stylistic/selector-list-comma-newline-after */
 
 
-// Description lists
-
-dt {
-  color: $headings-color;
-}
-
-
-// Blockquotes
+// Blockquote
 
 .blockquote {
-  position: relative;
-  color: $blockquote-color;
   font-weight: $blockquote-font-weight;
-  &::before {
-    display: inline-block;
-    font: {
-      family: $icons-font-family;
-      size: $blockquote-icon-size;
-    }
-    color: $blockquote-icon-color;
-    content: $fi-quote;
-  }
+  color: $blockquote-color;
 }
-.blockquote-footer { margin-top: 0; }
+
+.blockquote-footer {
+  margin-top: -$blockquote-margin-y * .5;
+}
+
+
+// Inline list
+
+.list-inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: $spacer * .625 $list-inline-padding;
+  margin-bottom: $spacer * .75;
+}

@@ -1,109 +1,93 @@
-//
-// Interactive Map
-// Based on https://github.com/Leaflet/Leaflet
-// --------------------------------------------------
+// Interactive map component
 
-
-// Zoom controls
-
-.leaflet-touch {
-  .leaflet-control-layers,
-  .leaflet-bar {
-    border: 0;
-    box-shadow: $box-shadow;
+@include media-breakpoint-up(lg) {
+  .map-section {
+    position: sticky;
+    top: 76px;
+    height: calc(100vh - 76px);
   }
-  .leaflet-bar a {
-    transition: $nav-link-transition;
-    color: $nav-link-color;
-    font-weight: normal;
-    line-height: 26px;
-    &:first-child {
-      border-bottom-color: $border-color;
-      border-top-left-radius: $border-radius-sm;
-      border-top-right-radius: $border-radius-sm;
-    }
-    &:last-child {
-      border-bottom-left-radius: $border-radius-sm;
-      border-bottom-right-radius: $border-radius-sm;
-    }
-    &:hover {
-      background-color: $white;
-      color: $nav-link-hover-color;
-    }
-    &.leaflet-disabled {
-      background-color: $white;
-      color: rgba($nav-link-disabled-color, .7);
-    }
+
+  .map-section,
+  .listings-section {
+    width: 50%;
   }
 }
 
 
-// Custom marker: Dot
+// Marker
 
-.custom-marker-dot {
-  display: block;
-  width: .875rem !important;
-  height: .875rem !important;
-  margin: {
-    top: -.75rem !important;
-    left: -.375rem !important;
+.map-marker-price {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  padding: $spacer * .375 $spacer * .75;
+  font: {
+    family: $font-family-sans-serif;
+    size: $font-size-xs;
+    weight: $font-weight-medium;
   }
-  padding-left: .875rem;
-  transition: box-shadow .2s ease-in-out;
-  border-radius: 50%;
-  box-sizing: border-box;
-  background: $primary;
-
-  &:hover {
-    box-shadow: 0 0 0 .625rem rgba($primary, .25);
-  }
-
-  &.leaflet-marker-shadow { display: none; }
+  color: $gray-800;
+  background-color: $white;
+  @include border-radius($border-radius-sm);
+  @include box-shadow($box-shadow);
+  transition: color .2s ease-in-out, background-color .2s ease-in-out;
+  transform: translateX(-50%);
 }
 
-
-// Custom marker: Icon
-
-.custom-marker-icon {
-  display: block;
-  width: 3rem !important;
+.map-marker {
+  width: auto !important;
   height: auto !important;
-  margin: {
-    top: -1.5rem !important;
-    left: -1.5rem !important;
-  }
-  &.leaflet-marker-shadow { display: none; }
+}
+
+.is-highlighted .map-marker-price {
+  color: $white;
+  background-color: var(--#{$prefix}primary);
 }
 
 
 // Popup
 
-.leaflet-popup-content-wrapper {
-  padding: 0;
-  overflow: hidden;
-  .leaflet-popup-content {
-    width: 220px !important;
-    margin:10px !important;
-    padding:3px !important;
-    color: $body-color;
+.leaflet-popup {
+  margin: {
+    bottom: 28px;
+    left: 5px;
   }
 }
+
+.leaflet-popup-content-wrapper {
+  min-width: 280px;
+  padding: 0;
+  overflow: hidden;
+
+  .leaflet-popup-content {
+    width: 100% !important;
+    margin: 0 !important;
+    color: $white;
+  }
+}
+
 .leaflet-container {
   font-family: $font-family-sans-serif;
-  a.leaflet-popup-close-button {
-    top: .5rem;
-    right: .5rem;
-    width: 1.5rem;
-    height: 1.5rem;
+
+  a.leaflet-popup-close-button { // stylelint-disable-line selector-no-qualifying-type
+    top: $spacer * .5;
+    right: $spacer * .5;
+    left: auto;
+    z-index: 10;
+    width: 24px;
+    height: 24px;
     padding: 0;
+    font-size: $font-size-sm;
+    line-height: $line-height-base;
+    color: $gray-700;
+    text-align: center;
     background-color: $white;
     border-radius: 50%;
-    color: rgba($gray-800, .7);
-    font-size: .875rem;
-    line-height: 1.5rem;
-    text-align: center;
-    box-shadow: $box-shadow-sm;
-    &:hover { color: $gray-800; }
+    @include box-shadow($box-shadow-sm);
+
+    &:hover {
+      color: $gray-900;
+    }
   }
 }
 .leaflet-popup:focus,
@@ -111,43 +95,40 @@
 .leaflet-popup-tip-container {
   backface-visibility: hidden;
 }
-@-moz-document url-prefix() {
-  .leaflet-container a.leaflet-popup-close-button {
-    line-height: 1.375rem;
+
+
+// Zoom controls
+
+/* stylelint-disable selector-no-qualifying-type */
+.leaflet-touch {
+  .leaflet-control-layers,
+  .leaflet-bar {
+    border: 0;
+    @include box-shadow($box-shadow);
+  }
+  .leaflet-bar a {
+    font-weight: $font-weight-normal;
+    line-height: 26px;
+    color: $gray-700;
+    transition: $nav-link-transition;
+
+    &:first-child {
+      border-bottom-color: $gray-200;
+      border-top-left-radius: $border-radius-sm;
+      border-top-right-radius: $border-radius-sm;
+    }
+    &:last-child {
+      border-bottom-right-radius: $border-radius-sm;
+      border-bottom-left-radius: $border-radius-sm;
+    }
+    &:hover {
+      color: $gray-900;
+      background-color: $white;
+    }
+    &.leaflet-disabled {
+      color: $gray-400;
+      background-color: $white;
+    }
   }
 }
-
-
-// Hide / show map popup
-
-.map-popup {
-  transition: opacity .25s ease-in-out, visibility .25s ease-in-out;
-  background-color: $white;
-  z-index: 10;
-  &.invisible {
-    opacity: 0;
-    visibility: hidden;
-  }
-  .btn-icon {
-    position: absolute;
-    top: $spacer;
-    right: $spacer;
-    z-index: 999;
-  }
-}
-
-.map-popup,
-.map-popup .interactive-map {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-@include media-breakpoint-down(lg) {
-  .map-popup {
-    position: fixed;
-    z-index: $zindex-fixed + 1;
-  }
-}
+/* stylelint-enable selector-no-qualifying-type */

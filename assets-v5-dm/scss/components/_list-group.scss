@@ -1,52 +1,51 @@
-//
-// List group
-// --------------------------------------------------
+// Extend default Bootstrap's list group component
 
+.list-group {
+  --#{$prefix}list-group-font-size: #{$list-group-font-size};
+  --#{$prefix}list-group-action-font-weight: #{$list-group-action-font-weight};
+  --#{$prefix}list-group-borderless-item-spacer: #{$list-group-borderless-item-spacer};
 
-// List items
-
-.list-group-item {
-  margin-bottom: 0;
-
-  & + .list-group-item.active {
-    border-top-color: transparent;
-  }
+  gap: 0;
+  @include font-size(var(--#{$prefix}list-group-font-size));
 }
-
-
-// Interactive list items
 
 .list-group-item-action {
-  transition: $list-group-action-transition;
-  &:active { transition: none; }
+  font-weight: var(--#{$prefix}list-group-action-font-weight);
+  color: var(--#{$prefix}list-group-action-color);
+  transition: $list-group-item-transition;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--#{$prefix}list-group-action-hover-color);
+    background-color: var(--#{$prefix}list-group-action-hover-bg);
+  }
+
   &.active {
-    border-color: transparent;
+    color: var(--#{$prefix}list-group-action-active-color);
+    background-color: var(--#{$prefix}list-group-action-active-bg);
   }
 }
 
 
-// Contextual variants
+// Borderless list group
 
-@each $color, $value in map-remove($theme-faded-colors, 'secondary', 'light') {
-  .list-group-item-#{$color},
-  .list-group-item-#{$color}:hover {
-    background-color: $value !important;
+.list-group-borderless {
+  gap: var(--#{$prefix}list-group-borderless-item-spacer);
+  @include border-radius(0);
+
+  .list-group-item {
+    border: 0;
+    @include border-radius(var(--#{$prefix}list-group-border-radius) !important);
+
+    &.active {
+      margin-top: 0;
+    }
   }
 }
 
-.list-group-item-secondary,
-.list-group-item-light {
-  color: $body-color !important;
-}
-.list-group-item-light:hover {
-  background-color: $light !important;
-}
-.list-group-item-secondary {
-  background-color: $gray-200 !important;
-  &:hover { background-color: $gray-200 !important; }
-}
-.list-group-item-dark,
-.list-group-item-dark:hover {
-  background-color: $dark !important;
-  color: $white !important;
+
+// Flush list group inside card
+
+.card > .list-group-flush {
+  --#{$prefix}list-group-item-padding-x: var(--#{$prefix}card-spacer-x);
 }

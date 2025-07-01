@@ -166,3 +166,33 @@ body.modal-open .modal{
     padding-left: 0;
     padding-right: 0;
 }
+
+#wpadminbar ul{
+  display: block;
+}
+
+
+
+// light//dark stuff needs to be outside wrapper
+
+html[data-bs-theme="dark"]{
+  .aui-dark-mode-hide{
+    display: none;
+  }
+}
+
+html[data-bs-theme="light"]{
+  .aui-light-mode-hide{
+    display: none;
+  }
+}
+
+
+/// ul ol flex wrong
+ol,
+ul {
+  &.row {
+    flex-direction: row;
+    gap: unset;
+  }
+}

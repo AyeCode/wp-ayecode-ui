@@ -1,0 +1,40 @@
+// Circular progress
+
+.circular-progress {
+  --#{$prefix}progress-bg: #{$progress-bg};
+  --#{$prefix}progress-size: 96px;
+  --#{$prefix}progress-half-size: calc(var(--#{$prefix}progress-size) / 2);
+  --#{$prefix}progress-bar-width: calc(var(--#{$prefix}progress-size) * .1);
+  --#{$prefix}progress-radius: calc((var(--#{$prefix}progress-size) - var(--#{$prefix}progress-bar-width)) / 2);
+  --#{$prefix}progress-circumference: calc(var(--#{$prefix}progress-radius) * pi * 2);
+  --#{$prefix}progress-dash: calc((var(--#{$prefix}progress) * var(--#{$prefix}progress-circumference)) / 100);
+  position: relative;
+  width: var(--#{$prefix}progress-size);
+  height: var(--#{$prefix}progress-size);
+
+  .progress-circle {
+    width: var(--#{$prefix}progress-size);
+    height: var(--#{$prefix}progress-size);
+  }
+
+  .progress-background,
+  .progress-bar {
+    cx: var(--#{$prefix}progress-half-size);
+    cy: var(--#{$prefix}progress-half-size);
+    r: var(--#{$prefix}progress-radius);
+    fill: none;
+    stroke-linecap: round;
+    stroke-width: var(--#{$prefix}progress-bar-width);
+  }
+
+  .progress-background {
+    stroke: var(--#{$prefix}progress-bg);
+  }
+
+  .progress-bar {
+    stroke: currentcolor;
+    stroke-dasharray: var(--#{$prefix}progress-dash) calc(var(--#{$prefix}progress-circumference) - var(--#{$prefix}progress-dash));
+    transform: rotate(-90deg);
+    transform-origin: var(--#{$prefix}progress-half-size) var(--#{$prefix}progress-half-size);
+  }
+}

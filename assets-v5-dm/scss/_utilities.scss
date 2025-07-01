@@ -1,344 +1,323 @@
-//
 // Utilities
-// Extends default Bootstrap utility classes
-// Classes with a purpose to reduce the frequency of 
-// highly repetitive declarations
-// --------------------------------------------------
+// Extend / update default Bootstrap's utility classes
 
-@import '1-frameworks/bootstrap/functions';
-@import '1-frameworks/bootstrap/variables';
-@import '1-frameworks/bootstrap/maps';
-@import '1-frameworks/bootstrap/mixins';
-@import '1-frameworks/bootstrap/utilities';
+@import "1-frameworks/bootstrap/functions";
+@import "1-frameworks/bootstrap/variables";
+@import "1-frameworks/bootstrap/variables-dark";
+@import "1-frameworks/bootstrap/maps";
+@import "1-frameworks/bootstrap/mixins";
+@import "1-frameworks/bootstrap/utilities";
 
+/* stylelint-disable @stylistic/value-list-max-empty-lines, @stylistic/function-max-empty-lines */
 $utilities: map-merge(
   $utilities,
   (
-    // Border (sides)
-    //'border-top': (
-    //  property: border-top,
-    //  responsive: true,
-    //  values: (
-    //    null: $border-width solid $border-color,
-    //    0: 0,
-    //  )
-    //),
-    //'border-end': (
-    //  property: border-right,
-    //  class: border-end,
-    //  responsive: true,
-    //  values: (
-    //    null: $border-width solid $border-color,
-    //    0: 0,
-    //  )
-    //),
-    //'border-bottom': (
-    //  property: border-bottom,
-    //  responsive: true,
-    //  values: (
-    //    null: $border-width solid $border-color,
-    //    0: 0,
-    //  )
-    //),
-    //'border-start': (
-    //  property: border-left,
-    //  class: border-start,
-    //  responsive: true,
-    //  values: (
-    //    null: $border-width solid $border-color,
-    //    0: 0,
-    //  )
-    //),
-    //'border': (
-    //  property: border,
-    //  class: border,
-    //  responsive: true,
-    //  values: (
-    //    null: $border-width solid $border-color,
-    //    0: 0,
-    //  )
-    //),
-
-    // Border colors
-    'border-color': map-merge(
-      map-get($utilities, 'border-color'),
-      (
-        values: map-merge(
-          map-get(map-get($utilities, 'border-color'), 'values'),
-          (
-            'light': $border-light-color
-          )
-        )
-      )
-    ),
-
-    // Background colors
-    'background-color': map-merge(
-      map-get($utilities, 'background-color'),
-      (
-        values: map-merge(
-          map-get(map-get($utilities, 'background-color'), 'values'),
-          (
-            'transparent': transparent
-          )
-        )
-      )
-    ),
-
-    // Disable background
-    'background': (
-      property: background,
-      class: bg,
-      values: none
-    ),
+    // Remove utilities
+    "link-offset": null,
+    "link-underline": null,
+    "link-underline-opacity": null,
 
     // Border radius
-    'rounded': (
+    "rounded": (
       property: border-radius,
       class: rounded,
-      responsive: true,
       values: (
-        null: $border-radius,
+        null: var(--#{$prefix}border-radius),
         0: 0,
-        1: $border-radius-sm,
-        2: $border-radius,
-        3: $border-radius-lg,
-        4: $border-radius-xl,
+        1: var(--#{$prefix}border-radius-xs),
+        2: var(--#{$prefix}border-radius-sm),
+        3: var(--#{$prefix}border-radius),
+        4: var(--#{$prefix}border-radius-lg),
+        5: var(--#{$prefix}border-radius-xl),
+        6: var(--#{$prefix}border-radius-xxl),
+        7: var(--#{$prefix}border-radius-xxxl),
         circle: 50%,
-        pill: $border-radius-pill
+        pill: var(--#{$prefix}border-radius-pill)
       )
     ),
-
-    // Background faded colors
-    'background-faded-color': (
-      property: background-color,
-      class: bg-faded,
-      values: $theme-faded-colors
-    ),
-
-    // Disable background image
-    'background-image': (
-      property: background-image,
-      class: bg-image,
-      values: none
-    ),
-
-    // Background size
-    'background-size': (
-      property: background-size,
-      class: bg-size,
+    "rounded-top": (
+      property: border-top-left-radius border-top-right-radius,
+      class: rounded-top,
       values: (
-        cover: cover,
-        contain: contain
+        null: var(--#{$prefix}border-radius),
+        0: 0,
+        1: var(--#{$prefix}border-radius-xs),
+        2: var(--#{$prefix}border-radius-sm),
+        3: var(--#{$prefix}border-radius),
+        4: var(--#{$prefix}border-radius-lg),
+        5: var(--#{$prefix}border-radius-xl),
+        6: var(--#{$prefix}border-radius-xxl),
+        7: var(--#{$prefix}border-radius-xxxl),
+        circle: 50%,
+        pill: var(--#{$prefix}border-radius-pill)
       )
     ),
-
-    // Background position
-    'background-position': (
-      property: background-position,
-      class: bg-position,
+    "rounded-end": (
+      property: border-top-right-radius border-bottom-right-radius,
+      class: rounded-end,
       values: (
-        'center': center,
-        'center-y': left center,
-        'center-x': center top,
-        'top-right': top right,
-        'top-center': top center,
-        'top-left': top left,
-        'center-right': center right,
-        'center-left': center left,
-        'bottom-right': bottom right,
-        'bottom-left': bottom left,
-        'bottom-center': bottom center
+        null: var(--#{$prefix}border-radius),
+        0: 0,
+        1: var(--#{$prefix}border-radius-xs),
+        2: var(--#{$prefix}border-radius-sm),
+        3: var(--#{$prefix}border-radius),
+        4: var(--#{$prefix}border-radius-lg),
+        5: var(--#{$prefix}border-radius-xl),
+        6: var(--#{$prefix}border-radius-xxl),
+        7: var(--#{$prefix}border-radius-xxxl),
+        circle: 50%,
+        pill: var(--#{$prefix}border-radius-pill)
       )
     ),
-
-    // Background repeat
-    'background-repeat': (
-      property: background-repeat,
-      class: bg-repeat,
+    "rounded-bottom": (
+      property: border-bottom-right-radius border-bottom-left-radius,
+      class: rounded-bottom,
       values: (
-        0: no-repeat,
-        x: repeat-x,
-        y: repeat-y
+        null: var(--#{$prefix}border-radius),
+        0: 0,
+        1: var(--#{$prefix}border-radius-xs),
+        2: var(--#{$prefix}border-radius-sm),
+        3: var(--#{$prefix}border-radius),
+        4: var(--#{$prefix}border-radius-lg),
+        5: var(--#{$prefix}border-radius-xl),
+        6: var(--#{$prefix}border-radius-xxl),
+        7: var(--#{$prefix}border-radius-xxxl),
+        circle: 50%,
+        pill: var(--#{$prefix}border-radius-pill)
       )
     ),
-
-    // Text color
-    'color': (
-      property: color,
-      class: text,
-      values: map-merge(
-        $theme-colors,
-        (
-          'white': $white,
-          'body': $body-color,
-          'muted': $text-muted,
-          'nav': $nav-link-color,
-          'black-50': rgba($black, .5),
-          'white-50': rgba($white, .5),
-          'reset': inherit,
-        )
-      )
-    ),
-
-    // Text shadow
-    'text-shadow': (
-      property: text-shadow,
+    "rounded-start": (
+      property: border-bottom-left-radius border-top-left-radius,
+      class: rounded-start,
       values: (
-        null: $text-shadow
+        null: var(--#{$prefix}border-radius),
+        0: 0,
+        1: var(--#{$prefix}border-radius-xs),
+        2: var(--#{$prefix}border-radius-sm),
+        3: var(--#{$prefix}border-radius),
+        4: var(--#{$prefix}border-radius-lg),
+        5: var(--#{$prefix}border-radius-xl),
+        6: var(--#{$prefix}border-radius-xxl),
+        7: var(--#{$prefix}border-radius-xxxl),
+        circle: 50%,
+        pill: var(--#{$prefix}border-radius-pill)
       )
     ),
 
-    // Font weight
-    'font-weight': map-merge(
-      map-get($utilities, 'font-weight'),
-      (
-        values: map-merge(
-          map-get(map-get($utilities, 'font-weight'), 'values'),
-          (
-            medium: $font-weight-medium,
-          )
-        )
-      )
-    ),
-
-    // Width
-    'width': (
-      property: width,
-      class: w,
-      responsive: true,
+    // Min width
+    "min-width": (
+      property: min-width,
+      class: min-w,
       values: (
-        25: 25%,
-        50: 50%,
-        75: 75%,
-        100: 100%,
-        auto: auto
+        0: 0,
+        100: 100
       )
     ),
 
-    // Height
-    'height': (
-      property: height,
-      class: h,
-      responsive: true,
+    // Line height
+    "line-height": (
+      property: line-height,
+      class: lh,
       values: (
-        25: 25%,
-        50: 50%,
-        75: 75%,
-        100: 100%,
-        auto: auto
+        0: 0,
+        1: 1,
+        sm: $line-height-sm,
+        base: $line-height-base,
+        lg: $line-height-lg,
       )
     ),
 
     // Opacity
-    'opacity': (
+    "opacity": (
       property: opacity,
-      class: opacity,
       values: (
-        10: .1,
-        15: .15,
+        0: 0,
         25: .25,
-        35: .35,
-        40: .40,
+        40: .4,
         50: .5,
         60: .6,
-        65: .65,
-        70: .7,
         75: .75,
-        80: .8,
-        90: .9,
-        100: 1
+        100: 1,
       )
     ),
 
-    // Rounded top: 0
-    'rounded-top': map-merge(
-      map-get($utilities, 'rounded-top'),
-      (
-        values: map-merge(
-          map-get(map-get($utilities, 'rounded-top'), 'values'),
-          (
-            0: 0
-          )
-        )
-      )
-    ),
-
-    // Rounded end: 0
-    'rounded-end': map-merge(
-      map-get($utilities, 'rounded-end'),
-      (
-        values: map-merge(
-          map-get(map-get($utilities, 'rounded-end'), 'values'),
-          (
-            0: 0
-          )
-        )
-      )
-    ),
-
-    // Rounded bottom: 0
-    'rounded-bottom': map-merge(
-      map-get($utilities, 'rounded-bottom'),
-      (
-        values: map-merge(
-          map-get(map-get($utilities, 'rounded-bottom'), 'values'),
-          (
-            0: 0
-          )
-        )
-      )
-    ),
-
-    // Rounded start: 0
-    'rounded-start': map-merge(
-      map-get($utilities, 'rounded-start'),
-      (
-        values: map-merge(
-          map-get(map-get($utilities, 'rounded-start'), 'values'),
-          (
-            0: 0
-          )
-        )
-      )
-    ),
-
-    // Z-index
-    'z-index': (
+    // z-index
+    "z-index": (
       property: z-index,
-      class: zindex,
-      responsive: true,
-      values: 0 1 5 10
+      class: z,
+      values: map-merge(
+        $zindex-levels,
+        (
+          sticky: $zindex-sticky,
+          fixed: $zindex-fixed
+        )
+      )
+    ),
+
+    // cursor
+    "cursor": (
+      property: cursor,
+      class: cursor,
+      values: (
+        pointer: pointer,
+        default: default,
+        help: help,
+        wait: wait,
+        crosshair: crosshair,
+        not-allowed: not-allowed,
+        zoom-in: zoom-in,
+        zoom-out: zoom-out,
+        grab: grab
+      )
     )
   )
 );
 
 
-// Fix the light border color priority
+// Disable :focus / :focus-visible
 
-[class^='border-'], [class*=' border-'] {
-  &.border-light { border-color: $border-light-color !important; }
-}
-
-
-// Opacity transition
-
-.opacity-transition {
-  transition: opacity .25s ease-in-out;
-  &:hover { opacity: 1 !important; }
-}
-
-
-// Image scale on hover
-
-.hover-img-scale {
-  img {
-    will-change: transform;
-    transition: transform .3s ease-in-out;
-    transform: none;
-  }
-
-  &:hover img {
-    transform: translateY(-.25rem) scale(1.01);
+.focus-none {
+  &:focus,
+  &:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
   }
 }
+
+
+// Fix Safari quirk of rounded corners
+
+[class^="rounded"].overflow-hidden,
+[class*=" rounded"].overflow-hidden {
+  transform: translateZ(0);
+}
+
+
+// Dotted background
+
+.bg-dotted {
+  --#{$prefix}bg-color: var(--#{$prefix}tertiary-bg);
+  --#{$prefix}dot-color: var(--#{$prefix}secondary);
+  --#{$prefix}dot-size: 1px;
+  --#{$prefix}dot-space: 20px;
+
+  background: linear-gradient(90deg, var(--#{$prefix}bg-color) calc(var(--#{$prefix}dot-space) - var(--#{$prefix}dot-size)), transparent 1%) center, linear-gradient(var(--#{$prefix}bg-color) calc(var(--#{$prefix}dot-space) - var(--#{$prefix}dot-size)), transparent 1%) center, var(--#{$prefix}dot-color);
+  background-size: var(--#{$prefix}dot-space) var(--#{$prefix}dot-space);
+}
+
+
+// Border styles
+
+.border-dashed {
+  --#{$prefix}border-style: dashed;
+}
+.border-dotted {
+  --#{$prefix}border-style: dotted;
+}
+
+
+// Disable transition on element
+
+.transition-none {
+  transition: none !important;
+}
+
+
+// Disable transform on element
+
+.transform-none {
+  transform: none !important;
+}
+
+
+// Disable background image on element
+
+.bg-image-none {
+  background-image: none !important;
+}
+
+
+// Flip objects horizontally when the direction is set to RTL
+
+[dir="rtl"] .rtl-flip {
+  transform: rotateY(180deg);
+}
+
+
+// Display element only when the direction is set to RTL
+
+[dir="rtl"] .d-none-rtl {
+  display: none !important;
+}
+
+[dir="rtl"] .d-block-rtl {
+  display: block !important;
+}
+
+[dir="rtl"] .d-inline-rtl {
+  display: inline !important;
+}
+
+[dir="rtl"] .d-inline-block-rtl {
+  display: inline-block !important;
+}
+
+[dir="rtl"] .d-flex-rtl {
+  display: flex !important;
+}
+
+[dir="rtl"] .d-inline-flex-rtl {
+  display: inline-flex !important;
+}
+
+
+// To make IntersectionObserver work with ".sticky-top" class correctly
+
+[data-sticky-element] {
+  top: -1px !important;
+}
+
+
+// Dark mode
+
+@if $enable-dark-mode {
+  @include color-mode(dark) {
+
+    // Display utilities
+    .d-none-dark {
+      display: none !important;
+    }
+    .d-block-dark {
+      display: block !important;
+    }
+    .d-inline-dark {
+      display: inline !important;
+    }
+    .d-inline-block-dark {
+      display: inline-block !important;
+    }
+    .d-inline-flex-dark {
+      display: inline-flex !important;
+    }
+    .d-flex-dark {
+      display: flex !important;
+    }
+
+    // Shadows
+    .shadow:not([data-bs-theme="light"]) {
+      box-shadow: $box-shadow-dark !important;
+    }
+    .shadow-sm:not([data-bs-theme="light"]) {
+      box-shadow: $box-shadow-sm-dark !important;
+    }
+    .shadow-lg:not([data-bs-theme="light"]) {
+      box-shadow: $box-shadow-lg-dark !important;
+    }
+
+    // Revert <body> background color in dark mode
+    body.bg-body-tertiary { // stylelint-disable-line selector-no-qualifying-type
+      background-color: var(--#{$prefix}body-bg) !important;
+    }
+  }
+}
+/* stylelint-enable @stylistic/value-list-max-empty-lines, @stylistic/function-max-empty-lines */

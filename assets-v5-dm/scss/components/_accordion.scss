@@ -1,66 +1,88 @@
-//
-// Accordion
-// --------------------------------------------------
+// Override default Bootstrap's accordion component
 
-
-// General
+.accordion {
+  --#{$prefix}accordion-btn-font-size: #{$accordion-button-font-size};
+  --#{$prefix}accordion-btn-font-weight: #{$accordion-button-font-weight};
+  --#{$prefix}accordion-body-font-size: #{$accordion-body-font-size};
+}
 
 .accordion-button {
-  font-weight: $accordion-button-font-weight;
+  @include font-size(var(--#{$prefix}accordion-btn-font-size));
+  font-weight: var(--#{$prefix}accordion-btn-font-weight);
+
+  &:focus-visible {
+    @include box-shadow($focus-ring-box-shadow);
+  }
+
+  &:not(.collapsed) {
+    box-shadow: none;
+  }
 }
+
+.accordion-item {
+  border: 0;
+  border-bottom: var(--#{$prefix}accordion-border-width) solid var(--#{$prefix}accordion-border-color);
+}
+
 .accordion-body {
-  padding-top: $accordion-body-padding-y * .1667;
+  padding-bottom: var(--#{$prefix}accordion-btn-padding-y);
+  @include font-size(var(--#{$prefix}accordion-body-font-size));
 }
 
 
-// Light version
+// Alternative button icon
 
-.accordion-light {
+.accordion-alt-icon {
+  --#{$prefix}accordion-btn-icon: #{escape-svg($accordion-button-icon-alt)};
+  --#{$prefix}accordion-btn-active-icon: #{escape-svg($accordion-button-active-icon-alt)};
+}
 
-  .accordion-item {
-    background-color: $accordion-light-bg;
-    border-color: $accordion-light-border-color;
+
+// Update accordion / collapse button label text
+
+[data-label-collapsed] {
+  &::before {
+    content: attr(data-label-expanded);
   }
-  
-  .accordion-button {
-    background-color: $accordion-light-bg !important;
 
-    // Button colors
-    &.collapsed {
-      color: $accordion-light-button-color;
-    }
-    &:not(.collapsed) {
-      color: $accordion-light-button-active-color;
-      box-shadow: none;
-    }
-
-    // Button indicator colors
-    &:not(.collapsed)::after {
-      background-image: escape-svg($accordion-light-button-active-icon);
-    }
-    &::after {
-      background-image: escape-svg($accordion-light-button-icon);
-    }
+  &.collapsed::before,
+  .collapsed > &::before {
+    content: attr(data-label-collapsed);
   }
 }
 
 
-// Collapse label
+// Collapse toggle icon
 
-.collapse-label {
-  &::after {
-    content: attr(data-bs-label-expanded);
-  }
-  > [class^='fi-'],
-  > [class*=' fi-'] {
+.collapse-toggle-icon {
+  :not(.collapsed) > & {
     transform: rotate(180deg);
-    transition: transform .2s ease-in-out;
   }
-  &.collapsed {
-    > [class^='fi-'],
-    > [class*=' fi-'] { transform: none; }  
-    &::after {
-      content: attr(data-bs-label-collapsed);
+}
+
+
+// Hiding collapse toggle
+
+.hiding-collapse-toggle:not(.collapsed) {
+  display: none;
+}
+
+
+// Dark mode
+
+@if $enable-dark-mode {
+  @include color-mode(dark) {
+    .accordion:not([data-bs-theme="light"]) {
+      .accordion-button::after {
+        --#{$prefix}accordion-btn-icon: #{escape-svg($accordion-button-icon-dark)};
+        --#{$prefix}accordion-btn-active-icon: #{escape-svg($accordion-button-active-icon-dark)};
+      }
+    }
+    .accordion-alt-icon:not([data-bs-theme="light"]) {
+      .accordion-button::after {
+        --#{$prefix}accordion-btn-icon: #{escape-svg($accordion-button-icon-alt-dark)};
+        --#{$prefix}accordion-btn-active-icon: #{escape-svg($accordion-button-active-icon-alt-dark)};
+      }
     }
   }
 }
