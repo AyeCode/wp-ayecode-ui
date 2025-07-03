@@ -1,4 +1,4 @@
-= 0.2.38 - 2025-06-TBD =
+= 0.2.38 - 2025-07-03 =
 * Iframe in BootStrap modal don't load for single image - FIXED
 * Sanitize FontAwesome icon in iconpicker - FIXED
 
