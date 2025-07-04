@@ -2,3 +2,11 @@
 .btn-round {
   border-radius: $round-radius !important;
 }
+
+// icon line height
+.btn{
+  i{
+    line-height: inherit;
+  }
+}
+

@@ -1,3 +1,4 @@
+//$enable-dark-mode: false;
 // colors
 $primary: #3993d5;
 
@@ -12,6 +13,7 @@ $prefix: "bs-";
 
 // Buttons
 $round-radius: 30px;
+$btn-line-height: 1.25rem;
 
 // nav
 $nav-link-font-weight: 600;
@@ -20,7 +22,7 @@ $nav-link-font-weight: 600;
 // buttons + forms
 //$input-btn-padding-y:         .53rem;
 //$input-btn-padding-x:         1rem;
-$input-btn-font-size:         1rem;
+$input-btn-font-size: 1rem;
 
 //$input-btn-padding-y-sm:      .375rem;
 //$input-btn-padding-x-sm:      .875rem;

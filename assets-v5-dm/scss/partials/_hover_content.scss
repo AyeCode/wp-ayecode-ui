@@ -1,0 +1,26 @@
+// buttons
+.hover-content{
+  display: none;
+  &.fas{
+    display: none;
+  }
+}
+
+.btn,.badge,.hover-swap{
+  &:hover{
+    .hover-content{
+      display: initial;
+    }
+    .hover-content-original{
+      display: none;
+    }
+  }
+}
+
+// pointers
+.c-pointer:hover {
+  cursor:pointer;
+}
+.c-move:hover {
+  cursor:move;
+}

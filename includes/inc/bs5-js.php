@@ -7,102 +7,132 @@
      * Licensed under the MIT license - http://opensource.org/licenses/MIT
      * @ver 0.0.1
      */
-    function aui_init_greedy_nav(){
-        jQuery('nav.greedy').each(function(i, obj) {
-            // Check if already initialized, if so continue.
-            if(jQuery(this).hasClass("being-greedy")){return true;}
+    function aui_init_greedy_nav() {
+        document.querySelectorAll('nav.greedy').forEach((nav) => {
+            if (nav.classList.contains('being-greedy')) return;
+            nav.classList.add('being-greedy', 'navbar-expand');
 
-            // Make sure its always expanded
-            jQuery(this).addClass('navbar-expand');
-            jQuery(this).off('shown.bs.tab').on('shown.bs.tab', function (e) {
-                if (jQuery(e.target).closest('.dropdown-menu').hasClass('greedy-links')) {
-                    jQuery(e.target).closest('.greedy').find('.greedy-btn.dropdown').attr('aria-expanded', 'false');
-                    jQuery(e.target).closest('.greedy-links').removeClass('show').addClass('d-none');
+            nav.addEventListener('shown.bs.tab', (e) => {
+                const menu = e.target.closest('.dropdown-menu.greedy-links');
+                if (menu) {
+                    const greedy = e.target.closest('.greedy');
+                    greedy.querySelector('.greedy-btn.dropdown')
+                        .setAttribute('aria-expanded', 'false');
+                    menu.classList.replace('show', 'd-none');
                 }
             });
-            jQuery(document).off('mousemove', '.greedy-btn').on('mousemove', '.greedy-btn', function(e){
-                jQuery('.dropdown-menu.greedy-links').removeClass('d-none');
+
+            document.addEventListener('mousemove', (e) => {
+                if (e.target.closest('.greedy-btn')) {
+                    document
+                        .querySelectorAll('.dropdown-menu.greedy-links')
+                        .forEach((m) => m.classList.remove('d-none'));
+                }
             });
-            // vars
-            var $vlinks = '';
-            var $dDownClass = '';
-            var ddItemClass = 'greedy-nav-item';
-            if(jQuery(this).find('.navbar-nav').length){
-                if(jQuery(this).find('.navbar-nav').hasClass("being-greedy")){return true;}
-                $vlinks = jQuery(this).find('.navbar-nav').addClass("being-greedy w-100").removeClass('overflow-hidden');
-            }else if(jQuery(this).find('.nav').length){
-                if(jQuery(this).find('.nav').hasClass("being-greedy")){return true;}
-                $vlinks = jQuery(this).find('.nav').addClass("being-greedy w-100").removeClass('overflow-hidden');
-                $dDownClass = ' mt-0 p-0 zi-5 ';
+
+            // find our <ul>
+            let vlinks = nav.querySelector('.navbar-nav');
+            let extraDD = '', ddItemClass = 'greedy-nav-item';
+            if (vlinks) {
+                if (vlinks.classList.contains('being-greedy')) return;
+                vlinks.classList.add('being-greedy', 'w-100');
+                vlinks.classList.remove('overflow-hidden');
+            } else {
+                vlinks = nav.querySelector('.nav');
+                if (!vlinks || vlinks.classList.contains('being-greedy')) return;
+                vlinks.classList.add('being-greedy', 'w-100');
+                vlinks.classList.remove('overflow-hidden');
+                extraDD = ' mt-0 p-0 zi-5';
                 ddItemClass += ' mt-0 me-0';
-            }else{
-                return false;
             }
 
-            jQuery($vlinks).append('<li class="nav-item list-unstyled ml-auto greedy-btn d-none dropdown"><button data-bs-toggle="collapse" class="nav-link greedy-nav-link" role="button"><i class="fas fa-ellipsis-h"></i> <span class="greedy-count badge bg-dark rounded-pill"></span></button><ul class="greedy-links dropdown-menu dropdown-menu-end '+$dDownClass+'"></ul></li>');
-
-            var $hlinks = jQuery(this).find('.greedy-links');
-            var $btn = jQuery(this).find('.greedy-btn');
-
-            var numOfItems = 0;
-            var totalSpace = 0;
-            var closingTime = 1000;
-            var breakWidths = [];
-
-            // Get initial state
-            $vlinks.children().outerWidth(function(i, w) {
-                totalSpace += w;
-                numOfItems += 1;
-                breakWidths.push(totalSpace);
+            // stash originals
+            Array.from(vlinks.children).forEach((li) => {
+                li.dataset.originalItemClass = li.className;
+                const a = li.querySelector('.nav-link');
+                if (a) a.dataset.originalLinkClass = a.className;
             });
 
-            var availableSpace, numOfVisibleItems, requiredSpace, buttonSpace ,timer;
+            // add the “more” button
+            const moreLi = document.createElement('li');
+            moreLi.className = 'nav-item list-unstyled ms-auto greedy-btn d-none dropdown';
+            moreLi.innerHTML = `
+      <button data-bs-toggle="dropdown"
+              class="nav-link greedy-nav-link dropdown-toggle"
+              role="button"
+              aria-expanded="false">
+        <i class="fas fa-ellipsis-h"></i>
+        <span class="greedy-count badge bg-dark rounded-pill"></span>
+      </button>
+      <ul class="greedy-links dropdown-menu dropdown-menu-end${extraDD}"></ul>
+    `;
+            vlinks.appendChild(moreLi);
 
-            /*
-			 The check function.
-			 */
+            const hlinks = nav.querySelector('ul.greedy-links');
+            const btnLi  = moreLi;
+            const btn    = moreLi.querySelector('button');
+
+            // measure breakpoints
+            let total = 0, breakWidths = [];
+            Array.from(vlinks.children).forEach((li) => {
+                total += li.getBoundingClientRect().width;
+                breakWidths.push(total);
+            });
+            const numItems = breakWidths.length;
+
             function check() {
-                // Get instant state
-                buttonSpace = $btn.width();
-                availableSpace = $vlinks.width() - 10;
-                numOfVisibleItems = $vlinks.children().length;
-                requiredSpace = breakWidths[numOfVisibleItems - 1];
+                const avail = vlinks.getBoundingClientRect().width - 10;
+                let visible = vlinks.children.length;
+                const needed = breakWidths[visible - 1];
 
-                // There is not enough space
-                if (numOfVisibleItems > 1 && requiredSpace > availableSpace) {
-                    var $li = $vlinks.children().last().prev();
-                    $li.removeClass('nav-item').addClass(ddItemClass);
-                    if (!jQuery($hlinks).children().length) {
-                        $li.find('.nav-link').addClass('w-100 dropdown-item rounded-0 rounded-bottom');
+                // overflow → push one into dropdown
+                if (visible > 1 && needed > avail) {
+                    const li = vlinks.children[visible - 2];
+                    li.classList.remove('nav-item');
+                    li.classList.add(...ddItemClass.split(' '));
+
+                    if (!hlinks.children.length) {
+                        li.querySelector('a')
+                            .classList.add('w-100','dropdown-item','rounded-0','rounded-bottom','justify-content-start');
                     } else {
-                        jQuery($hlinks).find('.nav-link').removeClass('rounded-top');
-                        $li.find('.nav-link').addClass('w-100 dropdown-item rounded-0 rounded-top');
+                        hlinks.querySelectorAll('a').forEach(x => x.classList.remove('rounded-top'));
+                        li.querySelector('a')
+                            .classList.add('w-100','dropdown-item','rounded-0','rounded-top','justify-content-start');
                     }
-                    $li.prependTo($hlinks);
-                    numOfVisibleItems -= 1;
-                    check();
-                    // There is more than enough space
-                } else if (availableSpace > breakWidths[numOfVisibleItems]) {
-                    $hlinks.children().first().insertBefore($btn);
-                    numOfVisibleItems += 1;
-                    check();
+
+                    hlinks.insertBefore(li, hlinks.firstChild);
+                    visible--;
+                    return check();
                 }
-                // Update the button accordingly
-                jQuery($btn).find(".greedy-count").html( numOfItems - numOfVisibleItems);
-                if (numOfVisibleItems === numOfItems) {
-                    $btn.addClass('d-none');
-                } else $btn.removeClass('d-none');
+
+                // underflow → pop one back out
+                if (avail > (breakWidths[visible] || 0)) {
+                    const li = hlinks.firstElementChild;
+                    if (li) {
+                        // restore <li> classes
+                        li.className = li.dataset.originalItemClass || '';
+                        // restore <a> classes
+                        const a = li.querySelector('a');
+                        if (a && a.dataset.originalLinkClass) {
+                            a.className = a.dataset.originalLinkClass;
+                        }
+                        vlinks.insertBefore(li, btnLi);
+                        visible++;
+                        return check();
+                    }
+                }
+
+                // update button count + toggle
+                btn.querySelector('.greedy-count').textContent = numItems - visible;
+                btnLi.classList.toggle('d-none', visible === numItems);
             }
 
-            // Window listeners
-            jQuery(window).on("resize",function() {
-                check();
-            });
-
-            // do initial check
+            window.addEventListener('resize', check);
             check();
         });
     }
+
+
 
     function aui_select2_locale() {
         var aui_select2_params = <?php echo self::select2_locale(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>;
@@ -239,44 +269,139 @@
     /**
      * Initiate tooltips on the page.
      */
-    function aui_init_tooltips(){
-        jQuery('[data-bs-toggle="tooltip"]').tooltip();
-        jQuery('[data-bs-toggle="popover"]').popover();
-        jQuery('[data-bs-toggle="popover-html"]').popover({
-            html: true,
-            sanitize: false
+    function aui_init_tooltips() {
+        // initialize all tooltips
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function(el) {
+            new bootstrap.Tooltip(el);
+        });
+
+        // initialize all popovers
+        document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function(el) {
+            new bootstrap.Popover(el);
+        });
+
+        // initialize all HTML‐enabled popovers
+        document.querySelectorAll('[data-bs-toggle="popover-html"]').forEach(function(el) {
+            new bootstrap.Popover(el, {
+                html: true,
+                sanitize: false
+            });
         });
 
         // fix popover container compatibility
-        jQuery('[data-bs-toggle="popover"],[data-bs-toggle="popover-html"]').on('inserted.bs.popover', function () {
-            jQuery('body > .popover').wrapAll("<div class='bsui' />");
+        document.querySelectorAll('[data-bs-toggle="popover"],[data-bs-toggle="popover-html"]').forEach(function(el) {
+            el.addEventListener('inserted.bs.popover', function () {
+                // collect all direct‐child .popover elements of <body>
+                const popovers = Array.from(document.body.querySelectorAll(':scope > .popover'));
+                if (!popovers.length) return;
+
+                // wrap them in a single .bsui container
+                const wrapper = document.createElement('div');
+                wrapper.className = 'bsui';
+                popovers.forEach(function(p) {
+                    wrapper.appendChild(p);
+                });
+                document.body.appendChild(wrapper);
+            });
         });
     }
+
 
     /**
      * Initiate flatpickrs on the page.
      */
     $aui_doing_init_flatpickr = false;
     function aui_init_flatpickr(){
-        if ( typeof jQuery.fn.flatpickr === "function" && !$aui_doing_init_flatpickr) {
+        if ( typeof flatpickr === "function" && !$aui_doing_init_flatpickr) {
             $aui_doing_init_flatpickr = true;
-			<?php if ( ! empty( $flatpickr_locale ) ) { ?>try{flatpickr.localize(<?php echo $flatpickr_locale; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>);}catch(err){console.log(err.message);}<?php } ?>
-            jQuery('input[data-aui-init="flatpickr"]:not(.flatpickr-input)').flatpickr();
+            <?php if ( ! empty( $flatpickr_locale ) ) { ?>try{flatpickr.localize(<?php echo $flatpickr_locale; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>);}catch(err){console.log(err.message);}<?php } ?>
+            document
+                .querySelectorAll('input[data-aui-init="flatpickr"]:not(.flatpickr-input)')
+                .forEach(function(el){
+                    flatpickr(el);
+                });
         }
         $aui_doing_init_flatpickr = false;
     }
 
+
+    // keep track of instances for cleanup
+    var _aui_iconPickers = [];
+
     /**
-     * Initiate iconpicker on the page.
+     * Initializes all icon pickers on the page.
+     * @param {string} [wrapperSelector] defaults to '.input-group'
+     * @param {boolean} [force] destroy & re-init if true
      */
-    $aui_doing_init_iconpicker = false;
-    function aui_init_iconpicker(){
-        if ( typeof jQuery.fn.iconpicker === "function" && !$aui_doing_init_iconpicker) {
-            $aui_doing_init_iconpicker = true;
-            jQuery('input[data-aui-init="iconpicker"]:not(.iconpicker-input)').iconpicker();
+    function aui_init_iconpicker(wrapperSelector, force) {
+        // Ensure the new picker class is available
+        if (typeof AyeCodeIconPicker === 'undefined') return;
+
+        var wrapSel = wrapperSelector || '.input-group';
+
+        // Destroy existing if forced
+        if (force) {
+            _aui_iconPickers.forEach(function(p) { p.destroy && p.destroy(); });
+            _aui_iconPickers = [];
+            document.querySelectorAll('input[data-aui-init="iconpicker"]')
+                .forEach(function(el) {
+                    el.classList.remove('iconpicker-input');
+                    delete el._iconPicker;
+                });
         }
-        $aui_doing_init_iconpicker= false;
+
+        // Init any new ones
+        document.querySelectorAll('input[data-aui-init="iconpicker"]:not(.iconpicker-input)')
+            .forEach(function(el) {
+                // Find wrapper & addon trigger
+                var wrapper = el.closest(wrapSel);
+                var addon = wrapper && wrapper.querySelector('.input-group-addon, .input-group-text');
+                if (!addon) return; // nothing to click
+
+                // Give the trigger addon a stable ID for the picker to attach to
+                if (!addon.id) {
+                    addon.id = 'iconpicker-trigger-' + Math.random().toString(36).substr(2, 9);
+                }
+
+                // Show initial icon or a fallback
+                addon.innerHTML = el.value.trim()
+                    ? '<i class="' + el.value + '"></i>'
+                    : '<i class="fas fa-icons"></i>'; // Fallback icon
+                addon.classList.add('c-pointer');
+
+                // Instantiate our new AyeCodeIconPicker on the addon
+                var picker = new AyeCodeIconPicker('#' + addon.id, {
+                    // IMPORTANT: Provide the correct path to your icons-libraries folder
+                    iconPickerUrl: '<?php echo $this->url;?>/assets-v5-dm/libs/universal-icon-picker/icons-libraries/',
+
+                    // These are the default libraries, can be overridden if needed
+                    iconLibraries: [
+                        'font-awesome-solid.min.json',
+                        'font-awesome-regular.min.json',
+                        'font-awesome-brands.min.json'
+                    ],
+
+                    // Define what happens when an icon is selected
+                    onSelect: function(jsonIconData) {
+                        // Update the hidden input's value
+                        el.value = jsonIconData.iconClass;
+                        // Update the visible addon's icon
+                        addon.innerHTML = jsonIconData.iconHtml;
+                        // Optional: Trigger a change event for other scripts to listen to
+                        el.dispatchEvent(new Event('change'));
+                    }
+
+                    // The onReset functionality is handled by selecting an empty icon if you were to add one,
+                    // or you could add a "Reset" button to the modal and call an `onReset` callback.
+                });
+
+                // Mark as initialized
+                el.classList.add('iconpicker-input');
+                el._iconPicker = picker;
+                _aui_iconPickers.push(picker);
+            });
     }
+
 
     function aui_modal_iframe($title,$url,$footer,$dismissible,$class,$dialog_class,$body_class,responsive){
         if(!$body_class){$body_class = 'p-0';}

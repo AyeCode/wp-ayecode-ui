@@ -485,6 +485,9 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 					// flatpickr
 					wp_register_style( 'flatpickr', $this->url.'assets'.$bs_ver.'/css/flatpickr.min.css', array(), $this->version );
 
+                    // iconpicker
+                    //wp_register_style( 'iconpicker', $this->url.'assets'.$bs_ver.'/css/universal-icon-picker.css', array(), $this->version );
+
 					// fix some wp-admin issues
 					if(is_admin()){
 						$custom_css = "
@@ -641,11 +644,17 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				wp_register_script( 'flatpickr', $this->url . 'assets/js/flatpickr.min.js', array(), $this->version );
 
 				// iconpicker
-				if ( defined( 'FAS_ICONPICKER_JS_URL' ) ) {
-					wp_register_script( 'iconpicker', FAS_ICONPICKER_JS_URL, array(), $this->version );
-				}else{
-					wp_register_script( 'iconpicker', $this->url . 'assets/js/fa-iconpicker.min.js', array(), $this->version );
-				}
+//                wp_register_script( 'iconpicker', $this->url . 'assets-v5-dm/libs/universal-icon-picker/js/universal-icon-picker.js', array(), $this->version );
+                wp_register_script( 'iconpicker-react', $this->url . 'assets-v5-dm/libs/universal-icon-picker/js/universal-icon-picker-react.js', array(), $this->version );
+                wp_register_script( 'iconpicker', $this->url . 'assets-v5-dm/libs/universal-icon-picker/js/universal-icon-picker.js', array(), $this->version );
+
+                // @todo blockstrap blocks seem to laod this from here, we need to check http://localhost/wp-content/plugins/blockstrap-page-builder-blocks/vendor/ayecode/wp-font-awesome-settings/assets/js/fa-iconpicker-v6.min.js
+//				if ( defined( 'FAS_ICONPICKER_JS_URL' ) ) {
+//                    echo '###'.FAS_ICONPICKER_JS_URL;exit;
+//					wp_register_script( 'iconpicker', FAS_ICONPICKER_JS_URL, array(), $this->version );
+//				}else{
+//					wp_register_script( 'iconpicker', $this->url . 'assets/js/universal-icon-picker.min.js', array(), $this->version );
+//				}
 
 				// Bootstrap file browser
 				wp_register_script( 'aui-custom-file-input', $url = $this->url . 'assets/js/bs-custom-file-input.min.js', array( 'jquery' ), $this->select2_version );
@@ -730,7 +739,6 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 * Enqueue iconpicker if called.
 		 */
 		public function enqueue_iconpicker(){
-			wp_enqueue_style( 'iconpicker' );
 			wp_enqueue_script( 'iconpicker' );
 		}
 
