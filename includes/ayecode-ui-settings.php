@@ -643,10 +643,16 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 				// flatpickr
 				wp_register_script( 'flatpickr', $this->url . 'assets/js/flatpickr.min.js', array(), $this->version );
 
-				// iconpicker
-//                wp_register_script( 'iconpicker', $this->url . 'assets-v5-dm/libs/universal-icon-picker/js/universal-icon-picker.js', array(), $this->version );
+				// iconpicker (react) for use in block editor
                 wp_register_script( 'iconpicker-react', $this->url . 'assets-v5-dm/libs/universal-icon-picker/js/universal-icon-picker-react.js', array(), $this->version );
+
+                // iconpicker
                 wp_register_script( 'iconpicker', $this->url . 'assets-v5-dm/libs/universal-icon-picker/js/universal-icon-picker.js', array(), $this->version );
+
+
+                // dynamic data picker @todo should probably move to SD?
+                wp_register_script( 'sd-dynamic-data-button', $this->url . 'assets-v5-dm/libs/universal-icon-picker/js/dynamic-data-picker-react.js', array(), $this->version );
+
 
                 // @todo blockstrap blocks seem to laod this from here, we need to check http://localhost/wp-content/plugins/blockstrap-page-builder-blocks/vendor/ayecode/wp-font-awesome-settings/assets/js/fa-iconpicker-v6.min.js
 //				if ( defined( 'FAS_ICONPICKER_JS_URL' ) ) {

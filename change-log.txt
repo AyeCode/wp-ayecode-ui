@@ -1,3 +1,6 @@
+= 1.0.0-beta TBA =
+* Changes started for BS5.3 dark mode -  STARTED
+
 = 0.2.37 - 2025-06-12 =
 * Prevent running a query on every page load when not required - CHANGED
 
