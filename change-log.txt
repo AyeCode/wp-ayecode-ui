@@ -1,4 +1,4 @@
-= 0.2.39 - 2025-07-TBD =
+= 0.2.39 - 2025-07-17 =
 * Added args in FA icon sanitization hook - CHANGED
 
 = 0.2.38 - 2025-07-03 =
