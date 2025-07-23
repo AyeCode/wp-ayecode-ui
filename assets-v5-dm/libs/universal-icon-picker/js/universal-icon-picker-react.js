@@ -179,7 +179,7 @@
         };
 
         return createElement(Fragment, null,
-            createElement('div', { style: { display: 'inline-block', marginRight: '-1px' } },
+            createElement('div', { style: { display: 'inline-block', marginLeft: '-1px' } },
                 createElement('button', {
                     id: `icon-picker-button-${props.uniqueId}`,
                     onClick: () => setIsModalOpen(true),
@@ -198,8 +198,8 @@
     }
 
     // Expose the necessary components to the window object
-    window.auiBlockTools = window.auiBlockTools || {};
-    window.auiBlockTools.IconPickerButton = IconPickerWrapper;
-    window.auiBlockTools.IconPickerModal = IconPickerModal; // Also expose modal directly
+    window.sdBlockTools = window.sdBlockTools || {};
+    window.sdBlockTools.IconPickerButton = IconPickerWrapper;
+    window.sdBlockTools.IconPickerModal = IconPickerModal; // Also expose modal directly
 
 })(window.wp);

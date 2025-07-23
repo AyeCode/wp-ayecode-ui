@@ -212,8 +212,11 @@
             }
         };
 
+        // Combine the default style with any passed-in style props
+        const wrapperStyle = { display: 'inline-block',marginLeft: '-1px', ...props.style };
+
         return createElement(Fragment, null,
-            createElement('div', { style: { 'display': 'inline-block' } },
+            createElement('div', { style: wrapperStyle },
                 createElement('button', {
                     onClick: () => useState(true),
                     type: 'button',
@@ -231,8 +234,8 @@
     }
 
     // Expose the necessary components to the window object
-    window.auiBlockTools = window.auiBlockTools || {};
-    window.auiBlockTools.DynamicDataButton = DynamicDataPicker;
-    window.auiBlockTools.DynamicDataModal = DynamicDataModal;
+    window.sdBlockTools = window.sdBlockTools || {};
+    window.sdBlockTools.DynamicDataButton = DynamicDataPicker;
+    window.sdBlockTools.DynamicDataModal = DynamicDataModal;
 
 })(window.wp);
