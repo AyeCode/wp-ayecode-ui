@@ -69,6 +69,10 @@ function aui_bs_convert_sd_output( $output, $instance = '', $args = '', $sd = ''
 			'"sr-only' => '"visually-hidden',
 			"'sr-only" => "'visually-hidden",
 			' sr-only' => ' visually-hidden',
+			'"fa-fw' => '"fa-fw fa-width-fixed', // FA7 compatibility
+			"'fa-fw" => "'fa-fw fa-width-fixed",
+			' fa-fw' => ' fa-fw fa-width-fixed',
+			'fa-width-fixed fa-width-fixed' => 'fa-width-fixed',
 
 //			'custom-control custom-checkbox'    => 'form-check',
 			// data
