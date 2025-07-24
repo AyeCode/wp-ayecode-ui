@@ -1,4 +1,4 @@
-= 0.2.40 - 2025-07-TBD =
+= 0.2.40 - 2025-07-27 =
 * .sr-only with BS5 forces to display hidden label - FIXED
 * FontAwesome 7 compatibility changes - CHANGED
 
