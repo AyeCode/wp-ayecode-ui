@@ -63,6 +63,12 @@ function aui_bs_convert_sd_output( $output, $instance = '', $args = '', $sd = ''
 			'rounded-left'  => 'rounded-start',
 			'rounded-right'  => 'rounded-end',
 			'font-italic' => 'fst-italic',
+			'"sr-only visually-hidden' => '"visually-hidden',
+			"'sr-only visually-hidden" => "'visually-hidden",
+			' sr-only visually-hidden' => ' visually-hidden',
+			'"sr-only' => '"visually-hidden',
+			"'sr-only" => "'visually-hidden",
+			' sr-only' => ' visually-hidden',
 
 //			'custom-control custom-checkbox'    => 'form-check',
 			// data
