@@ -1475,6 +1475,8 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
                 // pagination
 				$output .= $prefix . ' .pagination{--bs-pagination-hover-color: var(--bs-'.esc_attr($type).'); --bs-pagination-active-bg: var(--bs-'.esc_attr($type).');}';
 
+			} else if ( $aui_bs5 ) {
+				$output .= $prefix . ' .text-' . sanitize_key( $type ) . '{color: var(--bs-' . sanitize_key( $type ) . ') !important;}';
 			}
 
 			$output .= $prefix . ' .link-'.esc_attr($type).' {color: var(--bs-'.esc_attr($type).'-rgb) !important;}';
