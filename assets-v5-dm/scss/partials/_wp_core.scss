@@ -196,3 +196,27 @@ ul {
     gap: unset;
   }
 }
+
+// link focus
+a:focus{
+  outline: none;
+  box-shadow: none;
+}
+
+// wp-admin checkboxes and radios
+input[type=checkbox], input[type=radio] {
+  &.form-check-input {
+    min-height: 16px !important;
+    min-width: 16px !important;
+
+    &:checked::before {
+      content: none;
+    }
+  }
+}
+
+// choices JS
+.choices__input{
+  border: none !important;
+  box-shadow: none !important;
+}

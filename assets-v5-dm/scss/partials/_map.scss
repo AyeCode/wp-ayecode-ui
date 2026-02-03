@@ -1,0 +1,36 @@
+// Leaflet Marker Bounce Animation
+.leaflet-marker-bounce {
+  animation: leaflet-marker-bounce 0.7s infinite;
+}
+
+@keyframes leaflet-marker-bounce {
+  0%, 100% {
+    transform: translateY(0);
+    animation-timing-function: ease-out;
+  }
+
+  20%, 80% {
+    transform: translateY(-0.8em);
+  }
+
+  40%, 60% {
+    transform: translateY(-1.6em);
+  }
+
+  50% {
+    transform: translateY(-2em);
+    animation-timing-function: ease-in;
+  }
+}
+
+.leaflet-popup-close-button{
+  margin-top: -20px;
+  margin-right: -20px;
+  line-height: 1.6rem !important;
+}
+
+.map-marker-wrapper{
+  &.is-highlighted{
+    z-index: 999999 !important;
+  }
+}

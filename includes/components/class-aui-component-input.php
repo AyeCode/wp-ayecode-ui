@@ -360,7 +360,7 @@ else{$eli.attr(\'type\',\'password\');}"
 				}else{
 					$fg_class = $aui_bs5 ? 'mb-3' : 'form-group';
 				}
-				$form_group_class = $args['label_type'] == 'floating' && $type != 'checkbox' ? 'form-label-group' : $fg_class;
+				$form_group_class = $args['label_type'] == 'floating' && $type != 'checkbox' ? 'form-floating' : $fg_class;
 				$wrap_class       = $args['label_type'] == 'horizontal' ? $form_group_class . ' row' : $form_group_class;
 				$wrap_class       = ! empty( $args['wrap_class'] ) ? $wrap_class . " " . $args['wrap_class'] : $wrap_class;
 				$output           = self::wrap( array(
@@ -763,7 +763,7 @@ else{$eli.attr(\'type\',\'password\');}"
 			}else{
 				$fg_class = $aui_bs5 ? 'mb-3' : 'form-group';
 			}
-			$form_group_class = $args['label_type'] == 'floating' ? 'form-label-group' : $fg_class;
+			$form_group_class = $args['label_type'] == 'floating' ? 'form-floating' : $fg_class;
 			$wrap_class       = $args['label_type'] == 'horizontal' ? $form_group_class . ' row' : $form_group_class;
 			$wrap_class       = ! empty( $args['wrap_class'] ) ? $wrap_class . " " . $args['wrap_class'] : $wrap_class;
 			$output           = self::wrap( array(

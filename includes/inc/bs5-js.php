@@ -1,4 +1,3 @@
-<?php // @todo eventually we need to convert this to non jQuery ?>
 <script>
     /**
      * An AUI bootstrap adaptation of GreedyNav.js ( by Luke Jackson ).
@@ -180,14 +179,88 @@
     }
 
     /**
-     * Initiate Select2 items.
+     * Builds a configuration object for a single Choices.js instance.
+     * @param {HTMLElement} select - The <select> element to configure.
+     * @returns {object} The configuration object for Choices.js.
      */
-    function aui_init_select2(){
-        var select2_args = jQuery.extend({}, aui_select2_locale());
-        jQuery("select.aui-select2").each(function() {
-            if (!jQuery(this).hasClass("select2-hidden-accessible")) {
-                jQuery(this).select2(select2_args);
+    function aui_get_choices_config(select) {
+        const defaultOptions = {
+            allowHTML: true,
+            searchPlaceholderValue: 'Search...',
+            removeItemButton: true,
+            editItems: true,
+            searchEnabled: false,
+            shouldSort: false,
+            itemSelectText: '',
+            classNames: {
+                containerInner: 'form-select',
+            },
+        };
+
+        let userOptions = {};
+        const dataAttr = select.getAttribute('data-select');
+        if (dataAttr) {
+            try {
+                userOptions = JSON.parse(dataAttr);
+            } catch (e) {
+                console.error('Invalid JSON in data-select attribute:', e);
             }
+        }
+
+        let finalOptions = { ...defaultOptions, ...userOptions };
+
+        const template = select.getAttribute('data-select-template');
+        if (template) {
+            finalOptions.callbackOnCreateTemplates = function (templateFn) {
+                return {
+                    item: ({ classNames }, data) => {
+                        return templateFn(`
+                        <div class="${classNames.item} ${data.highlighted ? classNames.highlightedState : classNames.itemSelectable} ${data.placeholder ? classNames.placeholder : ''}" data-item data-id="${data.id}" data-value="${data.value}" ${data.active ? 'aria-selected="true"' : ''} ${data.disabled ? 'aria-disabled="true"' : ''} ${data.placeholder ? 'data-placeholder' : ''}>
+                            ${data.placeholder || !data.customProperties?.selected ? data.label : data.customProperties.selected}
+                            ${userOptions.removeItemButton === false ? '' : `<button type="button" class="choices__button" aria-label="Remove item" data-button></button>`}
+                        </div>
+                    `);
+                    },
+                    choice: ({ classNames }, data) => {
+                        return templateFn(`
+                        <div class="${classNames.item} ${classNames.itemChoice} ${data.disabled ? classNames.itemDisabled : classNames.itemSelectable} ${data.placeholder ? classNames.placeholder : ''}" data-select-text="${this.config.itemSelectText}" data-choice ${data.disabled ? 'data-choice-disabled aria-disabled="true"' : 'data-choice-selectable'} data-id="${data.id}" data-value="${data.value}" ${data.groupId > 0 ? 'role="treeitem"' : 'role="option"'}>
+                            <div>
+                                ${data.label}
+                                ${(() => {
+                            let output = '';
+                            if (data.customProperties) {
+                                for (const key in data.customProperties) {
+                                    if (Object.prototype.hasOwnProperty.call(data.customProperties, key) && key !== 'selected') {
+                                        output += data.customProperties[key];
+                                    }
+                                }
+                            }
+                            return output;
+                        })()}
+                            </div>
+                        </div>
+                    `);
+                    },
+                };
+            };
+        }
+
+        return finalOptions;
+    }
+
+    /**
+     * Initiate Select2 items.  @todo we need to check and replicate functionality in current use cases.
+     */
+    /**
+     * Finds and initializes all Choices.js select elements on the page.
+     */
+    function aui_init_choices() {
+        const selects = document.querySelectorAll('select.aui-select2:not([data-choice="active"])');
+        if (selects.length === 0) return;
+
+        selects.forEach((select) => {
+            const config = aui_get_choices_config(select);
+            new Choices(select, config);
         });
     }
 
@@ -426,107 +499,113 @@
         }
         $m = aui_modal($title,$body,$footer,$dismissible,$class,$dialog_class,$body_class);
 
-        // myModalEl.addEventListener('hidden.bs.modal', event => {
-        //     jQuery(".aui-carousel-modal iframe").attr('src', '');
-        // });
-
         const auiModal = document.getElementById('aui-modal');
         auiModal.addEventListener( 'shown.bs.modal', function ( e ) {
-            iFrame = jQuery( '#embedModal-iframe') ;
+            // Get references to the iframe and loading indicator(s)
+            const iframe = document.getElementById('embedModal-iframe');
+            const loaders = document.querySelectorAll('.ac-preview-loading');
 
-            jQuery('.ac-preview-loading').addClass('d-flex');
-
-            iFrame.attr({
-                src: $url
-            });
-
-            //resize the iframe once loaded.
-            iFrame.load(function() {
-                jQuery('.ac-preview-loading').removeClass('d-flex').addClass('d-none');
+            // Show the loading indicator
+            loaders.forEach(el => el.classList.add('d-flex'));
+            // Set the iframe’s src
+            iframe.src = $url;
+            // Once the iframe has finished loading…
+            iframe.addEventListener('load', () => {
+                // Hide the loading indicator
+                loaders.forEach(el => {
+                    el.classList.remove('d-flex');
+                    el.classList.add('d-none');
+                });
             });
         });
 
         return $m;
     }
 
-    function aui_modal($title,$body,$footer,$dismissible,$class,$dialog_class,$body_class) {
-        if(!$class){$class = '';}
-        if(!$dialog_class){$dialog_class = '';}
-        if(!$body){$body = '<div class="text-center"><div class="spinner-border" role="status"></div></div>';}
+    function aui_modal($title, $body, $footer, $dismissible, $class, $dialog_class, $body_class) {
+        // defaults
+        if (!$class)        { $class = ''; }
+        if (!$dialog_class) { $dialog_class = ''; }
+        if (!$body)         { $body = '<div class="text-center"><div class="spinner-border" role="status"></div></div>'; }
 
-       // remove it first
-       jQuery('.aui-modal').remove();
-       jQuery('.modal-backdrop').remove();
-       jQuery('body').css({'overflow': '','padding-right':''});
+        // remove any existing modal + backdrop
+        document.querySelectorAll('.aui-modal').forEach(el => el.remove());
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        document.body.style.overflow     = '';
+        document.body.style.paddingRight = '';
 
-
-        // var modal = document.getElementById('aui-modal');
-
+        // build the modal HTML
         var $modal = '';
+        $modal += '<div id="aui-modal" class="modal aui-modal fade shadow bsui ' + $class + '" tabindex="-1">';
+        $modal +=   '<div class="modal-dialog modal-dialog-centered ' + $dialog_class + '">';
+        $modal +=     '<div class="modal-content border-0 shadow">';
 
-        $modal += '<div id="aui-modal" class="modal aui-modal fade shadow bsui '+$class+'" tabindex="-1">'+
-            '<div class="modal-dialog modal-dialog-centered '+$dialog_class+'">'+
-            '<div class="modal-content border-0 shadow">';
-
-        if($title) {
-            $modal += '<div class="modal-header">' +
-                '<h5 class="modal-title">' + $title + '</h5>';
-
+        // header
+        if ($title) {
+            $modal += '<div class="modal-header">';
+            $modal +=   '<h5 class="modal-title">' + $title + '</h5>';
             if ($dismissible) {
-                $modal += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">' +
-                    '</button>';
+                $modal += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>';
             }
-
             $modal += '</div>';
         }
-        $modal += '<div class="modal-body '+$body_class+'">'+
-            $body+
-            '</div>';
 
-        if($footer){
-            $modal += '<div class="modal-footer">'+
-                $footer +
-                '</div>';
+        // body
+        $modal += '<div class="modal-body ' + $body_class + '">';
+        $modal +=   $body;
+        $modal += '</div>';
+
+        // footer
+        if ($footer) {
+            $modal += '<div class="modal-footer">';
+            $modal +=   $footer;
+            $modal += '</div>';
         }
 
-        $modal +='</div>'+
-            '</div>'+
-            '</div>';
+        $modal +=     '</div>'; // .modal-content
+        $modal +=   '</div>';   // .modal-dialog
+        $modal += '</div>';     // #aui-modal
 
-        jQuery('body').append($modal);
+        // append to body
+        document.body.insertAdjacentHTML('beforeend', $modal);
 
-
-
-        // const ayeModal = modal ? bootstrap.Modal.getInstance( modal ) : new bootstrap.Modal('#aui-modal', {});
-        const ayeModal = new bootstrap.Modal('.aui-modal', {});
-        // ayeModal.hide().show();
+        // init & show via Bootstrap 5
+        const ayeModal = new bootstrap.Modal(document.querySelector('.aui-modal'), {});
         ayeModal.show();
-
-        // return jQuery('.aui-modal').modal('hide').modal({
-        //     //backdrop: 'static'
-        // });
     }
+
 
     /**
      * Show / hide fields depending on conditions.
      */
-    function aui_conditional_fields(form){
-        jQuery(form).find(".aui-conditional-field").each(function () {
+    function aui_conditional_fields(form) {
+        // allow `form` to be either a selector string or a DOM node
+        const root = (typeof form === 'string')
+            ? document.querySelector(form)
+            : form;
+        if (!root) return;
 
-            var $element_require = jQuery(this).data('element-require');
+        // find all conditional fields
+        root.querySelectorAll('.aui-conditional-field').forEach((el) => {
+            // read the data-element-require attribute
+            let $element_require = el.getAttribute('data-element-require');
 
             if ($element_require) {
+                // replace HTML-encoded quotes
+                $element_require = $element_require
+                    .replace("&#039;", "'")
+                    .replace("&quot;", '"');
 
-                $element_require = $element_require.replace("&#039;", "'"); // replace single quotes
-                $element_require = $element_require.replace("&quot;", '"'); // replace double quotes
-                if (aui_check_form_condition($element_require,form)) {
-                    jQuery(this).removeClass('d-none');
+                // test the condition
+                if (aui_check_form_condition($element_require, form)) {
+                    el.classList.remove('d-none');
                 } else {
-                    jQuery(this).addClass('d-none');
+                    el.classList.add('d-none');
                 }
             }
         });
     }
+
 
     /**
      * Check form condition
@@ -541,487 +620,676 @@
     /**
      * A function to determine if a element is on screen.
      */
-    jQuery.fn.aui_isOnScreen = function(){
+    // attach to Element.prototype so you can call element.aui_isOnScreen()
+    Element.prototype.aui_isOnScreen = function() {
 
-        var win = jQuery(window);
+        var win = window;
+        // get scroll offsets (fallback for older browsers)
+        var scrollTop  = win.scrollY || document.documentElement.scrollTop;
+        var scrollLeft = win.scrollX || document.documentElement.scrollLeft;
 
+        // build the viewport bounds
         var viewport = {
-            top : win.scrollTop(),
-            left : win.scrollLeft()
+            top:    scrollTop,
+            left:   scrollLeft
         };
-        viewport.right = viewport.left + win.width();
-        viewport.bottom = viewport.top + win.height();
+        viewport.right  = viewport.left + (win.innerWidth || document.documentElement.clientWidth);
+        viewport.bottom = viewport.top  + (win.innerHeight || document.documentElement.clientHeight);
 
-        var bounds = this.offset();
-        bounds.right = bounds.left + this.outerWidth();
-        bounds.bottom = bounds.top + this.outerHeight();
+        // get element bounds (like offset() + outerWidth/outerHeight)
+        var rect = this.getBoundingClientRect();
+        var bounds = {
+            left: rect.left + scrollLeft,
+            top:  rect.top  + scrollTop
+        };
+        bounds.right  = bounds.left   + rect.width;
+        bounds.bottom = bounds.top    + rect.height;
 
-        return (!(viewport.right < bounds.left || viewport.left > bounds.right || viewport.bottom < bounds.top || viewport.top > bounds.bottom));
 
+        return !(
+            viewport.right  < bounds.left   ||
+            viewport.left   > bounds.right  ||
+            viewport.bottom < bounds.top    ||
+            viewport.top    > bounds.bottom
+        );
     };
+
 
     /**
      * Maybe show multiple carousel items if set to do so.
      */
-    function aui_carousel_maybe_show_multiple_items($carousel){
+    function aui_carousel_maybe_show_multiple_items($carousel) {
         var $items = {};
         var $item_count = 0;
 
-        // maybe backup
-        if(!jQuery($carousel).find('.carousel-inner-original').length){
-            jQuery($carousel).append('<div class="carousel-inner-original d-none">'+jQuery($carousel).find('.carousel-inner').html().replaceAll('carousel-item','not-carousel-item')+'</div>');
+        // maybe backup original slides
+        if (!$carousel.querySelector('.carousel-inner-original')) {
+            var origHTML = $carousel
+                .querySelector('.carousel-inner')
+                .innerHTML
+                .replaceAll('carousel-item', 'not-carousel-item');
+            $carousel.insertAdjacentHTML(
+                'beforeend',
+                '<div class="carousel-inner-original d-none">' +
+                origHTML +
+                '</div>'
+            );
         }
 
-        // Get the original items html
-        jQuery($carousel).find('.carousel-inner-original .not-carousel-item').each(function () {
-            $items[$item_count] = jQuery(this).html();
-            $item_count++;
-        });
+        // collect each “not-carousel-item” into $items
+        $carousel.querySelectorAll('.carousel-inner-original .not-carousel-item')
+            .forEach(function(el) {
+                $items[$item_count] = el.innerHTML;
+                $item_count++;
+            });
 
-        // bail if no items
-        if(!$item_count){return;}
+        // nothing to do?
+        if (!$item_count) return;
 
-        if(jQuery(window).width() <= 576){
-            // maybe restore original
-            if(jQuery($carousel).find('.carousel-inner').hasClass('aui-multiple-items') && jQuery($carousel).find('.carousel-inner-original').length){
-                jQuery($carousel).find('.carousel-inner').removeClass('aui-multiple-items').html(jQuery($carousel).find('.carousel-inner-original').html().replaceAll('not-carousel-item','carousel-item'));
-                jQuery($carousel).find(".carousel-indicators li").removeClass("d-none");
+        // SMALL SCREENS: restore original
+        var vw = window.innerWidth || document.documentElement.clientWidth;
+        if (vw <= 576) {
+            var carouselInner = $carousel.querySelector('.carousel-inner');
+            if (
+                carouselInner.classList.contains('aui-multiple-items') &&
+                $carousel.querySelector('.carousel-inner-original')
+            ) {
+                carouselInner.classList.remove('aui-multiple-items');
+                var restored = $carousel
+                    .querySelector('.carousel-inner-original')
+                    .innerHTML
+                    .replaceAll('not-carousel-item', 'carousel-item');
+                carouselInner.innerHTML = restored;
+                $carousel
+                    .querySelectorAll('.carousel-indicators li')
+                    .forEach(li => li.classList.remove('d-none'));
             }
 
-        }else{
-            // new items
-            var $md_count = jQuery($carousel).data('limit_show');
-            var $md_cols_count = jQuery($carousel).data('cols_show');
-            var $new_items = '';
+            // LARGER SCREENS: rebuild grouped slides
+        } else {
+            var $md_count      = parseInt($carousel.getAttribute('data-limit_show'), 10)  || 0;
+            var $md_cols_count = parseInt($carousel.getAttribute('data-cols_show'), 10)   || 0;
+            var $new_items     = '';
             var $new_items_count = 0;
-            var $new_item_count = 0;
+            var $new_item_count  = 0;
             var $closed = true;
-            Object.keys($items).forEach(function(key,index) {
 
-                // close
-                if(index != 0 && Number.isInteger(index/$md_count) ){
+            // loop through each original item by index
+            for (var index = 0; index < $item_count; index++) {
+                // close previous group?
+                if (index !== 0 && Number.isInteger(index / $md_count)) {
                     $new_items += '</div></div>';
                     $closed = true;
                 }
-
-                // open
-                if(index == 0 || Number.isInteger(index/$md_count) ){
-                    $row_cols_class = $md_cols_count ? ' g-lg-4 g-3 row-cols-1 row-cols-lg-' + $md_cols_count  : '';
-                    $active = index == 0 ? 'active' : '';
-                    $new_items += '<div class="carousel-item '+$active+'"><div class="row' + $row_cols_class + ' ">'; // mb to account for shadows (removed mb-3 as it was causing padding issues
+                // open a new carousel-item + row
+                if (index === 0 || Number.isInteger(index / $md_count)) {
+                    var $row_cols_class = $md_cols_count
+                        ? ' g-lg-4 g-3 row-cols-1 row-cols-lg-' + $md_cols_count
+                        : '';
+                    var $active = index === 0 ? 'active' : '';
+                    $new_items +=
+                        '<div class="carousel-item ' + $active + '">' +
+                        '<div class="row' + $row_cols_class + '">';
                     $closed = false;
                     $new_items_count++;
                     $new_item_count = 0;
                 }
-
-                // content
-                $new_items += '<div class="col ">'+$items[index]+'</div>';
+                // add the actual content column
+                $new_items += '<div class="col">' + $items[index] + '</div>';
                 $new_item_count++;
+            }
 
-
-            });
-
-            // close if not closed in the loop
-            if(!$closed){
-                // check for spares
-                if($md_count-$new_item_count > 0){
-                    $placeholder_count = $md_count-$new_item_count;
-                    while($placeholder_count > 0){
-                        $new_items += '<div class="col "></div>';
-                        $placeholder_count--;
-                    }
-
+            // pad empty cols and close final group
+            if (!$closed) {
+                var $placeholder_count = $md_count - $new_item_count;
+                while ($placeholder_count > 0) {
+                    $new_items += '<div class="col"></div>';
+                    $placeholder_count--;
                 }
-
                 $new_items += '</div></div>';
             }
 
-            // insert the new items
-            jQuery($carousel).find('.carousel-inner').addClass('aui-multiple-items').html($new_items);
+            // replace inner with grouped slides
+            var carouselInner = $carousel.querySelector('.carousel-inner');
+            carouselInner.classList.add('aui-multiple-items');
+            carouselInner.innerHTML = $new_items;
 
-            // fix any lazyload images in the active slider
-            jQuery($carousel).find('.carousel-item.active img').each(function () {
-                // fix the srcset
-                if(real_srcset = jQuery(this).attr("data-srcset")){
-                    if(!jQuery(this).attr("srcset")) jQuery(this).attr("srcset",real_srcset);
-                }
-                // fix the src
-                if(real_src = jQuery(this).attr("data-src")){
-                    if(!jQuery(this).attr("srcset"))  jQuery(this).attr("src",real_src);
-                }
-            });
+            // fix any lazy-load images in the active slide
+            $carousel.querySelectorAll('.carousel-item.active img')
+                .forEach(function(img) {
+                    var real_srcset = img.getAttribute('data-srcset');
+                    if (real_srcset && !img.getAttribute('srcset')) {
+                        img.setAttribute('srcset', real_srcset);
+                    }
+                    var real_src = img.getAttribute('data-src');
+                    if (real_src && !img.getAttribute('srcset')) {
+                        img.setAttribute('src', real_src);
+                    }
+                });
 
-            // maybe fix carousel indicators
-            $hide_count = $new_items_count-1;
-            jQuery($carousel).find(".carousel-indicators li:gt("+$hide_count+")").addClass("d-none");
+            // hide extra indicators beyond the last slide
+            var $hide_count = $new_items_count - 1;
+            $carousel.querySelectorAll('.carousel-indicators li')
+                .forEach(function(li, i) {
+                    if (i > $hide_count) li.classList.add('d-none');
+                });
         }
 
-        // bootstrap.Carousel.dispose($carousel);
-        // console.log( bootstrap.Carousel.getOrCreateInstance($carousel)._getItems() );
-        // trigger a global action to say we have
-        jQuery( window ).trigger( "aui_carousel_multiple" );
+        // fire the same custom event
+        var evt = new Event('aui_carousel_multiple');
+        window.dispatchEvent(evt);
     }
+
 
     /**
      * Init Multiple item carousels.
      */
-    function aui_init_carousel_multiple_items(){
-        jQuery(window).on("resize",function(){
-            jQuery('.carousel-multiple-items').each(function () {
-                aui_carousel_maybe_show_multiple_items(this);
+    function aui_init_carousel_multiple_items() {
+        // on resize, rerun for each carousel
+        window.addEventListener('resize', function() {
+            document.querySelectorAll('.carousel-multiple-items').forEach(function(el) {
+                aui_carousel_maybe_show_multiple_items(el);
             });
         });
 
-        // run now
-        jQuery('.carousel-multiple-items').each(function () {
-            aui_carousel_maybe_show_multiple_items(this);
+        // run now once on init
+        document.querySelectorAll('.carousel-multiple-items').forEach(function(el) {
+            aui_carousel_maybe_show_multiple_items(el);
         });
     }
 
     /**
-     * Allow navs to use multiple sub menus.
+     * Converts Bootstrap 5 dropdowns to open on hover, while maintaining full keyboard
+     * accessibility. This script waits for the DOM to be fully loaded before running
+     * to prevent race conditions with Bootstrap's own initialization.
      */
-    function init_nav_sub_menus(){
+    function init_nav_sub_menus() {
+        // Only run on non-touch devices
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+            return;
+        }
 
-        jQuery('.navbar-multi-sub-menus').each(function(i, obj) {
-            // Check if already initialized, if so continue.
-            if(jQuery(this).hasClass("has-sub-sub-menus")){return true;}
+        const dropdownTriggerList = document.querySelectorAll('[data-bs-toggle="dropdown"][data-bs-trigger="hover"]');
 
-            // Make sure its always expanded
-            jQuery(this).addClass('has-sub-sub-menus');
+        dropdownTriggerList.forEach(dropdownTriggerEl => {
+            // Get the Bootstrap instance *safely*
+            const bsDropdown = bootstrap.Dropdown.getOrCreateInstance(dropdownTriggerEl);
+            const parentNode = dropdownTriggerEl.parentNode;
 
-            jQuery(this).find( '.dropdown-menu a.dropdown-toggle' ).on( 'click', function ( e ) {
-                var $el = jQuery( this );
-                $el.toggleClass('active-dropdown');
-                var $parent = jQuery( this ).offsetParent( ".dropdown-menu" );
-                if ( !jQuery( this ).next().hasClass( 'show' ) ) {
-                    jQuery( this ).parents( '.dropdown-menu' ).first().find( '.show' ).removeClass( "show" );
+            // --- Event Listeners ---
+
+            dropdownTriggerEl.addEventListener('click', e => {
+                if (e.currentTarget.getAttribute('href') === '#') {
+                    e.preventDefault();
                 }
-                var $subMenu = jQuery( this ).next( ".dropdown-menu" );
-                $subMenu.toggleClass( 'show' );
+            });
 
-                jQuery( this ).parent( "li" ).toggleClass( 'show' );
+            // Show on mouseover and call .blur() to prevent the focus ring
+            dropdownTriggerEl.addEventListener('mouseover', () => {
+                bsDropdown.show();
+                dropdownTriggerEl.blur();
+            });
 
-                jQuery( this ).parents( 'li.nav-item.dropdown.show' ).on( 'hidden.bs.dropdown', function ( e ) {
-                    jQuery( '.dropdown-menu .show' ).removeClass( "show" );
-                    $el.removeClass('active-dropdown');
-                } );
+            // Show on focus for keyboard users
+            dropdownTriggerEl.addEventListener('focus', () => {
+                bsDropdown.show();
+            });
 
-                if ( !$parent.parent().hasClass( 'navbar-nav' ) ) {
-                    $el.next().addClass('position-relative border-top border-bottom');
+            // Hide when mouse leaves the entire dropdown component
+            parentNode.addEventListener('mouseleave', () => {
+                bsDropdown.hide();
+            });
+
+            // Hide when focus moves to another element outside the component
+            parentNode.addEventListener('focusout', (e) => {
+                // The check for e.relatedTarget prevents the programmatic .blur() from closing the dropdown
+                if (e.relatedTarget && !parentNode.contains(e.relatedTarget)) {
+                    bsDropdown.hide();
                 }
-
-                return false;
-            } );
-
+            });
         });
 
+        // Add a single, global escape key handler
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                    const instance = bootstrap.Dropdown.getInstance(menu.previousElementSibling);
+                    if (instance) {
+                        instance.hide();
+                    }
+                });
+            }
+        });
     }
+
 
 
     /**
      * Open a lightbox when an embed item is clicked.
      */
-    function aui_lightbox_embed($link,ele){
+    function aui_lightbox_embed(link, ele) {
         ele.preventDefault();
 
-        // remove it first
-        jQuery('.aui-carousel-modal').remove();
+        // remove existing modal
+        document.querySelectorAll('.aui-carousel-modal').forEach(el => el.remove());
 
-        var $modal = '<div class="modal fade aui-carousel-modal bsui" id="aui-carousel-modal" tabindex="-1" role="dialog" aria-labelledby="aui-modal-title" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-xl mw-100"><div class="modal-content bg-transparent border-0 shadow-none"><div class="modal-header"><h5 class="modal-title" id="aui-modal-title"></h5></div><div class="modal-body text-center"><i class="fas fa-circle-notch fa-spin fa-3x"></i></div></div></div></div>';
-        jQuery('body').append($modal);
+        // create and append modal wrapper
+        const modalHTML = `
+      <div class="modal fade aui-carousel-modal bsui" id="aui-carousel-modal" tabindex="-1" role="dialog" aria-labelledby="aui-modal-title" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl mw-100">
+          <div class="modal-content bg-transparent border-0 shadow-none">
+            <div class="modal-header">
+              <h5 class="modal-title" id="aui-modal-title"></h5>
+            </div>
+            <div class="modal-body text-center">
+              <i class="fas fa-circle-notch fa-spin fa-3x"></i>
+            </div>
+          </div>
+        </div>
+      </div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-        const ayeModal = new bootstrap.Modal('.aui-carousel-modal', {});
+        // initialize Bootstrap modal
+        const ayeModal = new bootstrap.Modal(document.querySelector('.aui-carousel-modal'), {});
 
+        // clear iframe src on hide
         const myModalEl = document.getElementById('aui-carousel-modal');
-        myModalEl.addEventListener('hidden.bs.modal', event => {
-            jQuery(".aui-carousel-modal iframe").attr('src', '');
+        myModalEl.addEventListener('hidden.bs.modal', () => {
+            document.querySelectorAll('.aui-carousel-modal iframe').forEach(iframe => {
+                iframe.src = '';
+            });
         });
 
-        $container = jQuery($link).closest('.aui-gallery');
-
-        $clicked_href = jQuery($link).attr('href');
-        $images = [];
-        $container.find('.aui-lightbox-image, .aui-lightbox-iframe').each(function() {
-            var a = this;
-            var href = jQuery(a).attr('href');
-            if (href) {
-                $images.push(href);
-            }
+        // find gallery container & hrefs
+        const $container = link.closest('.aui-gallery');
+        const $clicked_href = link.getAttribute('href');
+        const $images = [];
+        $container.querySelectorAll('.aui-lightbox-image, .aui-lightbox-iframe').forEach(a => {
+            const href = a.getAttribute('href');
+            if (href) $images.push(href);
         });
 
-        if( $images.length ){
-            var $carousel = '<div id="aui-embed-slider-modal" class="carousel slide" >';
+        if ($images.length) {
+            let $carousel = `<div id="aui-embed-slider-modal" class="carousel slide">`;
 
             // indicators
-            if($images.length > 1){
-                $i = 0;
-                $carousel  += '<ol class="carousel-indicators position-fixed">';
-                $container.find('.aui-lightbox-image, .aui-lightbox-iframe').each(function() {
-                    $active = $clicked_href == jQuery(this).attr('href') ? 'active' : '';
-                    $carousel  += '<li data-bs-target="#aui-embed-slider-modal" data-bs-slide-to="'+$i+'" class="'+$active+'"></li>';
-                    $i++;
-
+            if ($images.length > 1) {
+                $carousel += `<ol class="carousel-indicators position-fixed">`;
+                $container.querySelectorAll('.aui-lightbox-image, .aui-lightbox-iframe').forEach((el, i) => {
+                    const active = ($clicked_href === el.getAttribute('href')) ? 'active' : '';
+                    $carousel += `<li data-bs-target="#aui-embed-slider-modal" data-bs-slide-to="${i}" class="${active}"></li>`;
                 });
-                $carousel  += '</ol>';
+                $carousel += `</ol>`;
             }
 
+            // determine RTL
+            const rtlClass = document.documentElement.dir === 'rtl'
+                ? 'justify-content-end'
+                : 'justify-content-start';
 
+            // carousel-inner start
+            $carousel += `<div class="carousel-inner d-flex align-items-center ${rtlClass}">`;
 
-            // items
-            $i = 0;
-            $rtl_class = '<?php echo is_rtl() ? 'justify-content-end' : 'justify-content-start'; ?>'; 
-            $carousel += '<div class="carousel-inner d-flex align-items-center ' + $rtl_class + '">';
-            $container.find('.aui-lightbox-image').each(function() {
-                var a = this;
-                var href = jQuery(a).attr('href');
+            // image slides
+            $container.querySelectorAll('.aui-lightbox-image').forEach(el => {
+                const href = el.getAttribute('href');
+                const active = ($clicked_href === href) ? 'active' : '';
+                const cssHeight = window.innerWidth > window.innerHeight ? '90vh' : 'auto';
 
-                $active = $clicked_href == jQuery(this).attr('href') ? 'active' : '';
-                $carousel += '<div class="carousel-item '+ $active+'"><div>';
-
-                // image
-                var css_height = window.innerWidth > window.innerHeight ? '90vh' : 'auto';
-                var srcset = jQuery(a).find('img').attr('srcset');
-                var sizes = '';
+                // build srcset/sizes if present
+                const imgElem = el.querySelector('img');
+                const srcset = imgElem.getAttribute('srcset') || '';
+                let sizes = '';
                 if (srcset) {
-                    var sources = srcset.split(',')
-                        .map(s => {
-                            var parts = s.trim().split(' ');
-                            return {
-                                width: parseInt(parts[1].replace('w', '')),
-                                descriptor: parts[1].replace('w', 'px')  // Ensuring the descriptor is in pixels
-                            };
-                        })
-                        .sort((a, b) => b.width - a.width); // Sort from largest to smallest for proper descending order
+                    const sources = srcset.split(',').map(s => {
+                        const [url, desc] = s.trim().split(' ');
+                        return {
+                            width: parseInt(desc.replace('w',''), 10),
+                            descriptor: desc.replace('w','px')
+                        };
+                    }).sort((a, b) => b.width - a.width);
 
-                    // Build the sizes string
-                    sizes = sources.map((source, index, array) => {
-                        // For the largest source, do not include max-width to serve as default for larger viewports
-                        if (index === 0) {
-                            return `${source.descriptor}`; // Using full descriptor for the largest image
-                        } else {
-                            // For other sources, specify max-width for one pixel less than the current width
-                            return `(max-width: ${source.width - 1}px) ${array[index - 1].descriptor}`;
-                        }
-                    }).reverse().join(', '); // Reverse to start from smallest to largest for logical order
-
+                    sizes = sources
+                        .map((src, idx, arr) =>
+                            idx === 0
+                                ? `${src.descriptor}`
+                                : `(max-width: ${src.width - 1}px) ${arr[idx-1].descriptor}`
+                        )
+                        .reverse()
+                        .join(', ');
                 }
 
+                // image tag
+                $carousel += `
+          <div class="carousel-item ${active}">
+            <div>
+              <img
+                src="${href}"
+                ${srcset ? `srcset="${srcset}" sizes="${sizes}"` : ''}
+                class="mx-auto d-block w-auto rounded"
+                style="max-height:${cssHeight};max-width:98%;"
+              >
+        `;
 
-                var img = href ? jQuery(a).find('img').clone().attr('src', href ).attr('sizes', sizes ).removeClass().addClass('mx-auto d-block w-auto rounded').css({'max-height':css_height,'max-width':'98%'}).get(0).outerHTML :  jQuery(a).find('img').clone().removeClass().addClass('mx-auto d-block w-auto rounded').css({'max-height':css_height,'max-width':'98%'}).get(0).outerHTML;
-                $carousel += img;
                 // captions
-                if(jQuery(a).parent().find('.carousel-caption').length ){
-                    $carousel += jQuery(a).parent().find('.carousel-caption').clone().removeClass('sr-only visually-hidden').get(0).outerHTML;
-                }else if(jQuery(a).parent().find('.figure-caption').length ){
-                    $carousel += jQuery(a).parent().find('.figure-caption').clone().removeClass('sr-only visually-hidden').addClass('carousel-caption').get(0).outerHTML;
+                const cap = el.parentElement.querySelector('.carousel-caption');
+                const fig = el.parentElement.querySelector('.figure-caption');
+                if (cap) {
+                    $carousel += cap.cloneNode(true).outerHTML.replace(/sr-only|visually-hidden/g, '');
+                } else if (fig) {
+                    const cloned = fig.cloneNode(true);
+                    cloned.classList.add('carousel-caption');
+                    cloned.classList.remove('sr-only', 'visually-hidden');
+                    $carousel += cloned.outerHTML;
                 }
-                $carousel += '</div></div>';
-                $i++;
+
+                $carousel += `</div></div>`;
             });
 
-            $container.find('.aui-lightbox-iframe').each(function() {
-                var a = this;
-                var css_height = window.innerWidth > window.innerHeight ? '90vh;' : 'auto;';
-                var styleWidth = $images.length > 1 ? 'max-width:70%;' : '';
+            // iframe slides
+            $container.querySelectorAll('.aui-lightbox-iframe').forEach(el => {
+                const href = el.getAttribute('href');
+                const active = ($clicked_href === href) ? 'active' : '';
+                const cssHeight = window.innerWidth > window.innerHeight ? '90vh' : 'auto';
+                const styleWidth = $images.length > 1 ? 'max-width:70%;' : '';
 
-                $active = $clicked_href == jQuery(this).attr('href') ? 'active' : '';
-                $carousel += '<div class="carousel-item '+ $active+'"><div class="modal-xl mx-auto ratio ratio-16x9" style="max-height:'+css_height+styleWidth+'">';
-
-                // iframe
-                var url = jQuery(a).attr('href');
-                var iframe = '<div class="ac-preview-loading text-light d-none" style="left:0;top:0;height:'+css_height +'"><div class="spinner-border m-auto" role="status"></div></div>';
-                iframe += '<iframe class="aui-carousel-iframe" style="height:'+css_height +'" src="" data-src="'+url+'?rel=0&amp;showinfo=0&amp;modestbranding=1&amp;autoplay=1" allow="autoplay"></iframe>';
-                var img = iframe ;//.css('height',css_height).get(0).outerHTML;
-                $carousel  += img;
-
-                $carousel  += '</div></div>';
-                $i++;
-
+                $carousel += `
+          <div class="carousel-item ${active}">
+            <div class="modal-xl mx-auto ratio ratio-16x9" style="max-height:${cssHeight};${styleWidth}">
+              <div class="ac-preview-loading text-light d-none" style="left:0;top:0;height:${cssHeight}">
+                <div class="spinner-border m-auto" role="status"></div>
+              </div>
+              <iframe
+                class="aui-carousel-iframe"
+                style="height:${cssHeight}"
+                src=""
+                data-src="${href}?rel=0&amp;showinfo=0&amp;modestbranding=1&amp;autoplay=1"
+                allow="autoplay"
+              ></iframe>
+            </div>
+          </div>`;
             });
-            $carousel  += '</div>';
 
+            $carousel += `</div>`; // end .carousel-inner
 
-            // next/prev indicators
-            if($images.length > 1) {
-                $carousel += '<a class="carousel-control-prev" href="#aui-embed-slider-modal" role="button" data-bs-slide="prev">';
-                $carousel += '<span class="carousel-control-prev-icon" aria-hidden="true"></span>';
-                $carousel += ' <a class="carousel-control-next" href="#aui-embed-slider-modal" role="button" data-bs-slide="next">';
-                $carousel += '<span class="carousel-control-next-icon" aria-hidden="true"></span>';
-                $carousel += '</a>';
+            // controls
+            if ($images.length > 1) {
+                $carousel += `
+          <a class="carousel-control-prev" href="#aui-embed-slider-modal" role="button" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          </a>
+          <a class="carousel-control-next" href="#aui-embed-slider-modal" role="button" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          </a>`;
             }
 
-            $carousel  += '</div>';
+            $carousel += `</div>`; // end #aui-embed-slider-modal
 
-            var $close = '<button type="button" class="btn-close btn-close-white text-end position-fixed" style="right: 20px;top: 10px; z-index: 1055;" data-bs-dismiss="modal" aria-label="Close"></button>';
+            // inject content & show
+            const closeBtn = `
+        <button
+          type="button"
+          class="btn-close btn-close-white text-end position-fixed"
+          style="right:20px;top:10px;z-index:1055;"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>`;
+            document.querySelector('.aui-carousel-modal .modal-content').innerHTML = closeBtn + $carousel;
 
-            jQuery('.aui-carousel-modal .modal-content').html($carousel).prepend($close);
-
-            // ayeModal.getOrCreateInstance();
             ayeModal.show();
 
-            /* Support carousel swipe in BS modal on touch device */
-            try {
-                if ('ontouchstart' in document.documentElement || navigator.maxTouchPoints > 0) {
-                    let _bsC = new bootstrap.Carousel('#aui-embed-slider-modal');
-                }
-            } catch(err) {}
-
-            // enable ajax load
-            //gd_init_carousel_ajax();
+            // enable touch swipe
+            if ('ontouchstart' in document.documentElement || navigator.maxTouchPoints > 0) {
+                try {
+                    new bootstrap.Carousel('#aui-embed-slider-modal');
+                } catch (e) { /* ignore */ }
+            }
         }
     }
+
 
     /**
      * Init lightbox embed.
      */
-    function aui_init_lightbox_embed(){
-        // Open a lightbox for embeded items
-        jQuery('.aui-lightbox-image, .aui-lightbox-iframe').off('click').on("click",function(ele) {
-            aui_lightbox_embed(this,ele);
-        });
+    function aui_init_lightbox_embed() {
+        document
+            .querySelectorAll('.aui-lightbox-image, .aui-lightbox-iframe')
+            .forEach(el => {
+                // overwrite any previous click handler exactly like `.off('click').on('click',…)`
+                el.onclick = function(event) {
+                    aui_lightbox_embed(this, event);
+                };
+            });
     }
+
 
     /**
      * Init modal iframe.
      */
     function aui_init_modal_iframe() {
-        jQuery('.aui-has-embed, [data-aui-embed="iframe"]').each(function(e){
-            if (!jQuery(this).hasClass('aui-modal-iframed') && jQuery(this).data('embed-url')) {
-                jQuery(this).addClass('aui-modal-iframed');
-
-                jQuery(this).on("click",function(e1) {
-                    aui_modal_iframe('',jQuery(this).data('embed-url'),'',true,'','modal-lg','aui-modal-iframe p-0',true);
-                    return false;
-                });
-            }
-        });
+        document
+            .querySelectorAll('.aui-has-embed, [data-aui-embed="iframe"]')
+            .forEach(el => {
+                // only bind once, and only if there's a data-embed-url
+                const url = el.dataset.embedUrl;
+                if (url && !el.classList.contains('aui-modal-iframed')) {
+                    el.classList.add('aui-modal-iframed');
+                    el.addEventListener('click', function(e) {
+                        aui_modal_iframe(
+                            '',
+                            url,
+                            '',
+                            true,
+                            '',
+                            'modal-lg',
+                            'aui-modal-iframe p-0',
+                            true
+                        );
+                        e.preventDefault();
+                        e.stopPropagation();
+                    });
+                }
+            });
     }
+
 
     /**
      * Show a toast.
      */
-    $aui_doing_toast = false;
-    function aui_toast($id,$type,$title,$title_small,$body,$time,$can_close){
+        // global flag
+    var $aui_doing_toast = false;
 
-        if($aui_doing_toast){setTimeout(function(){
-            aui_toast($id,$type,$title,$title_small,$body,$time,$can_close);
-        }, 500); return;}
-
-        $aui_doing_toast = true;
-
-        if($can_close == null){$can_close = false;}
-        if($time == '' || $time == null ){$time = 3000;}
-
-        // if already setup then just show
-        if(document.getElementById($id)){
-            jQuery('#'+$id).toast('show');
-            setTimeout(function(){ $aui_doing_toast = false; }, 500);
+    function aui_toast($id, $type, $title, $title_small, $body, $time, $can_close) {
+        if ($aui_doing_toast) {
+            setTimeout(function() {
+                aui_toast($id, $type, $title, $title_small, $body, $time, $can_close);
+            }, 500);
             return;
         }
+        $aui_doing_toast = true;
 
-        var uniqid = Date.now();
-        if($id){
-            uniqid = $id;
+        // defaults
+        if ($can_close == null) { $can_close = false; }
+        if (!$time) { $time = 3000; }
+
+        // if already exists, remove it before creating the new one
+        if ($id && document.getElementById($id)) {
+            var existing = document.getElementById($id);
+            existing.remove();
         }
 
-        $op = "";
-        $tClass = '';
-        $thClass = '';
-        $icon = "";
+        // unique id
+        var uniqid = $id || String(Date.now());
 
-        if ($type == 'success') {
-            $op = "opacity:.92;";
-            $tClass = 'alert bg-success w-auto';
-            $thClass = 'bg-transparent border-0 text-white';
-            $icon = "<div class='h5 m-0 p-0'><i class='fas fa-check-circle me-2'></i></div>";
-        } else if ($type == 'error' || $type == 'danger') {
-            $op = "opacity:.92;";
-            $tClass = 'alert bg-danger  w-auto';
-            $thClass = 'bg-transparent border-0 text-white';
-            $icon = "<div class='h5 m-0 p-0'><i class='far fa-times-circle me-2'></i></div>";
-        } else if ($type == 'info') {
-            $op = "opacity:.92;";
-            $tClass = 'alert bg-info  w-auto';
-            $thClass = 'bg-transparent border-0 text-white';
-            $icon = "<div class='h5 m-0 p-0'><i class='fas fa-info-circle me-2'></i></div>";
-        } else if ($type == 'warning') {
-            $op = "opacity:.92;";
-            $tClass = 'alert bg-warning  w-auto';
-            $thClass = 'bg-transparent border-0 text-dark';
-            $icon = "<div class='h5 m-0 p-0'><i class='fas fa-exclamation-triangle me-2'></i></div>";
+        // styling vars
+        var op = '', tClass = '', thClass = '', icon = '';
+        switch ($type) {
+            case 'success':
+                op = 'opacity:.92;';
+                tClass = 'alert bg-success w-auto';
+                thClass = 'bg-transparent border-0 text-white';
+                icon = "<div class='fs-5 m-0 p-0'><i class='fas fa-check-circle me-2'></i></div>";
+                break;
+            case 'error':
+            case 'danger':
+                op = 'opacity:.92;';
+                tClass = 'alert bg-danger w-auto';
+                thClass = 'bg-transparent border-0 text-white';
+                icon = "<div class='s-5 m-0 p-0'><i class='far fa-times-circle me-2'></i></div>";
+                break;
+            case 'info':
+                op = 'opacity:.92;';
+                tClass = 'alert bg-info w-auto';
+                thClass = 'bg-transparent border-0 text-white';
+                icon = "<div class='fs-5 m-0 p-0'><i class='fas fa-info-circle me-2'></i></div>";
+                break;
+            case 'warning':
+                op = 'opacity:.92;';
+                tClass = 'alert bg-warning w-auto';
+                thClass = 'bg-transparent border-0 text-dark';
+                icon = "<div class='fs-5 m-0 p-0'><i class='fas fa-exclamation-triangle me-2'></i></div>";
+                break;
         }
 
+        // ensure container exists
+        if (!document.getElementById('aui-toasts')) {
+            var outer = document.createElement('div');
+            outer.id = 'aui-toasts';
+            outer.classList.add('bsui');
+            var inner = document.createElement('div');
+            inner.className = 'position-fixed aui-toast-bottom-right pr-3 pe-3 mb-1';
+            inner.setAttribute('style', 'z-index:500000;right:0;bottom:0;' + op);
+            outer.appendChild(inner);
+            document.body.appendChild(outer);
+        }
+        var container = document.querySelector('.aui-toast-bottom-right');
 
-        // add container if not exist
-        if(!document.getElementById("aui-toasts")){
-            jQuery('body').append('<div class="bsui" id="aui-toasts"><div class="position-fixed aui-toast-bottom-right pr-3 pe-3 mb-1" style="z-index: 500000;right: 0;bottom: 0;'+$op+'"></div></div>');
+        // build toast element
+        var toastEl = document.createElement('div');
+        toastEl.id = uniqid;
+        toastEl.className = 'toast fade hide shadow hover-shadow ' + tClass;
+        toastEl.setAttribute('role', 'alert');
+        toastEl.setAttribute('aria-live', 'assertive');
+        toastEl.setAttribute('aria-atomic', 'true');
+
+        // header
+        if ($type || $title || $title_small) {
+            var header = document.createElement('div');
+            header.className = 'toast-header ' + thClass;
+
+            if (icon) {
+                header.insertAdjacentHTML('beforeend', icon);
+            }
+
+            if ($title) {
+                var strong = document.createElement('strong');
+                strong.className = 'me-auto';
+                strong.innerHTML = $title;
+                header.appendChild(strong);
+            }
+
+            if ($title_small) {
+                var small = document.createElement('small');
+                small.textContent = $title_small;
+                header.appendChild(small);
+            }
+
+            if ($can_close) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'ms-2 mb-1 btn-close';
+                btn.setAttribute('data-bs-dismiss', 'toast');
+                btn.setAttribute('aria-label', 'Close');
+                header.appendChild(btn);
+            }
+
+            toastEl.appendChild(header);
         }
 
-        $toast = '<div id="'+uniqid+'" class="toast fade hide shadow hover-shadow '+$tClass+'" style="" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="'+$time+'">';
-        if($type || $title || $title_small){
-            $toast += '<div class="toast-header '+$thClass+'">';
-            if($icon ){$toast += $icon;}
-            if($title){$toast += '<strong class="me-auto">'+$title+'</strong>';}
-            if($title_small){$toast += '<small>'+$title_small+'</small>';}
-            if($can_close){$toast += '<button type="button" class="ms-2 mb-1 btn-close" data-bs-dismiss="toast" aria-label="Close"></button>';}
-            $toast += '</div>';
+        // The rest of the function continues as before to create and show the new element
+        if ($body) {
+            var bodyEl = document.createElement('div');
+            bodyEl.className = 'toast-body';
+            bodyEl.innerHTML = $body;
+            toastEl.appendChild(bodyEl);
         }
 
-        if($body){
-            $toast += '<div class="toast-body">'+$body+'</div>';
-        }
+        container.appendChild(toastEl);
 
-        $toast += '</div>';
+        var toast = bootstrap.Toast.getOrCreateInstance(toastEl, {
+            animation: true,
+            autohide: ($time > 0),
+            delay: $time
+        });
 
-        jQuery('.aui-toast-bottom-right').prepend($toast);
-        jQuery('#'+uniqid).toast('show');
-        setTimeout(function(){ $aui_doing_toast = false; }, 500);
+        toast.show();
+        setTimeout(function() { $aui_doing_toast = false; }, 500);
     }
+
 
     /**
      * Animate a number.
      */
-    function aui_init_counters(){
+    function aui_init_counters() {
 
-        const animNum = (EL) => {
-
-            if (EL._isAnimated) return; // Animate only once!
+        const animNum = EL => {
+            if (EL._isAnimated) return;   // Animate only once!
             EL._isAnimated = true;
 
-            let end = EL.dataset.auiend;
-            let start = EL.dataset.auistart;
-            let duration = EL.dataset.auiduration ? EL.dataset.auiduration : 2000;
-            let seperator = EL.dataset.auisep ? EL.dataset.auisep: '';
+            const end      = parseFloat(EL.dataset.auiend);
+            const start    = parseFloat(EL.dataset.auistart);
+            const duration = EL.dataset.auiduration
+                ? Math.abs(parseInt(EL.dataset.auiduration, 10))
+                : 2000;
+            const seperator= EL.dataset.auisep || '';
 
-            jQuery(EL).prop('Counter', start).animate({
-                Counter: end
-            }, {
-                duration: Math.abs(duration),
-                easing: 'swing',
-                step: function(now) {
-                    const text = seperator ?  (Math.ceil(now)).toLocaleString('en-US') : Math.ceil(now);
-                    const html = seperator ? text.split(",").map(n => `<span class="count">${n}</span>`).join(",") : text;
-                    if(seperator && seperator!=','){
-                        html.replace(',',seperator);
-                    }
-                    jQuery(this).html(html);
+            // “swing” easing ≈ easeInOut
+            const easeSwing = p => 0.5 - Math.cos(p * Math.PI) / 2;
+
+            let startTime = null;
+            function step(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const elapsed = timestamp - startTime;
+                const progress= Math.min(elapsed / duration, 1);
+                const eased   = easeSwing(progress);
+                const nowVal  = start + (end - start) * eased;
+                // build text + HTML
+                const text    = seperator
+                    ? Math.ceil(nowVal).toLocaleString('en-US')
+                    : Math.ceil(nowVal);
+                let html      = seperator
+                    ? text.split(',').map(n => `<span class="count">${n}</span>`).join(',')
+                    : text;
+                if (seperator && seperator !== ',') {
+                    html.replace(',', seperator);
+                }
+                EL.innerHTML = html;
+
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                }
+            }
+
+            requestAnimationFrame(step);
+        };
+
+        const inViewport = (entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animNum(entry.target);
                 }
             });
         };
 
-        const inViewport = (entries, observer) => {
-            // alert(1);
-            entries.forEach(entry => {
-                if (entry.isIntersecting) animNum(entry.target);
+        // Observe all elements with [data-auicounter]
+        document
+            .querySelectorAll('[data-auicounter]')
+            .forEach(EL => {
+                const obs = new IntersectionObserver(inViewport);
+                obs.observe(EL);
             });
-        };
-
-        jQuery("[data-auicounter]").each((i, EL) => {
-            const observer = new IntersectionObserver(inViewport);
-            observer.observe(EL);
-        });
     }
+
 
 
     /**
@@ -1033,13 +1301,16 @@
         aui_init_counters();
 
         // nav menu submenus
-        init_nav_sub_menus();
+       // init_nav_sub_menus();
 
         // init tooltips
         aui_init_tooltips();
 
         // init select2
-        aui_init_select2();
+       // aui_init_select2();
+
+        //init choices
+        aui_init_choices();
 
         // init flatpickr
         aui_init_flatpickr();
@@ -1064,85 +1335,151 @@
     }
 
     // run on window loaded
-    jQuery(window).on("load",function() {
+    window.addEventListener('load', function() {
         aui_init();
     });
 
-    /* Fix modal background scroll on iOS mobile device */
-    jQuery(function($) {
-        var ua = navigator.userAgent.toLowerCase();
-        var isiOS = ua.match(/(iphone|ipod|ipad)/);
-        if (isiOS) {
-            var pS = 0; pM = parseFloat($('body').css('marginTop'));
 
-            $(document).on('show.bs.modal', function() {
-                pS = window.scrollY;
-                $('body').css({
-                    marginTop: -pS,
-                    overflow: 'hidden',
-                    position: 'fixed',
+
+    window.addEventListener('DOMContentLoaded', () => {
+        // nav menu submenus
+        init_nav_sub_menus();
+        init_nav_sub_menus(); // for some reason this only fully works when called twice, we need to check this // @todo
+    });
+
+    /* Fix modal background scroll on iOS mobile device */
+    (function() {
+        let auiInitIosDone = false;
+
+        function aui_init_ios_modal_scroll() {
+            if (auiInitIosDone) return;
+            auiInitIosDone = true;
+
+            const ua = navigator.userAgent.toLowerCase();
+            const isiOS = /(iphone|ipod|ipad)/.test(ua);
+            if (isiOS) {
+                let pS = 0;
+                const pM = parseFloat(getComputedStyle(document.body).marginTop);
+
+                document.addEventListener('show.bs.modal', () => {
+                    pS = window.scrollY;
+                    Object.assign(document.body.style, {
+                        marginTop: `-${pS}px`,
+                        overflow: 'hidden',
+                        position: 'fixed'
+                    });
                 });
-            }).on('hidden.bs.modal', function() {
-                $('body').css({
-                    marginTop: pM,
-                    overflow: 'visible',
-                    position: 'inherit',
+
+                document.addEventListener('hidden.bs.modal', () => {
+                    Object.assign(document.body.style, {
+                        marginTop: `${pM}px`,
+                        overflow: 'visible',
+                        position: 'inherit'
+                    });
+                    window.scrollTo(0, pS);
                 });
-                window.scrollTo(0, pS);
+            }
+
+            document.addEventListener('slide.bs.carousel', event => {
+                const related = event.relatedTarget;
+                if (!related) return;
+
+                const modalEl = related.closest('.aui-carousel-modal');
+                if (
+                    !modalEl ||
+                    modalEl.offsetParent === null ||
+                    !modalEl.querySelector('iframe.aui-carousel-iframe')
+                ) return;
+
+                // clear old iframe
+                modalEl
+                    .querySelectorAll('.carousel-item.active iframe.aui-carousel-iframe')
+                    .forEach(iframe => {
+                        if (iframe.src) {
+                            iframe.dataset.src = iframe.src;
+                            iframe.src = '';
+                        }
+                    });
+
+                // show loader + set new src
+                const loading = related.querySelector('.ac-preview-loading');
+                if (loading) {
+                    loading.classList.replace('d-none','d-flex');
+                }
+                const cIframe = related.querySelector('iframe.aui-carousel-iframe');
+                if (cIframe && !cIframe.src && cIframe.dataset.src) {
+                    cIframe.src = cIframe.dataset.src;
+                }
+                if (cIframe) {
+                    cIframe.addEventListener('load', () => {
+                        setTimeout(() =>
+                                modalEl
+                                    .querySelectorAll('.ac-preview-loading')
+                                    .forEach(el => el.classList.replace('d-flex','d-none')),
+                            1250);
+                    });
+                }
             });
         }
 
-		$(document).on('slide.bs.carousel', function(el) {
-			var $_modal = $(el.relatedTarget).closest('.aui-carousel-modal:visible').length ? $(el.relatedTarget).closest('.aui-carousel-modal:visible') : '';
-			if ($_modal && $_modal.find('.carousel-item iframe.aui-carousel-iframe').length) {
-				/* Unset iframe src */
-				$_modal.find('.carousel-item.active iframe.aui-carousel-iframe').each(function(){
-					if ($(this).attr('src')) {
-						$(this).data('src', $(this).attr('src'));
-						$(this).attr('src', '');
-					}
-				});
-				/* Set iframe src */
-				if ($(el.relatedTarget).find('iframe.aui-carousel-iframe').length) {
-					$(el.relatedTarget).find('.ac-preview-loading').removeClass('d-none').addClass('d-flex');
-					var $cIframe = $(el.relatedTarget).find('iframe.aui-carousel-iframe');
-					if (! $cIframe.attr('src') && $cIframe.data('src')) {
-						$cIframe.attr('src', $cIframe.data('src'));
-					}
-					$cIframe.on('load', function(){
-						setTimeout(function(){$_modal.find('.ac-preview-loading').removeClass('d-flex').addClass('d-none');},1250);
-					});
-				}
-			}
-		});
-    });
+        // Self‐execute on DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', aui_init_ios_modal_scroll);
+        } else {
+            aui_init_ios_modal_scroll();
+        }
+    })();
+
 
     /**
-     * Show a "confirm" dialog to the user (using jQuery UI's dialog)
+     * Show a "confirm" dialog
      *
      * @param {string} message The message to display to the user
      * @param {string} okButtonText OPTIONAL - The OK button text, defaults to "Yes"
      * @param {string} cancelButtonText OPTIONAL - The Cancel button text, defaults to "No"
+     * @param isDelete
+     * @param large
      * @returns {Q.Promise<boolean>} A promise of a boolean value
      */
-    var aui_confirm = function (message, okButtonText, cancelButtonText, isDelete, large ) {
-        okButtonText = okButtonText || 'Yes';
+    var aui_confirm = function (message, okButtonText, cancelButtonText, isDelete, large) {
+        okButtonText     = okButtonText     || 'Yes';
         cancelButtonText = cancelButtonText || 'Cancel';
-        message = message || 'Are you sure?';
-        sizeClass = large ? '' : 'modal-sm';
-        btnClass = isDelete ? 'btn-danger' : 'btn-primary';
+        message          = message          || 'Are you sure?';
+        var sizeClass    = large ? '' : 'modal-sm';
+        var btnClass     = isDelete ? 'btn-danger' : 'btn-primary';
 
-        deferred = jQuery.Deferred();
-        var $body = "";
-        $body += "<h3 class='h4 py-3 text-center text-dark'>"+message+"</h3>";
+        // Simple “deferred” replacement
+        deferred = {};
+        deferred.promise = new Promise(function (resolve, reject) {
+            deferred.resolve = resolve;
+            deferred.reject  = reject;
+        });
+
+        // build the same markup
+        var $body = '';
+        $body += "<h3 class='h4 py-3 text-center text-dark'>" + message + "</h3>";
         $body += "<div class='d-flex'>";
-        $body += "<button class='btn btn-outline-secondary w-50 btn-round' data-bs-dismiss='modal'  onclick='deferred.resolve(false);'>"+cancelButtonText+"</button>";
-        $body += "<button class='btn "+btnClass+" ms-2 w-50 btn-round' data-bs-dismiss='modal'  onclick='deferred.resolve(true);'>"+okButtonText+"</button>";
-        $body += "</div>";
-        $modal = aui_modal('',$body,'',false,'',sizeClass);
+        $body +=
+            "<button class='btn btn-outline-secondary w-50 btn-round' data-bs-dismiss='modal' " +
+            "onclick='deferred.resolve(false);'>" +
+            cancelButtonText +
+            '</button>';
+        $body +=
+            "<button class='btn " +
+            btnClass +
+            " ms-2 w-50 btn-round' data-bs-dismiss='modal' " +
+            "onclick='deferred.resolve(true);'>" +
+            okButtonText +
+            '</button>';
+        $body += '</div>';
 
-        return deferred.promise();
+        // call your existing function to show the modal
+        aui_modal('', $body, '', false, '', sizeClass);
+
+        // return the native Promise so callers can await it
+        return deferred.promise;
     };
+
 
     /**
      * Flip the color scheem on scroll
@@ -1247,33 +1584,43 @@
      * update colors as the style colour pallet is changed
      * @param $color
      */
-    function aui_fse_sync_site_colors($color){
-
+    function aui_fse_sync_site_colors($color) {
+        // helper to grab the CSS custom-property from inside the site editor iframe
         const getColorHex = () => {
-            const element = jQuery(".edit-site-visual-editor__editor-canvas").contents().find(".editor-styles-wrapper").get(0);
-            const style = element == null ? '' : window.getComputedStyle(element).getPropertyValue('--wp--preset--color--'+$color);
-            return style;
+            const canvas = document.querySelector('.edit-site-visual-editor__editor-canvas');
+            if (!canvas || !canvas.contentDocument) return '';
+            const wrapper = canvas.contentDocument.querySelector('.editor-styles-wrapper');
+            return wrapper
+                ? window.getComputedStyle(wrapper).getPropertyValue(`--wp--preset--color--${$color}`)
+                : '';
         };
 
-        // set the initial ColorHex
+        // initial value
         let colorHex = getColorHex();
 
-
+        // subscribe to WP data store changes
         wp.data.subscribe(() => {
-
-            // get the current ColorHex
             const newColorHex = getColorHex();
 
-            // only do something if ColorHex has changed.
-            if( newColorHex && colorHex !== newColorHex ) {
-                jQuery(".edit-site-visual-editor__editor-canvas").contents().find("html body").get(0).style.setProperty('--bs-'+$color+'-rgb',aui_fse_hexToRgb(newColorHex));
+            // only update when it actually changes
+            if (newColorHex && newColorHex !== colorHex) {
+                const canvas = document.querySelector('.edit-site-visual-editor__editor-canvas');
+                if (canvas && canvas.contentDocument) {
+                    const body = canvas.contentDocument.querySelector('body');
+                    if (body) {
+                        body.style.setProperty(
+                            `--bs-${$color}-rgb`,
+                            aui_fse_hexToRgb(newColorHex)
+                        );
+                    }
+                }
             }
 
-            // update the newColorHex variable.
+            // store for next comparison
             colorHex = newColorHex;
-
         });
     }
+
 
     /**
      * update colors as the style colour pallet is changed
@@ -1363,33 +1710,6 @@
         aui_fse_sync_site_typography();
     }
 
-    // setTimeout(function(){
-    //     aui_listen_global_style_click();
-    // }, 3000);
-    //
-    // function aui_listen_global_style_click(){
-    //     setTimeout(function(){
-    //         // check for global stylebook clicks
-    //         jQuery('.interface-pinned-items button').click(function() {
-    //             aui_listen_stylebook_click();
-    //         });
-    //     }, 500);
-    // }
-    //
-    //
-    //
-    // function aui_listen_stylebook_click(){
-    //     setTimeout(function(){
-    //         // check for global stylebook clicks
-    //         jQuery('.edit-site-global-styles-sidebar__header .components-button.has-icon').click(function() {
-    //             setTimeout(function(){
-    //                 aui_sync_admin_styles();
-    //             }, 500);
-    //         });
-    //     }, 500);
-    // }
-
-
 
 
     function aui_parseCSS(cssString, selector, property) {
@@ -1418,37 +1738,49 @@
 
     // Function to update a CSS rule
     function aui_updateCssRule(selector, property, value) {
-        // check fi we are viewing stylebook
+        // find the inline‐CSS <style> in the site editor iframe
+        var aui_inline_css, aui_inline_css_stylebook, styleSheet;
 
-        var aui_inline_css = jQuery(".edit-site-visual-editor__editor-canvas").contents().find("#ayecode-ui-fse-inline-css").get(0);
-        var aui_inline_css_stylebook = jQuery(".edit-site-style-book__iframe").contents().find("#ayecode-ui-fse-inline-css").get(0);
-
-        if (aui_inline_css && aui_inline_css.sheet) {
-            var styleSheet = aui_inline_css.sheet;
-        }else if(aui_inline_css_stylebook && aui_inline_css_stylebook.sheet){
-            var styleSheet = aui_inline_css_stylebook.sheet;
-        }else{
-            return;
+        var editorCanvas = document.querySelector('.edit-site-visual-editor__editor-canvas');
+        if (editorCanvas && editorCanvas.contentDocument) {
+            aui_inline_css = editorCanvas.contentDocument.getElementById('ayecode-ui-fse-inline-css');
         }
 
+        // if not in the editor, try the style‐book iframe
+        var styleBook = document.querySelector('.edit-site-style-book__iframe');
+        if (styleBook && styleBook.contentDocument) {
+            aui_inline_css_stylebook = styleBook.contentDocument.getElementById('ayecode-ui-fse-inline-css');
+        }
+
+        // choose the sheet
+        if (aui_inline_css && aui_inline_css.sheet) {
+            styleSheet = aui_inline_css.sheet;
+        } else if (aui_inline_css_stylebook && aui_inline_css_stylebook.sheet) {
+            styleSheet = aui_inline_css_stylebook.sheet;
+        } else {
+            return; // nothing to update
+        }
+
+        // get existing rules
         var rules = styleSheet.cssRules || styleSheet.rules;
 
-        // console.log(rules);
-
+        // try to find and update
         for (var i = 0; i < rules.length; i++) {
             if (rules[i].selectorText === selector) {
                 rules[i].style[property] = value;
-                // console.log('update rule');
-                return; // Exit the function once the rule is found and updated
+                return; // done
             }
         }
 
-        // If the rule doesn't exist, optionally add it
-        styleSheet.insertRule(`${selector} { ${property}: ${value}; }`, rules.length);
-        // console.log(`insert rule ${selector}`);
+        // not found → insert new rule
+        styleSheet.insertRule(
+            selector + ' { ' + property + ': ' + value + '; }',
+            rules.length
+        );
     }
 
-	<?php } ?>
+
+    <?php } ?>
 
 
 </script>

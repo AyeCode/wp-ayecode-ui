@@ -1,0 +1,5 @@
+// Highlighted card
+
+.card.is-highlighted {
+  box-shadow: var(--#{$prefix}box-shadow) !important;
+}

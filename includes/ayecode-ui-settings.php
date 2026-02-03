@@ -58,6 +58,13 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 */
 		public $select2_version = "4.0.11";
 
+        /**
+         * Current version of choices.js being used.
+         *
+         * @var string
+         */
+        public $choices_version = "11.1.0";
+
 		/**
 		 * The title.
 		 *
@@ -469,13 +476,25 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
                 $bs_ver = $this->settings['bs_ver'] === '5dm' ? '-v5-dm' : ($this->settings['bs_ver'] == '5' ? '-v5' : '');
 
 				if ( $this->settings[ $css_setting ] ) {
+
+                    // choices (select2 replacements)
+                    wp_register_style( 'choices', $this->url . 'assets-v5-dm/css/choices.css', array(), $this->choices_version );
+
+                    if ( $this->force_load_select2() ) {
+                        wp_enqueue_style( 'choices' );
+                    }
+
+
 					$compatibility = $this->settings[$css_setting]=='core' ? false : true;
 					$url = $this->settings[$css_setting]=='core' ? $this->url.'assets'.$bs_ver.'/css/ayecode-ui'.$rtl.'.css' : $this->url.'assets'.$bs_ver.'/css/ayecode-ui-compatibility'.$rtl.'.css';
 
 					wp_register_style( 'ayecode-ui', $url, array(), $this->version );
 					wp_enqueue_style( 'ayecode-ui' );
 
-					if ( is_admin() && ( !empty($_REQUEST['postType']) || self::is_block_editor() ) && ( defined( 'BLOCKSTRAP_VERSION' ) || defined( 'AUI_FSE' ) )  ) {
+
+
+
+                    if ( is_admin() && ( !empty($_REQUEST['postType']) || self::is_block_editor() ) && ( defined( 'BLOCKSTRAP_VERSION' ) || defined( 'AUI_FSE' ) )  ) {
 						$url = $this->url.'assets'.$bs_ver.'/css/ayecode-ui-fse.css';
 						wp_register_style( 'ayecode-ui-fse', $url, array(), $this->version );
 						wp_enqueue_style( 'ayecode-ui-fse' );
@@ -610,7 +629,7 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 			?>
             <script>
                 // run on doc ready
-                jQuery(document).ready(function () {
+                document.addEventListener('DOMContentLoaded', function() {
                     bsCustomFileInput.init();
                 });
             </script>
@@ -638,7 +657,10 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
                 $bs_ver = $this->settings['bs_ver'] === '5dm' ? '-v5-dm' : ($this->settings['bs_ver'] == '5' ? '-v5' : '');
 
                 // select2
-				wp_register_script( 'select2', $this->url . 'assets/js/select2.min.js', array( 'jquery' ), $this->select2_version );
+//                wp_register_script( 'select2', $this->url . 'assets/js/select2.min.js', array( 'jquery' ), $this->select2_version );
+
+                // choices.js (swapped select2 for non-jquery dependent choices.js)
+                wp_register_script( 'choices', $this->url . 'assets-v5-dm/js/choices.min.js', array(), $this->choices_version );
 
 				// flatpickr
 				wp_register_script( 'flatpickr', $this->url . 'assets/js/flatpickr.min.js', array(), $this->version );
@@ -670,9 +692,11 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 
 				// Load select2 only when required.
 				if ( $this->force_load_select2() ) {
-					$dependency = array( 'select2', 'jquery' );
+//                    $dependency = array( 'select2', 'jquery' );
+                    $dependency = array( 'choices' );
 				} else {
-					$dependency = array( 'jquery' );
+                    $dependency = array();// array( 'jquery' );
+//                    $dependency = array( 'jquery' );
 				}
 
 				if ( $this->settings[ $js_setting ] == 'core-popper' ) {
@@ -730,7 +754,8 @@ if ( ! class_exists( 'AyeCode_UI_Settings' ) ) {
 		 * @since 0.2.29
 		 */
 		public function enqueue_select2() {
-			wp_enqueue_script( 'select2' );
+            wp_enqueue_style( 'choices' );
+            wp_enqueue_script( 'choices' );
 		}
 
 		/**

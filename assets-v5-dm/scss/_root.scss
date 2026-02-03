@@ -1,7 +1,7 @@
 // Root CSS variables
 
 :root,
-[data-bs-theme="light"] {
+{
 
   // Link color
   --#{$prefix}link-color: var(--#{$prefix}info);

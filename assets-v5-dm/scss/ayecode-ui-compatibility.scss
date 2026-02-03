@@ -7,13 +7,13 @@
 @import "variables-dark";
 @import "utilities";
 
-
+@import "root";
 .bsui {
   // Bootstrap
   @import '1-frameworks/index';
 
   // Layout, animations & components
-  @import "root";
+
   @import "reboot";
   @import "animations";
   @import "components";
@@ -43,6 +43,7 @@
 
 // select2 can't be inside wrapper
 @import '1-frameworks/select2/core';
+
 
 
 

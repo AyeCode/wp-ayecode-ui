@@ -19,6 +19,7 @@ $utilities: map-merge(
 
     // Border radius
     "rounded": (
+            responsive: true,
       property: border-radius,
       class: rounded,
       values: (

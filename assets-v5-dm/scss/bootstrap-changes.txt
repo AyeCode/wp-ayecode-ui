@@ -1,2 +1,7 @@
-No changes required in v5.
-RTL support built in.
+No changes required in v5 mains files.
+
+// NOTE: Make changes in partials.
+
+
+framework
+_root.scss - remove "[data-bs-theme="light"] " otherwise these may never be set
