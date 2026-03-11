@@ -1,0 +1,88 @@
+// Leaflet Marker Bounce Animation
+.leaflet-marker-bounce {
+  animation: leaflet-marker-bounce 0.7s infinite;
+}
+
+@keyframes leaflet-marker-bounce {
+  0%, 100% {
+    transform: translateY(0);
+    animation-timing-function: ease-out;
+  }
+
+  20%, 80% {
+    transform: translateY(-0.8em);
+  }
+
+  40%, 60% {
+    transform: translateY(-1.6em);
+  }
+
+  50% {
+    transform: translateY(-2em);
+    animation-timing-function: ease-in;
+  }
+}
+
+.leaflet-popup-close-button{
+  margin-top: -20px;
+  margin-right: -20px;
+  line-height: 1.6rem !important;
+}
+
+.map-marker-wrapper{
+  &.is-highlighted{
+    z-index: 999999 !important;
+  }
+}
+
+// Zoom controls
+.leaflet-touch {
+  .leaflet-control-layers,
+  .leaflet-bar {
+    border: 0;
+    @include box-shadow($box-shadow);
+  }
+  .leaflet-bar a {
+    background-color: var(--#{$prefix}body-bg);
+    font-weight: $font-weight-normal;
+    line-height: 26px;
+    color: var(--#{$prefix}body-color);
+    transition: $nav-link-transition;
+
+    &:first-child {
+      border-bottom-color: $gray-200;
+      border-top-left-radius: $border-radius-sm;
+      border-top-right-radius: $border-radius-sm;
+    }
+    &:last-child {
+      border-bottom-right-radius: $border-radius-sm;
+      border-bottom-left-radius: $border-radius-sm;
+    }
+    &:hover {
+      color: $gray-900;
+      background-color: $white;
+    }
+    &.leaflet-disabled {
+      color: $gray-400;
+      background-color: $white;
+    }
+  }
+}
+
+// Dark mode map
+[data-bs-theme="dark"] {
+  .geodir-map-canvas[data-maptype="ROADMAP"],
+  .geodir-map-canvas[data-maptype="TERRAIN"]{
+    //.leaflet-popup-close-button,
+    .leaflet-layer,
+    .leaflet-control-zoom-in,
+    .leaflet-control-zoom-out,
+    .leaflet-control-maptype,
+    .leaflet-control-fullwindow,
+    .map-marker-price,
+    .leaflet-control-attribution {
+      filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+    }
+  }
+
+}

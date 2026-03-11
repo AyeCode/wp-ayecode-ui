@@ -4,15 +4,33 @@
   text-align:center;
   display:inline-block;
 
+  &.iconextrasmall {
+    width:32px;
+    min-width: 32px;
+    height:32px;
+    line-height:32px;
+    font-size:0.9rem;
+  }
+
   &.iconsmall {
     width:40px;
+    min-width: 40px;
     height:40px;
     line-height:40px;
     font-size:1rem;
   }
 
+  &.iconsmallmedium {
+    width:48px;
+    min-width: 48px;
+    height:48px;
+    line-height:48px;
+    font-size:1.4rem;
+  }
+
   &.iconmedium {
     width:60px;
+    min-width: 60px;
     height:60px;
     line-height:60px;
     font-size:1.8rem;
@@ -20,8 +38,19 @@
 
   &.iconlarge {
     width:80px;
+    min-width: 80px;
     height:80px;
     line-height:80px;
     font-size:2.2rem;
   }
+}
+
+// our custom SVG FA icons
+.aui-icon{
+  //width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  max-width: unset;
 }

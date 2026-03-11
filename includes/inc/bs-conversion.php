@@ -14,10 +14,8 @@
  * @return array|mixed|string|string[]
  */
 function aui_bs_convert_sd_output( $output, $instance = '', $args = '', $sd = '' ) {
-	global $aui_bs5;
-
-	if ( $aui_bs5 ) {
-		$convert = array(
+	// Always convert to BS5 in v2.0+
+	$convert = array(
 			'"ml-' => '"ms-',
 			'"mr-' => '"me-',
 			'"pl-' => '"ps-',
@@ -43,7 +41,7 @@ function aui_bs_convert_sd_output( $output, $instance = '', $args = '', $sd = ''
 			'-21by9'    => '-21x9',
 			'geodir-lightbox-image' => 'aui-lightbox-image',
 			'geodir-lightbox-iframe' => 'aui-lightbox-iframe',
-			' badge-'   => ' text-bg-',
+			' badge-'   => ' text-bg-', // not light/dark compliant
 			'form-group'   => 'mb-3',
 			'custom-select'   => 'form-select',
 			'float-left'   => 'float-start',
@@ -76,12 +74,11 @@ function aui_bs_convert_sd_output( $output, $instance = '', $args = '', $sd = ''
 			'class="close"' => 'class="btn-close"',
 			'<span aria-hidden="true">&times;</span>' => '',
 		);
-		$output  = str_replace(
-			array_keys( $convert ),
-			array_values( $convert ),
-			$output
-		);
-	}
+	$output  = str_replace(
+		array_keys( $convert ),
+		array_values( $convert ),
+		$output
+	);
 
 	return $output;
 }

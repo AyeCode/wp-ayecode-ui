@@ -1,9 +1,29 @@
-// 1- Import bootstrap framework
-@import '1-frameworks/index';
-@import "main";
-@import "partials/index"; // helpers
+// User variables
+@import "user-variables";
 
-@import "partials/wp_core"; // WP core
+// // Configuration & utilities
+//@import "fonts";
+@import "variables";
+@import "variables-dark";
+@import "utilities";
+
+// Bootstrap
+@import '1-frameworks/index';
+
+// Layout, animations & components
+@import "root";
+@import "reboot";
+@import "animations";
+@import "components";
+
+// Partials
+@import "partials/index";
+
+// WP core (not loaded in index as needs to be outside wrapper)
+@import "partials/wp_core";
 
 // select2 can't be inside wrapper
-@import '1-frameworks/select2/core';
+//@import '1-frameworks/select2/core';
+
+// choices
+//@import '1-frameworks/choices/choices';

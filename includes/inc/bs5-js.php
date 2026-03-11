@@ -445,7 +445,7 @@
                 // Instantiate our new AyeCodeIconPicker on the addon
                 var picker = new AyeCodeIconPicker('#' + addon.id, {
                     // IMPORTANT: Provide the correct path to your icons-libraries folder
-                    iconPickerUrl: '<?php echo $this->url;?>/assets-v5-dm/libs/universal-icon-picker/icons-libraries/',
+                    iconPickerUrl: '<?php echo $this->url;?>/assets/libs/universal-icon-picker/icons-libraries/',
 
                     // These are the default libraries, can be overridden if needed
                     iconLibraries: [

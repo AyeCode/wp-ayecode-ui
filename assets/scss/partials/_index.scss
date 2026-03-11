@@ -1,21 +1,31 @@
-@import "variables";
-@import "iconbox";
 @import "buttons";
-@import "alerts";
-@import "grids";
-@import "borders";
-@import "background_shadow";
-@import "animations";
-@import "hover_content";
-@import "overflow";
-@import "embed";
-@import "compatibility";
-@import "manual_vendor_prefix";
-@import "badge";
 @import "background";
-@import "floating_labels";
-@import "positioning";
-@import "nav";
-@import "switch";
-@import "hover_effects";
+@import "hover_content";
 @import "inputs";
+@import "positioning";
+@import "embed";
+@import "grids";
+@import "dropdown";
+@import "iconbox";
+@import "hover_effects";
+@import "nav";
+@import "card";
+@import "map";
+
+
+
+
+
+//@import "wp_core"; // needs to be outside wrapper
+
+
+// Small one liners
+
+
+// BS Shape diver, make background inherit text color
+//path.blockstrap-shape-fill{
+//  fill: currentColor;
+//}
+
+
+

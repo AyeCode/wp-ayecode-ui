@@ -7,6 +7,8 @@
       & > * {
         flex: 0 0 100%;
         max-width: 100%;
+        width: 100%;
+
       }
 
       .card{
@@ -28,6 +30,7 @@
           max-width: 30%;
           height: 100%;
           display: inline-block;
+          margin-bottom: 0 !important;
           .embed-responsive{
             max-width: none;
             &:before{
@@ -40,6 +43,7 @@
           display: inline-block;
           vertical-align: top;
           max-width: 69%;
+          padding-left: 1rem !important;
         }
 
         .card-footer{

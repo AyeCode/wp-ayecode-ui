@@ -1,5 +1,8 @@
 $transition-all: all ease .3s !default; /* Animation */
 
+.transition-all{
+  transition: $transition-all;
+}
 .hover-zoom{
   transition: transform .2s; /* Animation */
   &:hover{

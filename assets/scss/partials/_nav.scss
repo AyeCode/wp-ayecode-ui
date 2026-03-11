@@ -1,6 +1,5 @@
-// alert links might be styled the same color as the background
-.navbar-multi-sub-menus{
-  .dropdown-toggle.active-dropdown::after {
-    transform: rotate(-180deg);
-  }
-}
+// Dropdowns with hover to open get a border on close, this hides it.
+//.nav-item.dropdown:focus-visible{
+//  outline: none;
+//  box-shadow: none;
+//}

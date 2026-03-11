@@ -179,15 +179,18 @@ class AUI_Component_Helper {
 		if ( $class ) {
 			$classes = self::esc_classes( $class );
 			if ( ! empty( $classes ) ) {
+
+                if ( $space_after ) {
+                    $classes.= " me-2";
+                }
+
 				$output = '<i class="' . $classes . '" ';
 				// extra attributes
 				if ( ! empty( $extra_attributes ) ) {
 					$output .= AUI_Component_Helper::extra_attributes( $extra_attributes );
 				}
 				$output .= '></i>';
-				if ( $space_after ) {
-					$output .= " ";
-				}
+
 			}
 		}
 
