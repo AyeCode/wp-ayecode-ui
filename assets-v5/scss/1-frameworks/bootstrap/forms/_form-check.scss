@@ -69,6 +69,7 @@
       } @else {
         background-image: escape-svg($form-check-input-checked-bg-image);
       }
+      background-repeat: no-repeat;
     }
 
     &[type="radio"] {
@@ -77,6 +78,7 @@
       } @else {
         background-image: escape-svg($form-check-radio-checked-bg-image);
       }
+      background-repeat: no-repeat;
     }
   }
 
@@ -89,6 +91,7 @@
     } @else {
       background-image: escape-svg($form-check-input-indeterminate-bg-image);
     }
+    background-repeat: no-repeat;
   }
 
   &:disabled {
