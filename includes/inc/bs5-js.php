@@ -401,8 +401,99 @@
     // keep track of instances for cleanup
     var _aui_iconPickers = [];
 
+    // Cache for loaded icon libraries data
+    var _aui_iconLibrariesCache = null;
+
+    /**
+     * Render an icon HTML from an icon class string.
+     * Handles both font icons (Font Awesome) and custom SVG icons.
+     *
+     * @param {string} iconClass - The icon class (e.g., 'fa-solid fa-home' or 'aui-icon-ayecode')
+     * @param {function} callback - Callback function that receives the HTML string
+     */
+    async function aui_render_icon_from_class(iconClass, callback) {
+        if (!iconClass || !iconClass.trim()) {
+            callback('<i class="fas fa-icons"></i>');
+            return;
+        }
+
+        // Check if this is a custom icon (starts with aui-icon-)
+        if (iconClass.startsWith('aui-icon-')) {
+            // Extract the slug from the class
+            var slug = iconClass.replace('aui-icon-', '');
+
+            // Try to find the icon in the cached libraries data
+            if (!_aui_iconLibrariesCache) {
+                // Load icon libraries if not already cached
+                try {
+                    var libraries = window.ayecodeFASettings?.libraries || [];
+                    var allIcons = {};
+
+                    // Fetch all libraries
+                    var promises = libraries.map(function(url) {
+                        return fetch(url)
+                            .then(function(response) { return response.json(); })
+                            .then(function(data) {
+                                var key = url.split('/').pop().replace('.json', '');
+                                allIcons[key] = data;
+                            })
+                            .catch(function(err) {
+                                console.warn('Failed to load icon library:', url, err);
+                            });
+                    });
+
+                    await Promise.all(promises);
+                    _aui_iconLibrariesCache = allIcons;
+                } catch (error) {
+                    console.error('Error loading icon libraries:', error);
+                    callback('<i class="' + iconClass + '"></i>');
+                    return;
+                }
+            }
+
+            // Search for the icon in all libraries
+            var iconHtml = null;
+            for (var libKey in _aui_iconLibrariesCache) {
+                var library = _aui_iconLibrariesCache[libKey];
+                if (library.icons && Array.isArray(library.icons)) {
+                    for (var i = 0; i < library.icons.length; i++) {
+                        var icon = library.icons[i];
+                        if (typeof icon === 'object' && icon.slug === slug) {
+                            // Found the custom icon - construct the image URL
+                            var uploadsUrl = window.ayecodeFASettings?.uploadsUrl || '';
+                            if (library['base-path'] && icon.file) {
+                                var iconUrl = uploadsUrl + '/' + library['base-path'] + '/' + icon.file;
+                                iconHtml = '<img src="' + iconUrl + '" alt="' + slug + '" style="width: 24px; height: 24px; object-fit: contain;">';
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (iconHtml) break;
+            }
+
+            // If we found the icon, use it, otherwise fallback to font icon
+            callback(iconHtml || '<i class="' + iconClass + '"></i>');
+        } else {
+            // Font icon (Font Awesome) - render as <i> tag
+            callback('<i class="' + iconClass + '"></i>');
+        }
+    }
+
     /**
      * Initializes all icon pickers on the page.
+     *
+     * Icon libraries are configured via window.ayecodeFASettings which is set via
+     * wp_add_inline_script in class-aui-asset-manager.php.
+     *
+     * To add custom icon libraries, use the 'aui_iconpicker_libraries' filter:
+     *
+     * add_filter('aui_iconpicker_libraries', function($libraries) {
+     *     $uploads = wp_upload_dir();
+     *     $libraries[] = $uploads['baseurl'] . '/ayecode-icon-cache/custom-icons.json';
+     *     return $libraries;
+     * });
+     *
      * @param {string} [wrapperSelector] defaults to '.input-group'
      * @param {boolean} [force] destroy & re-init if true
      */
@@ -436,24 +527,21 @@
                     addon.id = 'iconpicker-trigger-' + Math.random().toString(36).substr(2, 9);
                 }
 
-                // Show initial icon or a fallback
-                addon.innerHTML = el.value.trim()
-                    ? '<i class="' + el.value + '"></i>'
-                    : '<i class="fas fa-icons"></i>'; // Fallback icon
                 addon.classList.add('c-pointer');
 
+                // Show initial icon using the helper function
+                if (el.value.trim()) {
+                    aui_render_icon_from_class(el.value.trim(), function(iconHtml) {
+                        addon.innerHTML = iconHtml;
+                    });
+                } else {
+                    addon.innerHTML = '<i class="fas fa-icons"></i>'; // Fallback icon
+                }
+
                 // Instantiate our new AyeCodeIconPicker on the addon
+                // The icon picker will automatically use window.ayecodeFASettings if available,
+                // otherwise it will use its built-in defaults (Font Awesome libraries)
                 var picker = new AyeCodeIconPicker('#' + addon.id, {
-                    // IMPORTANT: Provide the correct path to your icons-libraries folder
-                    iconPickerUrl: '<?php echo $this->url;?>/assets/libs/universal-icon-picker/icons-libraries/',
-
-                    // These are the default libraries, can be overridden if needed
-                    iconLibraries: [
-                        'font-awesome-solid.min.json',
-                        'font-awesome-regular.min.json',
-                        'font-awesome-brands.min.json'
-                    ],
-
                     // Define what happens when an icon is selected
                     onSelect: function(jsonIconData) {
                         // Update the hidden input's value
@@ -463,9 +551,6 @@
                         // Optional: Trigger a change event for other scripts to listen to
                         el.dispatchEvent(new Event('change'));
                     }
-
-                    // The onReset functionality is handled by selecting an empty icon if you were to add one,
-                    // or you could add a "Reset" button to the modal and call an `onReset` callback.
                 });
 
                 // Mark as initialized
@@ -914,12 +999,12 @@
 
             // indicators
             if ($images.length > 1) {
-                $carousel += `<ol class="carousel-indicators position-fixed">`;
+                $carousel += `<div class="carousel-indicators position-fixed">`;
                 $container.querySelectorAll('.aui-lightbox-image, .aui-lightbox-iframe').forEach((el, i) => {
                     const active = ($clicked_href === el.getAttribute('href')) ? 'active' : '';
-                    $carousel += `<li data-bs-target="#aui-embed-slider-modal" data-bs-slide-to="${i}" class="${active}"></li>`;
+                    $carousel += `<button type="button" data-bs-target="#aui-embed-slider-modal" data-bs-slide-to="${i}" class="${active}"></button>`;
                 });
-                $carousel += `</ol>`;
+                $carousel += `</div>`;
             }
 
             // determine RTL

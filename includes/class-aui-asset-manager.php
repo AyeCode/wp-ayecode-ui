@@ -131,9 +131,11 @@ class AUI_Asset_Manager {
 
 		// Icon picker (React version for block editor)
 		wp_register_script( 'iconpicker-react', $this->url . 'assets/libs/universal-icon-picker/js/universal-icon-picker-react.js', [], $this->version, true );
+        wp_add_inline_script( 'iconpicker-react', $this->inline_script_iconpicker(), 'before' );
 
 		// Icon picker
 		wp_register_script( 'iconpicker', $this->url . 'assets/libs/universal-icon-picker/js/universal-icon-picker.js', [], $this->version, true );
+		wp_add_inline_script( 'iconpicker', $this->inline_script_iconpicker(), 'before' );
 
 		// Dynamic data picker
 		wp_register_script( 'sd-dynamic-data-button', $this->url . 'assets/libs/universal-icon-picker/js/dynamic-data-picker-react.js', [], $this->version, true );
@@ -404,6 +406,34 @@ class AUI_Asset_Manager {
 		$output = ob_get_clean();
 
 		return str_replace( [ '<script>', '</script>' ], '', $output );
+	}
+
+	/**
+	 * Generate inline JavaScript configuration for icon picker.
+	 *
+	 * @return string JavaScript code.
+	 */
+	private function inline_script_iconpicker(): string {
+		// Default icon libraries - full URLs, these are added by the wp-font-awesome-settings package
+		$icon_libraries = apply_filters( 'aui_iconpicker_libraries', [] );
+
+		$uploads = wp_upload_dir();
+
+		// Allow filtering of the custom icons settings URL
+		$custom_icons_url = apply_filters(
+			'aui_iconpicker_custom_icons_settings_url',
+			admin_url( 'options-general.php?page=wp-font-awesome-settings#section=custom_icons' )
+		);
+
+		ob_start();
+		?>
+		window.ayecodeFASettings = {
+			libraries: <?php echo json_encode( $icon_libraries ); ?>,
+			uploadsUrl: '<?php echo esc_js( $uploads['baseurl'] ); ?>',
+			customIconsSettingsUrl: '<?php echo esc_url( $custom_icons_url ); ?>'
+		};
+		<?php
+		return ob_get_clean();
 	}
 
 	/**

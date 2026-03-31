@@ -399,7 +399,7 @@ else{$eli.attr(\'type\',\'password\');}"
 			if ( $type == 'file' || $type == 'checkbox' || $type == 'radio' || ! empty( $args['label_type'] ) ) {
 				$class = $args['class'];
 			} else {
-				$class = 'sr-only ' . $args['class'];
+				$class = 'visually-hidden ' . $args['class'];
 			}
 
 			// maybe horizontal
@@ -1141,7 +1141,7 @@ else{$eli.attr(\'type\',\'password\');}"
 			$label_args['class'] .= 'd-block ';
 
 			if ( $args['label_type'] == 'hidden' ) {
-				$label_args['class'] .= 'sr-only ';
+				$label_args['class'] .= 'visually-hidden ';
 			}
 		}
 
