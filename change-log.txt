@@ -1,4 +1,4 @@
-= 0.2.46 - 2026-TBD =
+= 0.2.46 - 2026-04-01 =
 * Class .btn-x-twitter variation added - ADDED
 * WordPress 7.0 compatibility - CHANGED/COMPATIBILITY
 
