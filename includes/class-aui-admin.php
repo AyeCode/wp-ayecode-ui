@@ -2,9 +2,9 @@
 /**
  * AyeCode UI Admin Interface
  *
- * Handles admin settings page, menu items, and notices.
+ * Handles admin settings page using AyeCode Settings Framework.
  *
- * @since 2.0.0
+ * @since 3.0.0
  * @package AyeCode_UI
  */
 
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Manages admin interface and settings page.
  */
-class AUI_Admin {
+class AUI_Admin extends \AyeCode\SettingsFramework\Settings_Framework {
 
 	/**
 	 * Singleton instance.
@@ -27,25 +27,67 @@ class AUI_Admin {
 	private static ?AUI_Admin $instance = null;
 
 	/**
-	 * Settings instance.
-	 *
-	 * @var AUI_Settings
-	 */
-	private AUI_Settings $settings;
-
-	/**
 	 * Package name.
 	 *
 	 * @var string
 	 */
-	private string $name = 'AyeCode UI';
+	protected $plugin_name = 'AyeCode UI';
+
+	/**
+	 * Option name for settings.
+	 *
+	 * @var string
+	 */
+	protected $option_name = 'ayecode-ui-settings';
+
+	/**
+	 * Page slug.
+	 *
+	 * @var string
+	 */
+	protected $page_slug = 'ayecode-ui-settings';
+
+	/**
+	 * Menu title.
+	 *
+	 * @var string
+	 */
+	protected $menu_title = 'AyeCode UI';
+
+	/**
+	 * Page title.
+	 *
+	 * @var string
+	 */
+	protected $page_title = 'Settings';
+
+	/**
+	 * Menu icon.
+	 *
+	 * @var string
+	 */
+	protected $menu_icon = 'dashicons-admin-settings';
+
+	/**
+	 * Menu position.
+	 *
+	 * @var int
+	 */
+	protected $menu_position = 80;
 
 	/**
 	 * Package version.
 	 *
 	 * @var string
 	 */
-	private string $version = '2.0.0';
+	private string $version;
+
+    /**
+     * Parent page slug.
+     *
+     * @var string
+     */
+    protected $parent_slug = 'options-general.php';
 
 	/**
 	 * Get singleton instance.
@@ -62,174 +104,219 @@ class AUI_Admin {
 	/**
 	 * Constructor.
 	 */
-	private function __construct() {
-		$this->settings = AUI_Settings::instance();
+	public function __construct() {
+		global $ayecode_ui_version;
+		$this->version = $ayecode_ui_version ?? '3.0.0-beta';
 
-		add_action( 'admin_menu', [ $this, 'add_menu_item' ] );
+		parent::__construct();
+
 		add_action( 'admin_notices', [ $this, 'show_admin_style_notice' ] );
+		add_action( 'admin_init', [ $this, 'maybe_fix_admin_settings' ] );
+
 	}
 
 	/**
-	 * Add settings page to admin menu.
+	 * Get the settings configuration.
 	 *
-	 * @return void
+	 * @return array Configuration array with sections and fields.
 	 */
-	public function add_menu_item(): void {
-		// Won't pass theme check if function name present directly
-		$menu_function = 'add' . '_' . 'options' . '_' . 'page';
-		call_user_func(
-			$menu_function,
-			$this->name,
-			$this->name,
-			'manage_options',
-			'ayecode-ui-settings',
-			[ $this, 'render_settings_page' ]
-		);
-	}
-
-	/**
-	 * Render the settings page.
-	 *
-	 * @return void
-	 */
-	public function render_settings_page(): void {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'ayecode-connect' ) );
-		}
-
-		$settings = $this->settings->get_settings();
+	public function get_config(): array {
 		$overrides = apply_filters( 'ayecode-ui-settings', [], [], [] );
-		?>
-		<div class="wrap">
-			<h1><?php echo esc_html( $this->name ); ?></h1>
-			<p><?php echo esc_html( apply_filters( 'ayecode-ui-settings-message', __( 'Here you can adjust settings if you are having compatibility issues.', 'ayecode-connect' ) ) ); ?></p>
+		$current_settings = get_option( $this->option_name, [] );
 
-			<form method="post" action="options.php">
-				<?php
-				settings_fields( 'ayecode-ui-settings' );
-				do_settings_sections( 'ayecode-ui-settings' );
-				?>
+		return [
+			'sections' => [
+				// Bootstrap Version Section
+				[
+					'id'    => 'bootstrap',
+					'name'  => __( 'Bootstrap Version', 'ayecode-connect' ),
+					'icon'  => 'fa-solid fa-code',
+					'description' => __( 'This package now only supports Bootstrap 5.3+ (with dark mode support).', 'ayecode-connect' ),
+					'fields' => [
+						[
+							'id'      => 'bs_ver',
+							'type'    => 'select',
+							'label'   => __( 'Bootstrap Version', 'ayecode-connect' ),
+							'desc'    => __( 'Select the Bootstrap version to use.', 'ayecode-connect' ),
+							'options' => apply_filters( 'ayecode_ui_versions', [
+								'5dm' => __( 'Bootstrap 5.3+ (Dark Mode) - v3.0', 'ayecode-connect' ),
+							], $current_settings, $overrides ),
+							'default' => '5dm',
+							'extra_attributes' => ! empty( $overrides['bs_ver'] ) ? [ 'disabled' => true ] : [],
+						],
+					],
+				],
 
-				<h2><?php esc_html_e( 'Bootstrap Version', 'ayecode-connect' ); ?></h2>
-				<p><?php esc_html_e( 'This package now only supports Bootstrap 5.3+ (with dark mode support).', 'ayecode-connect' ); ?></p>
-				<div class="bsui">
-					<?php
-					if ( ! empty( $overrides ) ) {
-						echo aui()->alert( [ // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							'type'    => 'info',
-							'content' => esc_html__( 'Some options are disabled as your current theme is overriding them.', 'ayecode-connect' ),
-						] );
-					}
+				// Asset Loading Section
+				[
+					'id'    => 'loading',
+					'name'  => __( 'Asset Loading', 'ayecode-connect' ),
+					'icon'  => 'fa-solid fa-bolt',
+					'fields' => [
+						[
+							'id'      => 'load_mode',
+							'type'    => 'select',
+							'label'   => __( 'Load Mode', 'ayecode-connect' ),
+							'desc'    => __( 'Auto mode only loads assets when AyeCode blocks are detected, improving performance.', 'ayecode-connect' ),
+							'options' => [
+								'auto'   => __( 'Auto (recommended) - Only when blocks detected', 'ayecode-connect' ),
+								'always' => __( 'Always - Load on all pages', 'ayecode-connect' ),
+								'manual' => __( 'Manual - Developer controlled', 'ayecode-connect' ),
+							],
+							'default' => 'auto',
+						],
+					],
+				],
 
-					$bs_ver_options = apply_filters( 'ayecode_ui_versions', [
-						'5dm' => __( 'Bootstrap 5.3+ (Dark Mode) - v2.0', 'ayecode-connect' ),
-					], $settings, $overrides );
-					?>
-				</div>
-				<table class="form-table wpbs-table-version-settings">
-					<tr valign="top">
-						<th scope="row"><label for="wpbs-version"><?php esc_html_e( 'Version', 'ayecode-connect' ); ?></label></th>
-						<td>
-							<select name="ayecode-ui-settings[bs_ver]" id="wpbs-version" <?php echo ! empty( $overrides['bs_ver'] ) ? 'disabled' : ''; ?>>
-								<?php foreach ( $bs_ver_options as $value => $label ) : ?>
-									<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $settings['bs_ver'], $value ); ?>>
-										<?php echo esc_html( $label ); ?>
-									</option>
-								<?php endforeach; ?>
-							</select>
-						</td>
-					</tr>
-				</table>
+				// Frontend Section
+				[
+					'id'    => 'frontend',
+					'name'  => __( 'Frontend', 'ayecode-connect' ),
+					'icon'  => 'fa-solid fa-display',
+					'fields' => [
+						[
+							'id'      => 'css',
+							'type'    => 'select',
+							'label'   => __( 'Load CSS', 'ayecode-connect' ),
+							'options' => [
+								'compatibility' => __( 'Compatibility Mode (default)', 'ayecode-connect' ),
+								'core'          => __( 'Full Mode', 'ayecode-connect' ),
+								''              => __( 'Disabled', 'ayecode-connect' ),
+							],
+							'default' => 'compatibility',
+							'extra_attributes' => ! empty( $overrides['css'] ) ? [ 'disabled' => true ] : [],
+						],
+						[
+							'id'      => 'js',
+							'type'    => 'select',
+							'label'   => __( 'Load JS', 'ayecode-connect' ),
+							'options' => [
+								'core-popper' => __( 'Core + Popper (default)', 'ayecode-connect' ),
+								'popper'      => __( 'Popper', 'ayecode-connect' ),
+								'required'    => __( 'Required functions only', 'ayecode-connect' ),
+								''            => __( 'Disabled (not recommended)', 'ayecode-connect' ),
+							],
+							'default' => 'core-popper',
+							'extra_attributes' => ! empty( $overrides['js'] ) ? [ 'disabled' => true ] : [],
+						],
+						[
+							'id'      => 'html_font_size',
+							'type'    => 'number',
+							'label'   => __( 'HTML Font Size (px)', 'ayecode-connect' ),
+							'desc'    => __( 'Our font sizing is rem (responsive based) here you can set the html font size in-case your theme is setting it too low.', 'ayecode-connect' ),
+							'default' => 16,
+							'min'     => 10,
+							'max'     => 24,
+							'placeholder' => '16',
+							'extra_attributes' => ! empty( $overrides['html_font_size'] ) ? [ 'disabled' => true ] : [],
+						],
+					],
+				],
 
-				<h2><?php esc_html_e( 'Asset Loading', 'ayecode-connect' ); ?></h2>
-				<table class="form-table wpbs-table-settings">
-					<tr valign="top">
-						<th scope="row"><label for="wpbs-load-mode"><?php esc_html_e( 'Load Mode', 'ayecode-connect' ); ?></label></th>
-						<td>
-							<select name="ayecode-ui-settings[load_mode]" id="wpbs-load-mode">
-								<option value="auto" <?php selected( $settings['load_mode'], 'auto' ); ?>><?php esc_html_e( 'Auto (recommended) - Only when blocks detected', 'ayecode-connect' ); ?></option>
-								<option value="always" <?php selected( $settings['load_mode'], 'always' ); ?>><?php esc_html_e( 'Always - Load on all pages', 'ayecode-connect' ); ?></option>
-								<option value="manual" <?php selected( $settings['load_mode'], 'manual' ); ?>><?php esc_html_e( 'Manual - Developer controlled', 'ayecode-connect' ); ?></option>
-							</select>
-							<p class="description"><?php esc_html_e( 'Auto mode only loads assets when AyeCode blocks are detected, improving performance.', 'ayecode-connect' ); ?></p>
-						</td>
-					</tr>
-				</table>
+				// Backend Section
+				[
+					'id'    => 'backend',
+					'name'  => __( 'Backend (wp-admin)', 'ayecode-connect' ),
+					'icon'  => 'fa-solid fa-gauge',
+					'fields' => [
+						[
+							'id'      => 'css_backend',
+							'type'    => 'select',
+							'label'   => __( 'Load CSS', 'ayecode-connect' ),
+							'options' => [
+								'compatibility' => __( 'Compatibility Mode (default)', 'ayecode-connect' ),
+								'core'          => __( 'Full Mode (will cause style issues)', 'ayecode-connect' ),
+								''              => __( 'Disabled', 'ayecode-connect' ),
+							],
+							'default' => 'compatibility',
+							'extra_attributes' => ! empty( $overrides['css_backend'] ) ? [ 'disabled' => true ] : [],
+						],
+						[
+							'id'      => 'js_backend',
+							'type'    => 'select',
+							'label'   => __( 'Load JS', 'ayecode-connect' ),
+							'options' => [
+								'core-popper' => __( 'Core + Popper (default)', 'ayecode-connect' ),
+								'popper'      => __( 'Popper', 'ayecode-connect' ),
+								'required'    => __( 'Required functions only', 'ayecode-connect' ),
+								''            => __( 'Disabled (not recommended)', 'ayecode-connect' ),
+							],
+							'default' => 'core-popper',
+							'extra_attributes' => ! empty( $overrides['js_backend'] ) ? [ 'disabled' => true ] : [],
+						],
+						[
+							'id'      => 'disable_admin',
+							'type'    => 'textarea',
+							'label'   => __( 'Disable load on URL', 'ayecode-connect' ),
+							'desc'    => __( 'If you have backend conflict you can enter a partial URL argument that will disable the loading of AUI on those pages. Add each argument on a new line.', 'ayecode-connect' ),
+							'rows'    => 10,
+							'placeholder' => "myplugin.php\naction=go",
+							'class'   => 'large-text code',
+						],
+					],
+				],
 
-				<h2><?php esc_html_e( 'Frontend', 'ayecode-connect' ); ?></h2>
-				<table class="form-table wpbs-table-settings">
-					<tr valign="top">
-						<th scope="row"><label for="wpbs-css"><?php esc_html_e( 'Load CSS', 'ayecode-connect' ); ?></label></th>
-						<td>
-							<select name="ayecode-ui-settings[css]" id="wpbs-css" <?php echo ! empty( $overrides['css'] ) ? 'disabled' : ''; ?>>
-								<option value="compatibility" <?php selected( $settings['css'], 'compatibility' ); ?>><?php esc_html_e( 'Compatibility Mode (default)', 'ayecode-connect' ); ?></option>
-								<option value="core" <?php selected( $settings['css'], 'core' ); ?>><?php esc_html_e( 'Full Mode', 'ayecode-connect' ); ?></option>
-								<option value="" <?php selected( $settings['css'], '' ); ?>><?php esc_html_e( 'Disabled', 'ayecode-connect' ); ?></option>
-							</select>
-						</td>
-					</tr>
+				// Tools Section
+				[
+					'id'    => 'tools',
+					'name'  => __( 'Tools', 'ayecode-connect' ),
+					'icon'  => 'fa-solid fa-wrench',
+					'fields' => [
+						[
+							'id'      => 'reset_settings',
+							'type'    => 'action_button',
+							'label'   => __( 'Reset Settings', 'ayecode-connect' ),
+							'description' => __( 'Reset all settings to their default values.', 'ayecode-connect' ),
+							'button_text' => __( 'Reset to Defaults', 'ayecode-connect' ),
+							'button_class' => 'btn-danger',
+                            'ajax_action' => 'reset_settings',  // Built-in handler!
+                            'confirm' => true,
+                            'confirm_message' => __( 'Are you sure you want to reset all settings to their default values? This cannot be undone.', 'ayecode-connect' ),
 
-					<tr valign="top">
-						<th scope="row"><label for="wpbs-js"><?php esc_html_e( 'Load JS', 'ayecode-connect' ); ?></label></th>
-						<td>
-							<select name="ayecode-ui-settings[js]" id="wpbs-js" <?php echo ! empty( $overrides['js'] ) ? 'disabled' : ''; ?>>
-								<option value="core-popper" <?php selected( $settings['js'], 'core-popper' ); ?>><?php esc_html_e( 'Core + Popper (default)', 'ayecode-connect' ); ?></option>
-								<option value="popper" <?php selected( $settings['js'], 'popper' ); ?>><?php esc_html_e( 'Popper', 'ayecode-connect' ); ?></option>
-								<option value="required" <?php selected( $settings['js'], 'required' ); ?>><?php esc_html_e( 'Required functions only', 'ayecode-connect' ); ?></option>
-								<option value="" <?php selected( $settings['js'], '' ); ?>><?php esc_html_e( 'Disabled (not recommended)', 'ayecode-connect' ); ?></option>
-							</select>
-						</td>
-					</tr>
+                        ],
+					],
+				],
 
-					<tr valign="top">
-						<th scope="row"><label for="wpbs-font_size"><?php esc_html_e( 'HTML Font Size (px)', 'ayecode-connect' ); ?></label></th>
-						<td>
-							<input type="number" name="ayecode-ui-settings[html_font_size]" id="wpbs-font_size" value="<?php echo absint( $settings['html_font_size'] ); ?>" placeholder="16" <?php echo ! empty( $overrides['html_font_size'] ) ? 'disabled' : ''; ?> />
-							<p class="description"><?php esc_html_e( 'Our font sizing is rem (responsive based) here you can set the html font size in-case your theme is setting it too low.', 'ayecode-connect' ); ?></p>
-						</td>
-					</tr>
-				</table>
-
-				<h2><?php esc_html_e( 'Backend', 'ayecode-connect' ); ?> (wp-admin)</h2>
-				<table class="form-table wpbs-table-settings">
-					<tr valign="top">
-						<th scope="row"><label for="wpbs-css-admin"><?php esc_html_e( 'Load CSS', 'ayecode-connect' ); ?></label></th>
-						<td>
-							<select name="ayecode-ui-settings[css_backend]" id="wpbs-css-admin" <?php echo ! empty( $overrides['css_backend'] ) ? 'disabled' : ''; ?>>
-								<option value="compatibility" <?php selected( $settings['css_backend'], 'compatibility' ); ?>><?php esc_html_e( 'Compatibility Mode (default)', 'ayecode-connect' ); ?></option>
-								<option value="core" <?php selected( $settings['css_backend'], 'core' ); ?>><?php esc_html_e( 'Full Mode (will cause style issues)', 'ayecode-connect' ); ?></option>
-								<option value="" <?php selected( $settings['css_backend'], '' ); ?>><?php esc_html_e( 'Disabled', 'ayecode-connect' ); ?></option>
-							</select>
-						</td>
-					</tr>
-
-					<tr valign="top">
-						<th scope="row"><label for="wpbs-js-admin"><?php esc_html_e( 'Load JS', 'ayecode-connect' ); ?></label></th>
-						<td>
-							<select name="ayecode-ui-settings[js_backend]" id="wpbs-js-admin" <?php echo ! empty( $overrides['js_backend'] ) ? 'disabled' : ''; ?>>
-								<option value="core-popper" <?php selected( $settings['js_backend'], 'core-popper' ); ?>><?php esc_html_e( 'Core + Popper (default)', 'ayecode-connect' ); ?></option>
-								<option value="popper" <?php selected( $settings['js_backend'], 'popper' ); ?>><?php esc_html_e( 'Popper', 'ayecode-connect' ); ?></option>
-								<option value="required" <?php selected( $settings['js_backend'], 'required' ); ?>><?php esc_html_e( 'Required functions only', 'ayecode-connect' ); ?></option>
-								<option value="" <?php selected( $settings['js_backend'], '' ); ?>><?php esc_html_e( 'Disabled (not recommended)', 'ayecode-connect' ); ?></option>
-							</select>
-						</td>
-					</tr>
-
-					<tr valign="top">
-						<th scope="row"><label for="wpbs-disable-admin"><?php esc_html_e( 'Disable load on URL', 'ayecode-connect' ); ?></label></th>
-						<td>
-							<p><?php esc_html_e( 'If you have backend conflict you can enter a partial URL argument that will disable the loading of AUI on those pages. Add each argument on a new line.', 'ayecode-connect' ); ?></p>
-							<textarea name="ayecode-ui-settings[disable_admin]" rows="10" cols="50" id="wpbs-disable-admin" class="large-text code" spellcheck="false" placeholder="myplugin.php &#10;action=go"><?php echo esc_textarea( $settings['disable_admin'] ); ?></textarea>
-						</td>
-					</tr>
-				</table>
-
-				<?php submit_button(); ?>
-			</form>
-			<div id="wpbs-version" data-aui-source="<?php echo esc_attr( $this->get_load_source() ); ?>"><?php echo esc_html( $this->version ); ?></div>
-		</div>
-		<?php
+				// Info Section
+				[
+					'id'    => 'info',
+					'name'  => __( 'Info', 'ayecode-connect' ),
+					'icon'  => 'fa-solid fa-circle-info',
+					'fields' => [
+						[
+							'type'  => 'alert',
+							'label' => __( 'Version Information', 'ayecode-connect' ),
+							'description' => sprintf(
+								__( 'Version: %s<br>Loaded from: %s', 'ayecode-connect' ),
+								$this->version,
+								$this->get_load_source()
+							),
+							'alert_type' => 'info',
+						],
+					],
+				],
+			],
+		];
 	}
+
+	/**
+	 * Get default settings.
+	 *
+	 * @return array Default settings values.
+	 */
+	protected function get_default_settings(): array {
+		return [
+			'bs_ver'         => '5dm',
+			'load_mode'      => 'auto',
+			'css'            => 'compatibility',
+			'js'             => 'core-popper',
+			'html_font_size' => 16,
+			'css_backend'    => 'compatibility',
+			'js_backend'     => 'core-popper',
+			'disable_admin'  => '',
+		];
+	}
+
 
 	/**
 	 * Show admin notice if backend scripts not loaded correctly.
@@ -237,17 +324,49 @@ class AUI_Admin {
 	 * @return void
 	 */
 	public function show_admin_style_notice(): void {
-		$settings = $this->settings->get_settings();
+		$screen = get_current_screen();
+		if ( ! $screen || $screen->id === 'settings_page_' . $this->page_slug ) {
+			return; // Don't show on settings page
+		}
+
+		$settings = $this->get_settings();
 
 		if ( $settings['css_backend'] === 'compatibility' && $settings['js_backend'] === 'core-popper' ) {
 			return; // Correct settings, no need to show notice
 		}
 
-		$fix_url = admin_url( 'options-general.php?page=ayecode-ui-settings&aui-fix-admin=true&nonce=' . wp_create_nonce( 'aui-fix-admin' ) );
+		$fix_url = admin_url( 'options-general.php?page=' . $this->page_slug . '&aui-fix-admin=true&nonce=' . wp_create_nonce( 'aui-fix-admin' ) );
 		$button = '<a href="' . esc_url( $fix_url ) . '" class="button-primary">Fix Now</a>';
 		$message = __( '<b>Style Issue:</b> AyeCode UI is disabled or set wrong.', 'ayecode-connect' ) . ' ' . $button;
 
 		echo '<div class="notice notice-error aui-settings-error-notice"><p>' . wp_kses_post( $message ) . '</p></div>';
+	}
+
+	/**
+	 * Maybe fix admin settings when "Fix Now" is clicked.
+	 *
+	 * @return void
+	 */
+	public function maybe_fix_admin_settings(): void {
+		if ( ! isset( $_GET['aui-fix-admin'], $_GET['nonce'] ) ) {
+			return;
+		}
+
+		if ( ! wp_verify_nonce( $_GET['nonce'], 'aui-fix-admin' ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$settings = $this->get_settings();
+		$settings['css_backend'] = 'compatibility';
+		$settings['js_backend'] = 'core-popper';
+		update_option( $this->option_name, $settings );
+
+		wp_redirect( admin_url( 'options-general.php?page=' . $this->page_slug ) );
+		exit;
 	}
 
 	/**
