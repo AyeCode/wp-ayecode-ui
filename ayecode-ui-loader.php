@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 add_action('after_setup_theme', function () {
 	global $ayecode_ui_version,$ayecode_ui_file_key;
-	$this_version = "2.0.0-beta";
+	$this_version = "3.0.0-beta";
 	if(empty($ayecode_ui_version) || version_compare($this_version , $ayecode_ui_version, '>')){
 		$ayecode_ui_version = $this_version ;
 		$ayecode_ui_file_key = wp_hash( __FILE__ );
