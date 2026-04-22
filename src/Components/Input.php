@@ -35,8 +35,8 @@ class Input {
 	 * @param array $args Component arguments.
 	 * @return string
 	 */
-	public static function input( array $args = [] ): string {
-		$defaults = [
+	public static function input( array $args = array() ): string {
+		$defaults = array(
 			'type'                     => 'text',
 			'name'                     => '',
 			'class'                    => '',
@@ -69,9 +69,9 @@ class Input {
 			'checked'                  => false,
 			'password_toggle'          => true,
 			'element_require'          => '',
-			'extra_attributes'         => [],
-			'wrap_attributes'          => [],
-		];
+			'extra_attributes'         => array(),
+			'wrap_attributes'          => array(),
+		);
 
 		$args   = wp_parse_args( $args, $defaults );
 		$output = '';
@@ -83,13 +83,13 @@ class Input {
 			$help_text   = '';
 			$label       = '';
 			$label_after = $args['label_after'];
-			$label_args  = [
+			$label_args  = array(
 				'title'      => $args['label'],
 				'for'        => $args['id'],
 				'class'      => $args['label_class'] . ' ',
 				'label_type' => $args['label_type'],
 				'label_col'  => $args['label_col'],
-			];
+			);
 
 			if ( $args['label_type'] === 'floating' && $type !== 'checkbox' ) {
 				$label_after         = true;
@@ -98,10 +98,10 @@ class Input {
 
 			$size = '';
 			if ( $args['size'] === 'lg' || $args['size'] === 'large' ) {
-				$size = 'lg';
+				$size           = 'lg';
 				$args['class'] .= ' form-control-lg';
 			} elseif ( $args['size'] === 'sm' || $args['size'] === 'small' ) {
-				$size = 'sm';
+				$size           = 'sm';
 				$args['class'] .= ' form-control-sm';
 			}
 
@@ -114,14 +114,14 @@ class Input {
 				$label_after    = true;
 				$args['class'] .= ' form-check-input c-pointer ';
 			} elseif ( $type === 'datepicker' || $type === 'timepicker' ) {
-				$type           = 'text';
-				$args['class'] .= ' bg-initial ';
+				$type            = 'text';
+				$args['class']  .= ' bg-initial ';
 				$clear_function .= "jQuery(this).parent().parent().find('input[name=\'" . esc_attr( $args['name'] ) . "\']').trigger('change');";
 
 				$args['extra_attributes']['data-aui-init'] = 'flatpickr';
 
-				$disable_mobile_attr = $args['extra_attributes']['data-disable-mobile'] ?? 'true';
-				$disable_mobile_attr = apply_filters( 'aui_flatpickr_disable_disable_mobile_attr', $disable_mobile_attr, $args );
+				$disable_mobile_attr                             = $args['extra_attributes']['data-disable-mobile'] ?? 'true';
+				$disable_mobile_attr                             = apply_filters( 'aui_flatpickr_disable_disable_mobile_attr', $disable_mobile_attr, $args );
 				$args['extra_attributes']['data-disable-mobile'] = $disable_mobile_attr;
 
 				if ( $args['input_group_right'] === '' && $args['clear_icon'] !== false ) {
@@ -133,9 +133,9 @@ class Input {
 			} elseif ( $type === 'iconpicker' ) {
 				$type = 'text';
 
-				$args['extra_attributes']['data-aui-init'] = 'iconpicker';
+				$args['extra_attributes']['data-aui-init']  = 'iconpicker';
 				$args['extra_attributes']['data-placement'] = 'bottomRight';
-				$args['input_group_right'] = '<span class="input-group-addon input-group-text c-pointer"></span>';
+				$args['input_group_right']                  = '<span class="input-group-addon input-group-text c-pointer"></span>';
 
 				SettingsOrchestrator::instance()->enqueue_iconpicker();
 			}
@@ -145,9 +145,9 @@ class Input {
 			}
 
 			if ( $args['input_group_right'] === '' && $args['clear_icon'] ) {
-				$font_size             = $size === 'sm' ? '1.3' : ( $size === 'lg' ? '1.65' : '1.5' );
+				$font_size                        = $size === 'sm' ? '1.3' : ( $size === 'lg' ? '1.65' : '1.5' );
 				$args['input_group_right_inside'] = true;
-				$args['input_group_right'] = '<span class="input-group-text aui-clear-input c-pointer bg-initial border-0 px-2 d-none h-100 py-0" onclick="' . $clear_function . '"><span style="font-size: ' . $font_size . 'rem" aria-hidden="true" class="btn-close"></span></span>';
+				$args['input_group_right']        = '<span class="input-group-text aui-clear-input c-pointer bg-initial border-0 px-2 d-none h-100 py-0" onclick="' . $clear_function . '"><span style="font-size: ' . $font_size . 'rem" aria-hidden="true" class="btn-close"></span></span>';
 			}
 
 			$output .= '<input type="' . $type . '" ';
@@ -206,13 +206,13 @@ class Input {
 				} elseif ( $type === 'checkbox' ) {
 					if ( ! empty( $args['label_force_left'] ) ) {
 						$label_args['title'] = wp_kses_post( $args['help_text'] );
-						$help_text = '';
+						$help_text           = '';
 						$args['wrap_class'] .= ' align-items-center ';
 					}
 					$label_base_class = ' form-check-label';
 				}
 				$label_args['class'] .= $label_base_class;
-				$temp_label_args = $label_args;
+				$temp_label_args      = $label_args;
 				if ( ! empty( $args['label_force_left'] ) ) {
 					$temp_label_args['class'] = $label_base_class . ' text-muted';
 				}
@@ -224,10 +224,12 @@ class Input {
 			}
 
 			if ( $type === 'file' ) {
-				$output = self::wrap( [
-					'content' => $output,
-					'class'   => 'mb-3 custom-file',
-				] );
+				$output = self::wrap(
+					array(
+						'content' => $output,
+						'class'   => 'mb-3 custom-file',
+					)
+				);
 			} elseif ( $type === 'checkbox' ) {
 				$label_args['title'] = $args['label'];
 				$label_col           = Helper::get_column_class( $args['label_col'], 'label' );
@@ -238,10 +240,12 @@ class Input {
 				if ( ! empty( $args['label_force_left'] ) ) {
 					$label = str_replace( 'form-check-label', '', self::label( $label_args, 'cb' ) );
 				}
-				$output = self::wrap( [
-					'content' => $output,
-					'class'   => $wrap_class,
-				] );
+				$output = self::wrap(
+					array(
+						'content' => $output,
+						'class'   => $wrap_class,
+					)
+				);
 
 				if ( $args['label_type'] === 'horizontal' ) {
 					$input_col = Helper::get_column_class( $args['label_col'], 'input' );
@@ -263,20 +267,24 @@ else{$eli.attr(\'type\',\'password\');}"
 				$group_size = ! $group_size && $size === 'sm' ? ' input-group-sm' : $group_size;
 
 				if ( $args['input_group_left'] ) {
-					$output = self::wrap( [
-						'content'                 => $output,
-						'class'                   => $args['input_group_left_inside'] ? 'input-group-inside position-relative' . $w100 . $group_size : 'input-group' . $group_size,
-						'input_group_left'        => $args['input_group_left'],
-						'input_group_left_inside' => $args['input_group_left_inside'],
-					] );
+					$output = self::wrap(
+						array(
+							'content'                 => $output,
+							'class'                   => $args['input_group_left_inside'] ? 'input-group-inside position-relative' . $w100 . $group_size : 'input-group' . $group_size,
+							'input_group_left'        => $args['input_group_left'],
+							'input_group_left_inside' => $args['input_group_left_inside'],
+						)
+					);
 				}
 				if ( $args['input_group_right'] ) {
-					$output = self::wrap( [
-						'content'                  => $output,
-						'class'                    => $args['input_group_right_inside'] ? 'input-group-inside position-relative' . $w100 . $group_size : 'input-group' . $group_size,
-						'input_group_right'        => $args['input_group_right'],
-						'input_group_right_inside' => $args['input_group_right_inside'],
-					] );
+					$output = self::wrap(
+						array(
+							'content'                  => $output,
+							'class'                    => $args['input_group_right_inside'] ? 'input-group-inside position-relative' . $w100 . $group_size : 'input-group' . $group_size,
+							'input_group_right'        => $args['input_group_right'],
+							'input_group_right_inside' => $args['input_group_right_inside'],
+						)
+					);
 				}
 			}
 
@@ -285,10 +293,12 @@ else{$eli.attr(\'type\',\'password\');}"
 			}
 
 			if ( $args['label_type'] === 'horizontal' && $type !== 'checkbox' ) {
-				$output = self::wrap( [
-					'content' => $output,
-					'class'   => Helper::get_column_class( $args['label_col'], 'input' ),
-				] );
+				$output = self::wrap(
+					array(
+						'content' => $output,
+						'class'   => Helper::get_column_class( $args['label_col'], 'input' ),
+					)
+				);
 			}
 
 			if ( ! $label_after ) {
@@ -300,13 +310,15 @@ else{$eli.attr(\'type\',\'password\');}"
 				$form_group_class = $args['label_type'] === 'floating' && $type !== 'checkbox' ? 'form-floating' : $fg_class;
 				$wrap_class       = $args['label_type'] === 'horizontal' ? $form_group_class . ' row' : $form_group_class;
 				$wrap_class       = ! empty( $args['wrap_class'] ) ? $wrap_class . ' ' . $args['wrap_class'] : $wrap_class;
-				$output           = self::wrap( [
-					'content'         => $output,
-					'class'           => $wrap_class,
-					'element_require' => $args['element_require'],
-					'argument_id'     => $args['id'],
-					'wrap_attributes' => $args['wrap_attributes'],
-				] );
+				$output           = self::wrap(
+					array(
+						'content'         => $output,
+						'class'           => $wrap_class,
+						'element_require' => $args['element_require'],
+						'argument_id'     => $args['id'],
+						'wrap_attributes' => $args['wrap_attributes'],
+					)
+				);
 			}
 		}
 
@@ -320,14 +332,14 @@ else{$eli.attr(\'type\',\'password\');}"
 	 * @param string $type Field type context.
 	 * @return string
 	 */
-	public static function label( array $args = [], string $type = '' ): string {
-		$defaults = [
+	public static function label( array $args = array(), string $type = '' ): string {
+		$defaults = array(
 			'title'      => '',
 			'for'        => '',
 			'class'      => '',
 			'label_type' => '',
 			'label_col'  => '',
-		];
+		);
 
 		$args   = wp_parse_args( $args, $defaults );
 		$output = '';
@@ -368,8 +380,8 @@ else{$eli.attr(\'type\',\'password\');}"
 	 * @param array $args Wrapper arguments.
 	 * @return string
 	 */
-	public static function wrap( array $args = [] ): string {
-		$defaults = [
+	public static function wrap( array $args = array() ): string {
+		$defaults = array(
 			'type'                     => 'div',
 			'class'                    => 'mb-3',
 			'content'                  => '',
@@ -379,8 +391,8 @@ else{$eli.attr(\'type\',\'password\');}"
 			'input_group_right_inside' => false,
 			'element_require'          => '',
 			'argument_id'              => '',
-			'wrap_attributes'          => [],
-		];
+			'wrap_attributes'          => array(),
+		);
 
 		$args   = wp_parse_args( $args, $defaults );
 		$output = '';
@@ -389,7 +401,7 @@ else{$eli.attr(\'type\',\'password\');}"
 			$output .= '<' . sanitize_html_class( $args['type'] );
 
 			if ( ! empty( $args['element_require'] ) ) {
-				$output .= Helper::element_require( $args['element_require'] );
+				$output        .= Helper::element_require( $args['element_require'] );
 				$args['class'] .= ' aui-conditional-field';
 			}
 			if ( ! empty( $args['argument_id'] ) ) {
@@ -431,8 +443,8 @@ else{$eli.attr(\'type\',\'password\');}"
 	 * @param array $args Component arguments.
 	 * @return string
 	 */
-	public static function textarea( array $args = [] ): string {
-		$defaults = [
+	public static function textarea( array $args = array() ): string {
+		$defaults = array(
 			'name'                     => '',
 			'class'                    => '',
 			'wrap_class'               => '',
@@ -458,9 +470,9 @@ else{$eli.attr(\'type\',\'password\');}"
 			'wysiwyg'                  => false,
 			'allow_tags'               => false,
 			'element_require'          => '',
-			'extra_attributes'         => [],
-			'wrap_attributes'          => [],
-		];
+			'extra_attributes'         => array(),
+			'wrap_attributes'          => array(),
+		);
 
 		$args   = wp_parse_args( $args, $defaults );
 		$output = '';
@@ -482,33 +494,33 @@ else{$eli.attr(\'type\',\'password\');}"
 		if ( ! empty( $args['label'] ) && is_array( $args['label'] ) ) {
 			// No-op: complex label handled elsewhere.
 		} elseif ( ! empty( $args['label'] ) && ! $label_after ) {
-			$label_args = [
+			$label_args = array(
 				'title'      => $args['label'],
 				'for'        => $args['id'],
 				'class'      => $args['label_class'] . ' ',
 				'label_type' => $args['label_type'],
 				'label_col'  => $args['label_col'],
-			];
-			$label .= self::label( $label_args );
+			);
+			$label     .= self::label( $label_args );
 		}
 
 		if ( $args['label_type'] === 'horizontal' ) {
-			$input_col  = Helper::get_column_class( $args['label_col'], 'input' );
-			$label     .= '<div class="' . $input_col . '">';
+			$input_col = Helper::get_column_class( $args['label_col'], 'input' );
+			$label    .= '<div class="' . $input_col . '">';
 		}
 
 		if ( ! empty( $args['wysiwyg'] ) ) {
 			ob_start();
 			$content   = $args['value'];
 			$editor_id = ! empty( $args['id'] ) ? sanitize_html_class( $args['id'] ) : 'wp_editor';
-			$settings  = [
+			$settings  = array(
 				'textarea_rows' => ! empty( absint( $args['rows'] ) ) ? absint( $args['rows'] ) : 4,
 				'quicktags'     => false,
 				'media_buttons' => false,
 				'editor_class'  => 'form-control',
 				'textarea_name' => ! empty( $args['name'] ) ? sanitize_html_class( $args['name'] ) : sanitize_html_class( $args['id'] ),
 				'teeny'         => true,
-			];
+			);
 			if ( is_array( $args['wysiwyg'] ) ) {
 				$settings = wp_parse_args( $args['wysiwyg'], $settings );
 			}
@@ -565,33 +577,37 @@ else{$eli.attr(\'type\',\'password\');}"
 			if ( $args['input_group_left'] || $args['input_group_right'] ) {
 				$w100 = strpos( $args['class'], 'w-100' ) !== false ? ' w-100' : '';
 				if ( $args['input_group_left'] ) {
-					$output = self::wrap( [
-						'content'                 => $output,
-						'class'                   => $args['input_group_left_inside'] ? 'input-group-inside position-relative' . $w100 : 'input-group',
-						'input_group_left'        => $args['input_group_left'],
-						'input_group_left_inside' => $args['input_group_left_inside'],
-					] );
+					$output = self::wrap(
+						array(
+							'content'                 => $output,
+							'class'                   => $args['input_group_left_inside'] ? 'input-group-inside position-relative' . $w100 : 'input-group',
+							'input_group_left'        => $args['input_group_left'],
+							'input_group_left_inside' => $args['input_group_left_inside'],
+						)
+					);
 				}
 				if ( $args['input_group_right'] ) {
-					$output = self::wrap( [
-						'content'                  => $output,
-						'class'                    => $args['input_group_right_inside'] ? 'input-group-inside position-relative' . $w100 : 'input-group',
-						'input_group_right'        => $args['input_group_right'],
-						'input_group_right_inside' => $args['input_group_right_inside'],
-					] );
+					$output = self::wrap(
+						array(
+							'content'                  => $output,
+							'class'                    => $args['input_group_right_inside'] ? 'input-group-inside position-relative' . $w100 : 'input-group',
+							'input_group_right'        => $args['input_group_right'],
+							'input_group_right_inside' => $args['input_group_right_inside'],
+						)
+					);
 				}
 			}
 		}
 
 		if ( ! empty( $args['label'] ) && $label_after ) {
-			$label_args = [
+			$label_args = array(
 				'title'      => $args['label'],
 				'for'        => $args['id'],
 				'class'      => $args['label_class'] . ' ',
 				'label_type' => $args['label_type'],
 				'label_col'  => $args['label_col'],
-			];
-			$output .= self::label( $label_args );
+			);
+			$output    .= self::label( $label_args );
 		}
 
 		if ( ! empty( $args['help_text'] ) ) {
@@ -611,13 +627,15 @@ else{$eli.attr(\'type\',\'password\');}"
 			$form_group_class = $args['label_type'] === 'floating' ? 'form-floating' : $fg_class;
 			$wrap_class       = $args['label_type'] === 'horizontal' ? $form_group_class . ' row' : $form_group_class;
 			$wrap_class       = ! empty( $args['wrap_class'] ) ? $wrap_class . ' ' . $args['wrap_class'] : $wrap_class;
-			$output           = self::wrap( [
-				'content'         => $output,
-				'class'           => $wrap_class,
-				'element_require' => $args['element_require'],
-				'argument_id'     => $args['id'],
-				'wrap_attributes' => $args['wrap_attributes'],
-			] );
+			$output           = self::wrap(
+				array(
+					'content'         => $output,
+					'class'           => $wrap_class,
+					'element_require' => $args['element_require'],
+					'argument_id'     => $args['id'],
+					'wrap_attributes' => $args['wrap_attributes'],
+				)
+			);
 		}
 
 		return $output;
@@ -629,8 +647,8 @@ else{$eli.attr(\'type\',\'password\');}"
 	 * @param array $args Component arguments.
 	 * @return string
 	 */
-	public static function select( array $args = [] ): string {
-		$defaults = [
+	public static function select( array $args = array() ): string {
+		$defaults = array(
 			'class'                    => '',
 			'wrap_class'               => '',
 			'id'                       => '',
@@ -644,7 +662,7 @@ else{$eli.attr(\'type\',\'password\');}"
 			'label_class'              => '',
 			'help_text'                => '',
 			'placeholder'              => '',
-			'options'                  => [],
+			'options'                  => array(),
 			'icon'                     => '',
 			'multiple'                 => false,
 			'select2'                  => false,
@@ -655,9 +673,9 @@ else{$eli.attr(\'type\',\'password\');}"
 			'input_group_left_inside'  => false,
 			'form_group_class'         => '',
 			'element_require'          => '',
-			'extra_attributes'         => [],
-			'wrap_attributes'          => [],
-		];
+			'extra_attributes'         => array(),
+			'wrap_attributes'          => array(),
+		);
 
 		$args = wp_parse_args( $args, $defaults );
 
@@ -682,7 +700,7 @@ else{$eli.attr(\'type\',\'password\');}"
 		}
 
 		if ( $is_select2 && ! self::$has_select2 ) {
-			self::$has_select2 = true;
+			self::$has_select2   = true;
 			$conditional_select2 = apply_filters( 'aui_is_conditional_select2', true );
 
 			if ( ! \AyeCode\UI\AssetManager::is_select2_enqueued() && $conditional_select2 === true ) {
@@ -715,7 +733,7 @@ else{$eli.attr(\'type\',\'password\');}"
 		}
 
 		if ( ! empty( $args['element_require'] ) ) {
-			$output .= Helper::element_require( $args['element_require'] );
+			$output        .= Helper::element_require( $args['element_require'] );
 			$args['class'] .= ' aui-conditional-field';
 		}
 
@@ -802,14 +820,14 @@ else{$eli.attr(\'type\',\'password\');}"
 		if ( ! empty( $args['label'] ) && is_array( $args['label'] ) ) {
 			// No-op.
 		} elseif ( ! empty( $args['label'] ) && ! $label_after ) {
-			$label_args = [
+			$label_args = array(
 				'title'      => $args['label'],
 				'for'        => $args['id'],
 				'class'      => $args['label_class'] . ' ',
 				'label_type' => $args['label_type'],
 				'label_col'  => $args['label_col'],
-			];
-			$label = self::label( $label_args );
+			);
+			$label      = self::label( $label_args );
 		}
 
 		if ( ! empty( $args['help_text'] ) ) {
@@ -819,20 +837,24 @@ else{$eli.attr(\'type\',\'password\');}"
 		if ( $args['input_group_left'] || $args['input_group_right'] ) {
 			$w100 = strpos( $args['class'], 'w-100' ) !== false ? ' w-100' : '';
 			if ( $args['input_group_left'] ) {
-				$output = self::wrap( [
-					'content'                 => $output,
-					'class'                   => $args['input_group_left_inside'] ? 'input-group-inside position-relative' . $w100 : 'input-group',
-					'input_group_left'        => $args['input_group_left'],
-					'input_group_left_inside' => $args['input_group_left_inside'],
-				] );
+				$output = self::wrap(
+					array(
+						'content'                 => $output,
+						'class'                   => $args['input_group_left_inside'] ? 'input-group-inside position-relative' . $w100 : 'input-group',
+						'input_group_left'        => $args['input_group_left'],
+						'input_group_left_inside' => $args['input_group_left_inside'],
+					)
+				);
 			}
 			if ( $args['input_group_right'] ) {
-				$output = self::wrap( [
-					'content'                  => $output,
-					'class'                    => $args['input_group_right_inside'] ? 'input-group-inside position-relative' . $w100 : 'input-group',
-					'input_group_right'        => $args['input_group_right'],
-					'input_group_right_inside' => $args['input_group_right_inside'],
-				] );
+				$output = self::wrap(
+					array(
+						'content'                  => $output,
+						'class'                    => $args['input_group_right_inside'] ? 'input-group-inside position-relative' . $w100 : 'input-group',
+						'input_group_right'        => $args['input_group_right'],
+						'input_group_right_inside' => $args['input_group_right_inside'],
+					)
+				);
 			}
 		}
 
@@ -841,10 +863,12 @@ else{$eli.attr(\'type\',\'password\');}"
 		}
 
 		if ( $args['label_type'] === 'horizontal' ) {
-			$output = self::wrap( [
-				'content' => $output,
-				'class'   => Helper::get_column_class( $args['label_col'], 'input' ),
-			] );
+			$output = self::wrap(
+				array(
+					'content' => $output,
+					'class'   => Helper::get_column_class( $args['label_col'], 'input' ),
+				)
+			);
 		}
 
 		if ( ! $label_after ) {
@@ -855,13 +879,15 @@ else{$eli.attr(\'type\',\'password\');}"
 			$fg_class   = ! empty( $args['form_group_class'] ) ? esc_attr( $args['form_group_class'] ) : 'mb-3';
 			$wrap_class = $args['label_type'] === 'horizontal' ? $fg_class . ' row' : $fg_class;
 			$wrap_class = ! empty( $args['wrap_class'] ) ? $wrap_class . ' ' . $args['wrap_class'] : $wrap_class;
-			$output     = self::wrap( [
-				'content'         => $output,
-				'class'           => $wrap_class,
-				'element_require' => $args['element_require'],
-				'argument_id'     => $args['id'],
-				'wrap_attributes' => $args['wrap_attributes'],
-			] );
+			$output     = self::wrap(
+				array(
+					'content'         => $output,
+					'class'           => $wrap_class,
+					'element_require' => $args['element_require'],
+					'argument_id'     => $args['id'],
+					'wrap_attributes' => $args['wrap_attributes'],
+				)
+			);
 		}
 
 		return $output;
@@ -873,8 +899,8 @@ else{$eli.attr(\'type\',\'password\');}"
 	 * @param array $args Component arguments.
 	 * @return string
 	 */
-	public static function radio( array $args = [] ): string {
-		$defaults = [
+	public static function radio( array $args = array() ): string {
+		$defaults = array(
 			'class'            => '',
 			'wrap_class'       => '',
 			'id'               => '',
@@ -888,13 +914,13 @@ else{$eli.attr(\'type\',\'password\');}"
 			'help_text'        => '',
 			'inline'           => true,
 			'required'         => false,
-			'options'          => [],
+			'options'          => array(),
 			'icon'             => '',
 			'no_wrap'          => false,
 			'element_require'  => '',
-			'extra_attributes' => [],
-			'wrap_attributes'  => [],
-		];
+			'extra_attributes' => array(),
+			'wrap_attributes'  => array(),
+		);
 
 		$args = wp_parse_args( $args, $defaults );
 
@@ -902,12 +928,12 @@ else{$eli.attr(\'type\',\'password\');}"
 			$args['label_type'] = 'horizontal';
 		}
 
-		$label_args = [
+		$label_args = array(
 			'title'      => $args['label'],
 			'class'      => $args['label_class'] . ' pt-0 ',
 			'label_type' => $args['label_type'],
 			'label_col'  => $args['label_col'],
-		];
+		);
 
 		if ( $args['label_type'] === 'top' || $args['label_type'] === 'hidden' ) {
 			$label_args['class'] .= 'd-block ';
@@ -923,8 +949,8 @@ else{$eli.attr(\'type\',\'password\');}"
 		}
 
 		if ( $args['label_type'] === 'horizontal' ) {
-			$input_col  = Helper::get_column_class( $args['label_col'], 'input' );
-			$output    .= '<div class="' . $input_col . '">';
+			$input_col = Helper::get_column_class( $args['label_col'], 'input' );
+			$output   .= '<div class="' . $input_col . '">';
 		}
 
 		if ( ! empty( $args['options'] ) ) {
@@ -934,13 +960,13 @@ else{$eli.attr(\'type\',\'password\');}"
 				$option_args['value']   = $value;
 				$option_args['label']   = $label;
 				$option_args['checked'] = $value == $args['value'];
-				$output .= self::radio_option( $option_args, $count );
-				$count++;
+				$output                .= self::radio_option( $option_args, $count );
+				++$count;
 			}
 		}
 
-		$help_text  = ! empty( $args['help_text'] ) ? Helper::help_text( $args['help_text'] ) : '';
-		$output    .= $help_text;
+		$help_text = ! empty( $args['help_text'] ) ? Helper::help_text( $args['help_text'] ) : '';
+		$output   .= $help_text;
 
 		if ( $args['label_type'] === 'horizontal' ) {
 			$output .= '</div>';
@@ -949,13 +975,15 @@ else{$eli.attr(\'type\',\'password\');}"
 		$fg_class   = 'mb-3';
 		$wrap_class = $args['label_type'] === 'horizontal' ? $fg_class . ' row' : $fg_class;
 		$wrap_class = ! empty( $args['wrap_class'] ) ? $wrap_class . ' ' . $args['wrap_class'] : $wrap_class;
-		$output     = self::wrap( [
-			'content'         => $output,
-			'class'           => $wrap_class,
-			'element_require' => $args['element_require'],
-			'argument_id'     => $args['id'],
-			'wrap_attributes' => $args['wrap_attributes'],
-		] );
+		$output     = self::wrap(
+			array(
+				'content'         => $output,
+				'class'           => $wrap_class,
+				'element_require' => $args['element_require'],
+				'argument_id'     => $args['id'],
+				'wrap_attributes' => $args['wrap_attributes'],
+			)
+		);
 
 		return $output;
 	}
@@ -967,8 +995,8 @@ else{$eli.attr(\'type\',\'password\');}"
 	 * @param string|int $count Option index for unique IDs.
 	 * @return string
 	 */
-	public static function radio_option( array $args = [], $count = '' ): string {
-		$defaults = [
+	public static function radio_option( array $args = array(), $count = '' ): string {
+		$defaults = array(
 			'class'            => '',
 			'id'               => '',
 			'title'            => '',
@@ -976,11 +1004,11 @@ else{$eli.attr(\'type\',\'password\');}"
 			'required'         => false,
 			'inline'           => true,
 			'label'            => '',
-			'options'          => [],
+			'options'          => array(),
 			'icon'             => '',
 			'no_wrap'          => false,
-			'extra_attributes' => [],
-		];
+			'extra_attributes' => array(),
+		);
 
 		$args   = wp_parse_args( $args, $defaults );
 		$output = '';
@@ -1019,11 +1047,14 @@ else{$eli.attr(\'type\',\'password\');}"
 		if ( ! empty( $args['label'] ) && is_array( $args['label'] ) ) {
 			// No-op.
 		} elseif ( ! empty( $args['label'] ) ) {
-			$output .= self::label( [
-				'title' => $args['label'],
-				'for'   => $args['id'] . $count,
-				'class' => 'form-check-label',
-			], 'radio' );
+			$output .= self::label(
+				array(
+					'title' => $args['label'],
+					'for'   => $args['id'] . $count,
+					'class' => 'form-check-label',
+				),
+				'radio'
+			);
 		}
 
 		if ( ! $args['no_wrap'] ) {
@@ -1043,10 +1074,12 @@ else{$eli.attr(\'type\',\'password\');}"
 			}
 			$wrap_class .= ' ' . sanitize_html_class( $uniq_class );
 
-			$output = self::wrap( [
-				'content' => $output,
-				'class'   => $wrap_class,
-			] );
+			$output = self::wrap(
+				array(
+					'content' => $output,
+					'class'   => $wrap_class,
+				)
+			);
 		}
 
 		return $output;

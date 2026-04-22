@@ -2,7 +2,7 @@
 /**
  * AyeCode UI Admin Interface
  *
- * Handles admin settings page using the AyeCode Settings Framework.
+ * Handles the admin settings page using the AyeCode Settings Framework.
  *
  * @package AyeCode\UI
  */
@@ -109,83 +109,88 @@ class Admin extends \AyeCode\SettingsFramework\Settings_Framework {
 	 * @return array Configuration array with sections and fields.
 	 */
 	public function get_config(): array {
-		$overrides        = apply_filters( 'ayecode-ui-settings', [], [], [] );
-		$current_settings = get_option( $this->option_name, [] );
-		$version          = defined( 'AYECODE_UI_VERSION' ) ? AYECODE_UI_VERSION : '3.0.0-beta';
+		$overrides        = apply_filters( 'ayecode_ui_settings', array(), array(), array() );
+		$current_settings = get_option( $this->option_name, array() );
+		$version          = AYECODE_UI_VERSION;
 
-		return [
-			'sections' => [
-				[
+		return array(
+			'sections' => array(
+				array(
 					'id'          => 'bootstrap',
 					'name'        => __( 'Bootstrap Version', 'ayecode-connect' ),
 					'icon'        => 'fa-solid fa-code',
 					'description' => __( 'This package now only supports Bootstrap 5.3+ (with dark mode support).', 'ayecode-connect' ),
-					'fields'      => [
-						[
+					'fields'      => array(
+						array(
 							'id'               => 'bs_ver',
 							'type'             => 'select',
 							'label'            => __( 'Bootstrap Version', 'ayecode-connect' ),
 							'desc'             => __( 'Select the Bootstrap version to use.', 'ayecode-connect' ),
-							'options'          => apply_filters( 'ayecode_ui_versions', [
-								'5dm' => __( 'Bootstrap 5.3+ (Dark Mode) - v3.0', 'ayecode-connect' ),
-							], $current_settings, $overrides ),
+							'options'          => apply_filters(
+								'ayecode_ui_versions',
+								array(
+									'5dm' => __( 'Bootstrap 5.3+ (Dark Mode) - v3.0', 'ayecode-connect' ),
+								),
+								$current_settings,
+								$overrides
+							),
 							'default'          => '5dm',
-							'extra_attributes' => ! empty( $overrides['bs_ver'] ) ? [ 'disabled' => true ] : [],
-						],
-					],
-				],
+							'extra_attributes' => ! empty( $overrides['bs_ver'] ) ? array( 'disabled' => true ) : array(),
+						),
+					),
+				),
 
-				[
+				array(
 					'id'     => 'loading',
 					'name'   => __( 'Asset Loading', 'ayecode-connect' ),
 					'icon'   => 'fa-solid fa-bolt',
-					'fields' => [
-						[
+					'fields' => array(
+						array(
 							'id'      => 'load_mode',
 							'type'    => 'select',
 							'label'   => __( 'Load Mode', 'ayecode-connect' ),
 							'desc'    => __( 'Auto mode only loads assets when AyeCode blocks are detected, improving performance.', 'ayecode-connect' ),
-							'options' => [
+							'options' => array(
 								'auto'   => __( 'Auto (recommended) - Only when blocks detected', 'ayecode-connect' ),
 								'always' => __( 'Always - Load on all pages', 'ayecode-connect' ),
 								'manual' => __( 'Manual - Developer controlled', 'ayecode-connect' ),
-							],
+							),
 							'default' => 'auto',
-						],
-					],
-				],
+						),
+					),
+				),
 
-				[
+				array(
 					'id'     => 'frontend',
 					'name'   => __( 'Frontend', 'ayecode-connect' ),
 					'icon'   => 'fa-solid fa-display',
-					'fields' => [
-						[
+					'fields' => array(
+						array(
 							'id'               => 'css',
 							'type'             => 'select',
 							'label'            => __( 'Load CSS', 'ayecode-connect' ),
-							'options'          => [
+							'options'          => array(
 								'compatibility' => __( 'Compatibility Mode (default)', 'ayecode-connect' ),
 								'core'          => __( 'Full Mode', 'ayecode-connect' ),
 								''              => __( 'Disabled', 'ayecode-connect' ),
-							],
+							),
 							'default'          => 'compatibility',
-							'extra_attributes' => ! empty( $overrides['css'] ) ? [ 'disabled' => true ] : [],
-						],
-						[
+							'extra_attributes' => ! empty( $overrides['css'] ) ? array( 'disabled' => true ) : array(),
+						),
+						array(
 							'id'               => 'js',
 							'type'             => 'select',
 							'label'            => __( 'Load JS', 'ayecode-connect' ),
-							'options'          => [
+							'options'          => array(
 								'core-popper' => __( 'Core + Popper (default)', 'ayecode-connect' ),
 								'popper'      => __( 'Popper', 'ayecode-connect' ),
 								'required'    => __( 'Required functions only', 'ayecode-connect' ),
 								''            => __( 'Disabled (not recommended)', 'ayecode-connect' ),
-							],
+							),
 							'default'          => 'core-popper',
-							'extra_attributes' => ! empty( $overrides['js'] ) ? [ 'disabled' => true ] : [],
-						],
-						[
+							'extra_attributes' => ! empty( $overrides['js'] ) ? array( 'disabled' => true ) : array(),
+						),
+						array(
 							'id'               => 'html_font_size',
 							'type'             => 'number',
 							'label'            => __( 'HTML Font Size (px)', 'ayecode-connect' ),
@@ -194,42 +199,42 @@ class Admin extends \AyeCode\SettingsFramework\Settings_Framework {
 							'min'              => 10,
 							'max'              => 24,
 							'placeholder'      => '16',
-							'extra_attributes' => ! empty( $overrides['html_font_size'] ) ? [ 'disabled' => true ] : [],
-						],
-					],
-				],
+							'extra_attributes' => ! empty( $overrides['html_font_size'] ) ? array( 'disabled' => true ) : array(),
+						),
+					),
+				),
 
-				[
+				array(
 					'id'     => 'backend',
 					'name'   => __( 'Backend (wp-admin)', 'ayecode-connect' ),
 					'icon'   => 'fa-solid fa-gauge',
-					'fields' => [
-						[
+					'fields' => array(
+						array(
 							'id'               => 'css_backend',
 							'type'             => 'select',
 							'label'            => __( 'Load CSS', 'ayecode-connect' ),
-							'options'          => [
+							'options'          => array(
 								'compatibility' => __( 'Compatibility Mode (default)', 'ayecode-connect' ),
 								'core'          => __( 'Full Mode (will cause style issues)', 'ayecode-connect' ),
 								''              => __( 'Disabled', 'ayecode-connect' ),
-							],
+							),
 							'default'          => 'compatibility',
-							'extra_attributes' => ! empty( $overrides['css_backend'] ) ? [ 'disabled' => true ] : [],
-						],
-						[
+							'extra_attributes' => ! empty( $overrides['css_backend'] ) ? array( 'disabled' => true ) : array(),
+						),
+						array(
 							'id'               => 'js_backend',
 							'type'             => 'select',
 							'label'            => __( 'Load JS', 'ayecode-connect' ),
-							'options'          => [
+							'options'          => array(
 								'core-popper' => __( 'Core + Popper (default)', 'ayecode-connect' ),
 								'popper'      => __( 'Popper', 'ayecode-connect' ),
 								'required'    => __( 'Required functions only', 'ayecode-connect' ),
 								''            => __( 'Disabled (not recommended)', 'ayecode-connect' ),
-							],
+							),
 							'default'          => 'core-popper',
-							'extra_attributes' => ! empty( $overrides['js_backend'] ) ? [ 'disabled' => true ] : [],
-						],
-						[
+							'extra_attributes' => ! empty( $overrides['js_backend'] ) ? array( 'disabled' => true ) : array(),
+						),
+						array(
 							'id'          => 'disable_admin',
 							'type'        => 'textarea',
 							'label'       => __( 'Disable load on URL', 'ayecode-connect' ),
@@ -237,35 +242,35 @@ class Admin extends \AyeCode\SettingsFramework\Settings_Framework {
 							'rows'        => 10,
 							'placeholder' => "myplugin.php\naction=go",
 							'class'       => 'large-text code',
-						],
-					],
-				],
+						),
+					),
+				),
 
-				[
+				array(
 					'id'     => 'tools',
 					'name'   => __( 'Tools', 'ayecode-connect' ),
 					'icon'   => 'fa-solid fa-wrench',
-					'fields' => [
-						[
-							'id'             => 'reset_settings',
-							'type'           => 'action_button',
-							'label'          => __( 'Reset Settings', 'ayecode-connect' ),
-							'description'    => __( 'Reset all settings to their default values.', 'ayecode-connect' ),
-							'button_text'    => __( 'Reset to Defaults', 'ayecode-connect' ),
-							'button_class'   => 'btn-danger',
-							'ajax_action'    => 'reset_settings',
-							'confirm'        => true,
+					'fields' => array(
+						array(
+							'id'              => 'reset_settings',
+							'type'            => 'action_button',
+							'label'           => __( 'Reset Settings', 'ayecode-connect' ),
+							'description'     => __( 'Reset all settings to their default values.', 'ayecode-connect' ),
+							'button_text'     => __( 'Reset to Defaults', 'ayecode-connect' ),
+							'button_class'    => 'btn-danger',
+							'ajax_action'     => 'reset_settings',
+							'confirm'         => true,
 							'confirm_message' => __( 'Are you sure you want to reset all settings to their default values? This cannot be undone.', 'ayecode-connect' ),
-						],
-					],
-				],
+						),
+					),
+				),
 
-				[
+				array(
 					'id'     => 'info',
 					'name'   => __( 'Info', 'ayecode-connect' ),
 					'icon'   => 'fa-solid fa-circle-info',
-					'fields' => [
-						[
+					'fields' => array(
+						array(
 							'type'        => 'alert',
 							'label'       => __( 'Version Information', 'ayecode-connect' ),
 							'description' => sprintf(
@@ -274,12 +279,12 @@ class Admin extends \AyeCode\SettingsFramework\Settings_Framework {
 								$version,
 								$this->get_load_source()
 							),
-							'alert_type' => 'info',
-						],
-					],
-				],
-			],
-		];
+							'alert_type'  => 'info',
+						),
+					),
+				),
+			),
+		);
 	}
 
 	/**
@@ -288,7 +293,7 @@ class Admin extends \AyeCode\SettingsFramework\Settings_Framework {
 	 * @return array Default settings values.
 	 */
 	protected function get_default_settings(): array {
-		return [
+		return array(
 			'bs_ver'         => '5dm',
 			'load_mode'      => 'auto',
 			'css'            => 'compatibility',
@@ -297,7 +302,7 @@ class Admin extends \AyeCode\SettingsFramework\Settings_Framework {
 			'css_backend'    => 'compatibility',
 			'js_backend'     => 'core-popper',
 			'disable_admin'  => '',
-		];
+		);
 	}
 
 	/**
@@ -307,13 +312,13 @@ class Admin extends \AyeCode\SettingsFramework\Settings_Framework {
 	 */
 	public function show_admin_style_notice(): void {
 		$screen = get_current_screen();
-		if ( ! $screen || $screen->id === 'settings_page_' . $this->page_slug ) {
+		if ( ! $screen || 'settings_page_' . $this->page_slug === $screen->id ) {
 			return;
 		}
 
 		$settings = $this->get_settings();
 
-		if ( $settings['css_backend'] === 'compatibility' && $settings['js_backend'] === 'core-popper' ) {
+		if ( 'compatibility' === $settings['css_backend'] && 'core-popper' === $settings['js_backend'] ) {
 			return;
 		}
 
@@ -342,9 +347,9 @@ class Admin extends \AyeCode\SettingsFramework\Settings_Framework {
 			return;
 		}
 
-		$settings                  = $this->get_settings();
-		$settings['css_backend']   = 'compatibility';
-		$settings['js_backend']    = 'core-popper';
+		$settings                = $this->get_settings();
+		$settings['css_backend'] = 'compatibility';
+		$settings['js_backend']  = 'core-popper';
 		update_option( $this->option_name, $settings );
 
 		wp_safe_redirect( admin_url( 'options-general.php?page=' . $this->page_slug ) );
@@ -357,14 +362,14 @@ class Admin extends \AyeCode\SettingsFramework\Settings_Framework {
 	 * @return string Source name.
 	 */
 	private function get_load_source(): string {
-		$file        = str_replace( [ '/', '\\' ], '/', realpath( AYECODE_UI_PLUGIN_FILE ) );
-		$plugins_dir = str_replace( [ '/', '\\' ], '/', realpath( WP_PLUGIN_DIR ) );
+		$file        = str_replace( array( '/', '\\' ), '/', realpath( AYECODE_UI_PLUGIN_FILE ) );
+		$plugins_dir = str_replace( array( '/', '\\' ), '/', realpath( WP_PLUGIN_DIR ) );
 
-		$source = [];
+		$source = array();
 		if ( strpos( $file, $plugins_dir ) !== false ) {
 			$source = explode( '/', plugin_basename( $file ) );
 		} elseif ( function_exists( 'get_theme_root' ) ) {
-			$themes_dir = str_replace( [ '/', '\\' ], '/', realpath( get_theme_root() ) );
+			$themes_dir = str_replace( array( '/', '\\' ), '/', realpath( get_theme_root() ) );
 
 			if ( strpos( $file, $themes_dir ) !== false ) {
 				$source = explode( '/', ltrim( str_replace( $themes_dir, '', $file ), '/' ) );

@@ -26,26 +26,38 @@ class Pagination {
 	 * @param array $args Component arguments.
 	 * @return string
 	 */
-	public static function get( array $args = [] ): string {
+	public static function get( array $args = array() ): string {
 		global $wp_query;
 
-		$defaults = [
+		$defaults = array(
 			'class'              => '',
 			'mid_size'           => 2,
-			'prev_text'          => '<i class="fas fa-chevron-left"></i>',
-			'next_text'          => '<i class="fas fa-chevron-right"></i>',
+			'prev_text'          => '',
+			'next_text'          => '',
 			'screen_reader_text' => __( 'Posts navigation', 'ayecode-connect' ),
 			'before_paging'      => '',
 			'after_paging'       => '',
 			'type'               => 'array',
 			'total'              => isset( $wp_query->max_num_pages ) ? $wp_query->max_num_pages : 1,
-			'links'              => [],
+			'links'              => array(),
 			'rounded_style'      => false,
 			'custom_next_text'   => '',
 			'custom_prev_text'   => '',
-		];
+		);
 
-		$args   = wp_parse_args( $args, $defaults );
+		$args = wp_parse_args( $args, $defaults );
+
+		// Apply default prev/next icons only when the caller did not supply their own text.
+		if ( '' === $args['prev_text'] ) {
+			$args['prev_text'] = function_exists( 'ayecode_get_icon' )
+				? \ayecode_get_icon( 'fas fa-chevron-left' )
+				: '<i class="fas fa-chevron-left"></i>';
+		}
+		if ( '' === $args['next_text'] ) {
+			$args['next_text'] = function_exists( 'ayecode_get_icon' )
+				? \ayecode_get_icon( 'fas fa-chevron-right' )
+				: '<i class="fas fa-chevron-right"></i>';
+		}
 		$output = '';
 
 		if ( $args['total'] > 1 ) {
@@ -63,15 +75,15 @@ class Pagination {
 					$link_active = $args['rounded_style'] ? ' current active fw-bold badge rounded-pill' : ' current active';
 
 					$links_html .= "<li class='page-item mx-0'>";
-					$link        = str_replace( [ 'page-numbers', ' current' ], [ $link_class, $link_active ], $link );
+					$link        = str_replace( array( 'page-numbers', ' current' ), array( $link_class, $link_active ), $link );
 					$link        = str_replace( 'text-dark link-primary current', 'current', $link );
 					$links_html .= $link;
-					$links_html .= "</li>";
+					$links_html .= '</li>';
 
 					if ( strpos( $_link, 'next page-numbers' ) || strpos( $_link, 'prev page-numbers' ) ) {
 						$btn_link = str_replace(
-							[ 'page-numbers', ' current' ],
-							[ 'btn btn-outline-primary rounded' . ( $args['rounded_style'] ? '-pill' : '' ) . ' mx-1 fs-base text-dark link-primary', ' current active fw-bold badge rounded-pill' ],
+							array( 'page-numbers', ' current' ),
+							array( 'btn btn-outline-primary rounded' . ( $args['rounded_style'] ? '-pill' : '' ) . ' mx-1 fs-base text-dark link-primary', ' current active fw-bold badge rounded-pill' ),
 							$_link
 						);
 						$btn_link = str_replace( 'text-dark link-primary current', 'current', $btn_link );
@@ -84,7 +96,7 @@ class Pagination {
 					}
 				}
 			}
-			$links_html .= "</ul>";
+			$links_html .= '</ul>';
 
 			if ( $links ) {
 				$output .= '<section class="px-0 py-2 w-100">';

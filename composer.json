@@ -1,6 +1,6 @@
 {
   "name": "ayecode/wp-ayecode-ui",
-  "version": "3.0.0-beta",
+  "version": "3.0.1-beta",
   "type": "library",
   "description": "A Bootstrap UI for WordPress plugins and themes.",
   "keywords": ["bootstrap","boot","ayecode"],
@@ -18,9 +18,6 @@
     "php": ">=7.4"
   },
   "autoload": {
-    "psr-4": {
-      "AyeCode\\UI\\": "src/"
-    },
     "files": ["package-loader.php"]
   }
 }

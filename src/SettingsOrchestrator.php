@@ -102,7 +102,7 @@ class SettingsOrchestrator {
 		if ( ! empty( $_REQUEST['aui-fix-admin'] ) && ! empty( $_REQUEST['nonce'] )
 			&& wp_verify_nonce( sanitize_key( wp_unslash( $_REQUEST['nonce'] ) ), 'aui-fix-admin' )
 		) {
-			$db_settings = get_option( 'ayecode-ui-settings', [] );
+			$db_settings = get_option( 'ayecode-ui-settings', array() );
 			if ( ! empty( $db_settings ) ) {
 				$db_settings['css_backend'] = 'compatibility';
 				$db_settings['js_backend']  = 'core-popper';
@@ -115,8 +115,8 @@ class SettingsOrchestrator {
 		$this->define_color_constants();
 
 		// Add BS5 body classes.
-		add_filter( 'admin_body_class', [ $this, 'add_bs5_admin_body_class' ], 99, 1 );
-		add_filter( 'body_class', [ $this, 'add_bs5_body_class' ] );
+		add_filter( 'admin_body_class', array( $this, 'add_bs5_admin_body_class' ), 99, 1 );
+		add_filter( 'body_class', array( $this, 'add_bs5_body_class' ) );
 
 		// Load conversion utilities (contains helper functions, not classes).
 		include_once AYECODE_UI_PLUGIN_DIR . 'includes/inc/bs-conversion.php';
@@ -125,27 +125,27 @@ class SettingsOrchestrator {
 		$load_mode = $this->settings->get_load_mode();
 		$settings  = $this->settings->get_settings();
 
-		if ( $load_mode === 'always' || $load_mode === 'manual' ) {
+		if ( 'always' === $load_mode || 'manual' === $load_mode ) {
 			if ( $settings['css'] ) {
-				add_action( 'wp_enqueue_scripts', [ $this->asset_manager, 'enqueue_style' ], 10 );
+				add_action( 'wp_enqueue_scripts', array( $this->asset_manager, 'enqueue_style' ), 10 );
 			}
 			if ( $settings['js'] ) {
-				add_action( 'wp_enqueue_scripts', [ $this->asset_manager, 'enqueue_scripts' ], 10 );
+				add_action( 'wp_enqueue_scripts', array( $this->asset_manager, 'enqueue_scripts' ), 10 );
 			}
 		}
 		// 'auto' mode is handled by AssetManager's lazy-loading via Loader hooks.
 
 		// Backend loading is not lazy.
 		if ( $settings['css_backend'] ) {
-			add_action( 'admin_enqueue_scripts', [ $this->asset_manager, 'enqueue_style' ], 1 );
+			add_action( 'admin_enqueue_scripts', array( $this->asset_manager, 'enqueue_style' ), 1 );
 		}
 		if ( $settings['js_backend'] ) {
-			add_action( 'admin_enqueue_scripts', [ $this->asset_manager, 'enqueue_scripts' ], 1 );
+			add_action( 'admin_enqueue_scripts', array( $this->asset_manager, 'enqueue_scripts' ), 1 );
 		}
 
 		// HTML font size.
 		if ( $settings['html_font_size'] ) {
-			add_action( 'wp_footer', [ $this, 'html_font_size' ], 10 );
+			add_action( 'wp_footer', array( $this, 'html_font_size' ), 10 );
 		}
 	}
 
@@ -155,39 +155,55 @@ class SettingsOrchestrator {
 	 * @return void
 	 */
 	private function define_color_constants(): void {
-		define( 'AUI_PRIMARY_COLOR_ORIGINAL',   '#1e73be' );
+		define( 'AUI_PRIMARY_COLOR_ORIGINAL', '#1e73be' );
 		define( 'AUI_SECONDARY_COLOR_ORIGINAL', '#6c757d' );
-		define( 'AUI_INFO_COLOR_ORIGINAL',      '#17a2b8' );
-		define( 'AUI_WARNING_COLOR_ORIGINAL',   '#ffc107' );
-		define( 'AUI_DANGER_COLOR_ORIGINAL',    '#dc3545' );
-		define( 'AUI_SUCCESS_COLOR_ORIGINAL',   '#44c553' );
-		define( 'AUI_LIGHT_COLOR_ORIGINAL',     '#f8f9fa' );
-		define( 'AUI_DARK_COLOR_ORIGINAL',      '#343a40' );
-		define( 'AUI_WHITE_COLOR_ORIGINAL',     '#fff' );
-		define( 'AUI_PURPLE_COLOR_ORIGINAL',    '#ad6edd' );
-		define( 'AUI_SALMON_COLOR_ORIGINAL',    '#ff977a' );
-		define( 'AUI_CYAN_COLOR_ORIGINAL',      '#35bdff' );
-		define( 'AUI_GRAY_COLOR_ORIGINAL',      '#ced4da' );
-		define( 'AUI_INDIGO_COLOR_ORIGINAL',    '#502c6c' );
-		define( 'AUI_ORANGE_COLOR_ORIGINAL',    '#orange' );
-		define( 'AUI_BLACK_COLOR_ORIGINAL',     '#000' );
+		define( 'AUI_INFO_COLOR_ORIGINAL', '#17a2b8' );
+		define( 'AUI_WARNING_COLOR_ORIGINAL', '#ffc107' );
+		define( 'AUI_DANGER_COLOR_ORIGINAL', '#dc3545' );
+		define( 'AUI_SUCCESS_COLOR_ORIGINAL', '#44c553' );
+		define( 'AUI_LIGHT_COLOR_ORIGINAL', '#f8f9fa' );
+		define( 'AUI_DARK_COLOR_ORIGINAL', '#343a40' );
+		define( 'AUI_WHITE_COLOR_ORIGINAL', '#fff' );
+		define( 'AUI_PURPLE_COLOR_ORIGINAL', '#ad6edd' );
+		define( 'AUI_SALMON_COLOR_ORIGINAL', '#ff977a' );
+		define( 'AUI_CYAN_COLOR_ORIGINAL', '#35bdff' );
+		define( 'AUI_GRAY_COLOR_ORIGINAL', '#ced4da' );
+		define( 'AUI_INDIGO_COLOR_ORIGINAL', '#502c6c' );
+		define( 'AUI_ORANGE_COLOR_ORIGINAL', '#orange' );
+		define( 'AUI_BLACK_COLOR_ORIGINAL', '#000' );
 
-		if ( ! defined( 'AUI_PRIMARY_COLOR' ) )   { define( 'AUI_PRIMARY_COLOR',   AUI_PRIMARY_COLOR_ORIGINAL ); }
-		if ( ! defined( 'AUI_SECONDARY_COLOR' ) ) { define( 'AUI_SECONDARY_COLOR', AUI_SECONDARY_COLOR_ORIGINAL ); }
-		if ( ! defined( 'AUI_INFO_COLOR' ) )      { define( 'AUI_INFO_COLOR',      AUI_INFO_COLOR_ORIGINAL ); }
-		if ( ! defined( 'AUI_WARNING_COLOR' ) )   { define( 'AUI_WARNING_COLOR',   AUI_WARNING_COLOR_ORIGINAL ); }
-		if ( ! defined( 'AUI_DANGER_COLOR' ) )    { define( 'AUI_DANGER_COLOR',    AUI_DANGER_COLOR_ORIGINAL ); }
-		if ( ! defined( 'AUI_SUCCESS_COLOR' ) )   { define( 'AUI_SUCCESS_COLOR',   AUI_SUCCESS_COLOR_ORIGINAL ); }
-		if ( ! defined( 'AUI_LIGHT_COLOR' ) )     { define( 'AUI_LIGHT_COLOR',     AUI_LIGHT_COLOR_ORIGINAL ); }
-		if ( ! defined( 'AUI_DARK_COLOR' ) )      { define( 'AUI_DARK_COLOR',      AUI_DARK_COLOR_ORIGINAL ); }
-		if ( ! defined( 'AUI_WHITE_COLOR' ) )     { define( 'AUI_WHITE_COLOR',     AUI_WHITE_COLOR_ORIGINAL ); }
-		if ( ! defined( 'AUI_PURPLE_COLOR' ) )    { define( 'AUI_PURPLE_COLOR',    AUI_PURPLE_COLOR_ORIGINAL ); }
-		if ( ! defined( 'AUI_SALMON_COLOR' ) )    { define( 'AUI_SALMON_COLOR',    AUI_SALMON_COLOR_ORIGINAL ); }
-		if ( ! defined( 'AUI_CYAN_COLOR' ) )      { define( 'AUI_CYAN_COLOR',      AUI_CYAN_COLOR_ORIGINAL ); }
-		if ( ! defined( 'AUI_GRAY_COLOR' ) )      { define( 'AUI_GRAY_COLOR',      AUI_GRAY_COLOR_ORIGINAL ); }
-		if ( ! defined( 'AUI_INDIGO_COLOR' ) )    { define( 'AUI_INDIGO_COLOR',    AUI_INDIGO_COLOR_ORIGINAL ); }
-		if ( ! defined( 'AUI_ORANGE_COLOR' ) )    { define( 'AUI_ORANGE_COLOR',    AUI_ORANGE_COLOR_ORIGINAL ); }
-		if ( ! defined( 'AUI_BLACK_COLOR' ) )     { define( 'AUI_BLACK_COLOR',     AUI_BLACK_COLOR_ORIGINAL ); }
+		if ( ! defined( 'AUI_PRIMARY_COLOR' ) ) {
+			define( 'AUI_PRIMARY_COLOR', AUI_PRIMARY_COLOR_ORIGINAL ); }
+		if ( ! defined( 'AUI_SECONDARY_COLOR' ) ) {
+			define( 'AUI_SECONDARY_COLOR', AUI_SECONDARY_COLOR_ORIGINAL ); }
+		if ( ! defined( 'AUI_INFO_COLOR' ) ) {
+			define( 'AUI_INFO_COLOR', AUI_INFO_COLOR_ORIGINAL ); }
+		if ( ! defined( 'AUI_WARNING_COLOR' ) ) {
+			define( 'AUI_WARNING_COLOR', AUI_WARNING_COLOR_ORIGINAL ); }
+		if ( ! defined( 'AUI_DANGER_COLOR' ) ) {
+			define( 'AUI_DANGER_COLOR', AUI_DANGER_COLOR_ORIGINAL ); }
+		if ( ! defined( 'AUI_SUCCESS_COLOR' ) ) {
+			define( 'AUI_SUCCESS_COLOR', AUI_SUCCESS_COLOR_ORIGINAL ); }
+		if ( ! defined( 'AUI_LIGHT_COLOR' ) ) {
+			define( 'AUI_LIGHT_COLOR', AUI_LIGHT_COLOR_ORIGINAL ); }
+		if ( ! defined( 'AUI_DARK_COLOR' ) ) {
+			define( 'AUI_DARK_COLOR', AUI_DARK_COLOR_ORIGINAL ); }
+		if ( ! defined( 'AUI_WHITE_COLOR' ) ) {
+			define( 'AUI_WHITE_COLOR', AUI_WHITE_COLOR_ORIGINAL ); }
+		if ( ! defined( 'AUI_PURPLE_COLOR' ) ) {
+			define( 'AUI_PURPLE_COLOR', AUI_PURPLE_COLOR_ORIGINAL ); }
+		if ( ! defined( 'AUI_SALMON_COLOR' ) ) {
+			define( 'AUI_SALMON_COLOR', AUI_SALMON_COLOR_ORIGINAL ); }
+		if ( ! defined( 'AUI_CYAN_COLOR' ) ) {
+			define( 'AUI_CYAN_COLOR', AUI_CYAN_COLOR_ORIGINAL ); }
+		if ( ! defined( 'AUI_GRAY_COLOR' ) ) {
+			define( 'AUI_GRAY_COLOR', AUI_GRAY_COLOR_ORIGINAL ); }
+		if ( ! defined( 'AUI_INDIGO_COLOR' ) ) {
+			define( 'AUI_INDIGO_COLOR', AUI_INDIGO_COLOR_ORIGINAL ); }
+		if ( ! defined( 'AUI_ORANGE_COLOR' ) ) {
+			define( 'AUI_ORANGE_COLOR', AUI_ORANGE_COLOR_ORIGINAL ); }
+		if ( ! defined( 'AUI_BLACK_COLOR' ) ) {
+			define( 'AUI_BLACK_COLOR', AUI_BLACK_COLOR_ORIGINAL ); }
 	}
 
 	/**
@@ -198,11 +214,11 @@ class SettingsOrchestrator {
 	 */
 	public static function get_colors( bool $original = false ): array {
 		if ( ! defined( 'AUI_PRIMARY_COLOR' ) ) {
-			return [];
+			return array();
 		}
 
 		if ( $original ) {
-			return [
+			return array(
 				'primary'   => AUI_PRIMARY_COLOR_ORIGINAL,
 				'secondary' => AUI_SECONDARY_COLOR_ORIGINAL,
 				'info'      => AUI_INFO_COLOR_ORIGINAL,
@@ -219,10 +235,10 @@ class SettingsOrchestrator {
 				'indigo'    => AUI_INDIGO_COLOR_ORIGINAL,
 				'orange'    => AUI_ORANGE_COLOR_ORIGINAL,
 				'black'     => AUI_BLACK_COLOR_ORIGINAL,
-			];
+			);
 		}
 
-		return [
+		return array(
 			'primary'   => AUI_PRIMARY_COLOR,
 			'secondary' => AUI_SECONDARY_COLOR,
 			'info'      => AUI_INFO_COLOR,
@@ -239,7 +255,7 @@ class SettingsOrchestrator {
 			'indigo'    => AUI_INDIGO_COLOR,
 			'orange'    => AUI_ORANGE_COLOR,
 			'black'     => AUI_BLACK_COLOR,
-		];
+		);
 	}
 
 	/**

@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	// -------------------------------------------------------------------------
 
 	$registry_key = 'ayecode_ui_registry';
-	$this_version = '3.0.0-beta';
+	$this_version = '3.0.1-beta';
 	$this_path    = dirname( __FILE__ );
 	$prefix       = 'AyeCode\\UI\\';
 	$loader_class = 'AyeCode\\UI\\Loader';

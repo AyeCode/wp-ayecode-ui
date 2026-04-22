@@ -32,7 +32,7 @@ class Settings {
 	 *
 	 * @var array
 	 */
-	private array $settings = [];
+	private array $settings = array();
 
 	/**
 	 * Get singleton instance.
@@ -72,7 +72,7 @@ class Settings {
 			return $this->settings;
 		}
 
-		$db_settings = get_option( 'ayecode-ui-settings', [] );
+		$db_settings = get_option( 'ayecode-ui-settings', array() );
 		$js_default  = 'core-popper';
 
 		/**
@@ -81,16 +81,20 @@ class Settings {
 		 * @param array $defaults     Default settings.
 		 * @param array $db_settings  Database settings.
 		 */
-		$defaults = apply_filters( 'ayecode-ui-default-settings', [
-			'css'            => 'compatibility',
-			'js'             => $js_default,
-			'html_font_size' => '16',
-			'css_backend'    => 'compatibility',
-			'js_backend'     => $js_default,
-			'disable_admin'  => '',
-			'bs_ver'         => '5dm',
-			'load_mode'      => 'auto',
-		], $db_settings );
+		$defaults = apply_filters(
+			'ayecode-ui-default-settings',
+			array(
+				'css'            => 'compatibility',
+				'js'             => $js_default,
+				'html_font_size' => '16',
+				'css_backend'    => 'compatibility',
+				'js_backend'     => $js_default,
+				'disable_admin'  => '',
+				'bs_ver'         => '5dm',
+				'load_mode'      => 'auto',
+			),
+			$db_settings
+		);
 
 		$settings = wp_parse_args( $db_settings, $defaults );
 

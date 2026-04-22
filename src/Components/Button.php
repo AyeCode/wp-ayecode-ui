@@ -26,37 +26,37 @@ class Button {
 	 * @param array $args Component arguments.
 	 * @return string
 	 */
-	public static function get( array $args = [] ): string {
-		$defaults = [
-			'type'                   => 'a',
-			'href'                   => '#',
-			'new_window'             => false,
-			'class'                  => 'btn btn-primary',
-			'id'                     => '',
-			'title'                  => '',
-			'value'                  => '',
-			'content'                => '',
-			'icon'                   => '',
-			'hover_content'          => '',
-			'hover_icon'             => '',
-			'new_line_after'         => true,
-			'no_wrap'                => true,
-			'onclick'                => '',
-			'style'                  => '',
-			'extra_attributes'       => [],
-			'icon_extra_attributes'  => [],
-		];
+	public static function get( array $args = array() ): string {
+		$defaults = array(
+			'type'                  => 'a',
+			'href'                  => '#',
+			'new_window'            => false,
+			'class'                 => 'btn btn-primary',
+			'id'                    => '',
+			'title'                 => '',
+			'value'                 => '',
+			'content'               => '',
+			'icon'                  => '',
+			'hover_content'         => '',
+			'hover_icon'            => '',
+			'new_line_after'        => true,
+			'no_wrap'               => true,
+			'onclick'               => '',
+			'style'                 => '',
+			'extra_attributes'      => array(),
+			'icon_extra_attributes' => array(),
+		);
 
 		$args   = wp_parse_args( $args, $defaults );
 		$output = '';
 
 		if ( ! empty( $args['type'] ) ) {
-			$type = $args['type'] !== 'a' ? esc_attr( $args['type'] ) : 'a';
+			$type = 'a' !== $args['type'] ? esc_attr( $args['type'] ) : 'a';
 
-			if ( $type === 'a' ) {
+			if ( 'a' === $type ) {
 				$new_window = ! empty( $args['new_window'] ) ? ' target="_blank" ' : '';
 				$output    .= '<a href="' . $args['href'] . '"' . $new_window;
-			} elseif ( $type === 'badge' ) {
+			} elseif ( 'badge' === $type ) {
 				$output .= '<span ';
 			} else {
 				$output .= '<button type="' . $type . '" ';
@@ -95,7 +95,7 @@ class Button {
 
 			$hover_content = false;
 			if ( ! empty( $args['hover_content'] ) || ! empty( $args['hover_icon'] ) ) {
-				$output       .= "<span class='hover-content'>" . Helper::icon( $args['hover_icon'], $args['hover_content'] ) . $args['hover_content'] . "</span>";
+				$output       .= "<span class='hover-content'>" . Helper::icon( $args['hover_icon'], $args['hover_content'] ) . $args['hover_content'] . '</span>';
 				$hover_content = true;
 			}
 
@@ -106,12 +106,12 @@ class Button {
 				$output .= Helper::icon( $args['icon'], $args['content'], $args['icon_extra_attributes'] ) . $args['content'];
 			}
 			if ( $hover_content ) {
-				$output .= "</span>";
+				$output .= '</span>';
 			}
 
-			if ( $type === 'a' ) {
+			if ( 'a' === $type ) {
 				$output .= '</a>';
-			} elseif ( $type === 'badge' ) {
+			} elseif ( 'badge' === $type ) {
 				$output .= '</span>';
 			} else {
 				$output .= '</button>';
@@ -122,7 +122,7 @@ class Button {
 			}
 
 			if ( ! $args['no_wrap'] ) {
-				$output = Input::wrap( [ 'content' => $output ] );
+				$output = Input::wrap( array( 'content' => $output ) );
 			}
 		}
 

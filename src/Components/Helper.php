@@ -104,7 +104,7 @@ class Helper {
 	public static function value( $text ): string {
 		$output = '';
 
-		if ( $text !== null && $text !== false ) {
+		if ( null !== $text && false !== $text ) {
 			$output = ' value="' . esc_attr( wp_unslash( $text ) ) . '" ';
 		}
 
@@ -194,26 +194,41 @@ class Helper {
 	/**
 	 * Build a Font Awesome icon tag.
 	 *
-	 * @param string $class            Icon class string.
-	 * @param bool   $space_after      Whether to add a right margin class.
-	 * @param array  $extra_attributes Extra HTML attributes.
+	 * Delegates to ayecode_get_icon() for JIT/SVG rendering on the frontend when the
+	 * Font Awesome settings package is present. Falls back to a plain <i> tag otherwise
+	 * (e.g. in wp-admin, where webfont CSS is loaded directly).
+	 *
+	 * @param string $class            Icon identifier / class string (e.g. 'fas fa-user').
+	 * @param bool   $space_after      Whether to add a right margin (me-2) class.
+	 * @param array  $extra_attributes Extra HTML attributes keyed by attribute name.
 	 * @return string
 	 */
-	public static function icon( $class, $space_after = false, $extra_attributes = [] ): string {
+	public static function icon( $class, $space_after = false, $extra_attributes = array() ): string {
 		$output = '';
 
 		if ( $class ) {
-			$classes = self::esc_classes( $class );
-			if ( ! empty( $classes ) ) {
-				if ( $space_after ) {
-					$classes .= ' me-2';
+			$identifier = self::esc_classes( $class );
+			if ( ! empty( $identifier ) ) {
+				if ( function_exists( 'ayecode_get_icon' ) ) {
+					$options = array();
+					if ( $space_after ) {
+						$options['class'] = 'me-2';
+					}
+					if ( ! empty( $extra_attributes ) && is_array( $extra_attributes ) ) {
+						$options['attributes'] = $extra_attributes;
+					}
+					$output = \ayecode_get_icon( $identifier, $options );
+				} else {
+					// Fallback: plain <i> tag (admin or Font Awesome settings not loaded).
+					if ( $space_after ) {
+						$identifier .= ' me-2';
+					}
+					$output = '<i class="' . $identifier . '" ';
+					if ( ! empty( $extra_attributes ) ) {
+						$output .= self::extra_attributes( $extra_attributes );
+					}
+					$output .= '></i>';
 				}
-
-				$output = '<i class="' . $classes . '" ';
-				if ( ! empty( $extra_attributes ) ) {
-					$output .= self::extra_attributes( $extra_attributes );
-				}
-				$output .= '></i>';
 			}
 		}
 
@@ -267,11 +282,17 @@ class Helper {
 	public static function element_require( $input ): string {
 		$input = str_replace( "'", '"', $input );
 
-		$output = esc_attr( str_replace( [ '[%', '%]', '%:checked]' ], [
-			'jQuery(form).find(\'[data-argument="',
-			'\"]\').find(\'input,select,textarea\').val()',
-			'\"]\').find(\'input:checked\').val()',
-		], $input ) );
+		$output = esc_attr(
+			str_replace(
+				array( '[%', '%]', '%:checked]' ),
+				array(
+					'jQuery(form).find(\'[data-argument="',
+					'\"]\').find(\'input,select,textarea\').val()',
+					'\"]\').find(\'input:checked\').val()',
+				),
+				$input
+			)
+		);
 
 		if ( $output ) {
 			$output = ' data-element-require="' . $output . '" ';
@@ -287,7 +308,7 @@ class Helper {
 	 * @param array $input Input field definition.
 	 * @return mixed
 	 */
-	public static function sanitize_html_field( $value, $input = [] ) {
+	public static function sanitize_html_field( $value, $input = array() ) {
 		$original = $value;
 
 		if ( is_array( $value ) ) {
@@ -313,8 +334,8 @@ class Helper {
 	 * @param array        $input Input field definition.
 	 * @return string
 	 */
-	public static function _sanitize_html_field( $value, $input = [] ): string {
-		if ( $value === '' ) {
+	public static function _sanitize_html_field( $value, $input = array() ): string {
+		if ( '' === $value ) {
 			return $value;
 		}
 
@@ -338,11 +359,11 @@ class Helper {
 	 * @param array        $input   Input field definition.
 	 * @return array
 	 */
-	public static function kses_allowed_html( $context = 'post', $input = [] ): array {
+	public static function kses_allowed_html( $context = 'post', $input = array() ): array {
 		$allowed_html = wp_kses_allowed_html( $context );
 
-		if ( is_array( $allowed_html ) && ! isset( $allowed_html['iframe'] ) && $context === 'post' ) {
-			$allowed_html['iframe'] = [
+		if ( is_array( $allowed_html ) && ! isset( $allowed_html['iframe'] ) && 'post' === $context ) {
+			$allowed_html['iframe'] = array(
 				'class'           => true,
 				'id'              => true,
 				'src'             => true,
@@ -357,7 +378,7 @@ class Helper {
 				'allow'           => true,
 				'allowfullscreen' => true,
 				'data-*'          => true,
-			];
+			);
 		}
 
 		return apply_filters( 'ayecode_ui_kses_allowed_html', $allowed_html, $context, $input );
@@ -373,14 +394,14 @@ class Helper {
 	public static function get_column_class( $label_number = 2, string $type = 'label' ): string {
 		$class = '';
 
-		if ( $label_number === '' ) {
+		if ( '' === $label_number ) {
 			$label_number = 2;
 		}
 
 		if ( $label_number && $label_number < 12 && $label_number > 0 ) {
-			if ( $type === 'label' ) {
+			if ( 'label' === $type ) {
 				$class = 'col-sm-' . absint( $label_number );
-			} elseif ( $type === 'input' ) {
+			} elseif ( 'input' === $type ) {
 				$class = 'col-sm-' . ( 12 - absint( $label_number ) );
 			}
 		}

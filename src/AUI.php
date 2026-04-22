@@ -91,7 +91,7 @@ class AUI {
 	 * @param bool  $echo     Whether to echo the output instead of returning it.
 	 * @return string Rendered HTML (empty string when $echo is true).
 	 */
-	public function render( array $items = [], bool $echo = false ): string {
+	public function render( array $items = array(), bool $echo = false ): string {
 		$output = '';
 
 		foreach ( $items as $args ) {
@@ -116,7 +116,7 @@ class AUI {
 	 * @param bool  $echo Whether to echo instead of return.
 	 * @return string Rendered HTML.
 	 */
-	public function alert( array $args = [], bool $echo = false ): string {
+	public function alert( array $args = array(), bool $echo = false ): string {
 		$output = Alert::get( $args );
 
 		if ( $echo ) {
@@ -134,7 +134,7 @@ class AUI {
 	 * @param bool  $echo Whether to echo instead of return.
 	 * @return string Rendered HTML.
 	 */
-	public function input( array $args = [], bool $echo = false ): string {
+	public function input( array $args = array(), bool $echo = false ): string {
 		$output = Input::input( $args );
 
 		if ( $echo ) {
@@ -152,7 +152,7 @@ class AUI {
 	 * @param bool  $echo Whether to echo instead of return.
 	 * @return string Rendered HTML.
 	 */
-	public function textarea( array $args = [], bool $echo = false ): string {
+	public function textarea( array $args = array(), bool $echo = false ): string {
 		$output = Input::textarea( $args );
 
 		if ( $echo ) {
@@ -170,7 +170,7 @@ class AUI {
 	 * @param bool  $echo Whether to echo instead of return.
 	 * @return string Rendered HTML.
 	 */
-	public function button( array $args = [], bool $echo = false ): string {
+	public function button( array $args = array(), bool $echo = false ): string {
 		$output = Button::get( $args );
 
 		if ( $echo ) {
@@ -188,10 +188,10 @@ class AUI {
 	 * @param bool  $echo Whether to echo instead of return.
 	 * @return string Rendered HTML.
 	 */
-	public function badge( array $args = [], bool $echo = false ): string {
-		$defaults = [
+	public function badge( array $args = array(), bool $echo = false ): string {
+		$defaults = array(
 			'class' => 'badge badge-primary align-middle',
-		];
+		);
 
 		if ( empty( $args['href'] ) ) {
 			$defaults['type'] = 'badge';
@@ -215,7 +215,7 @@ class AUI {
 	 * @param bool  $echo Whether to echo instead of return.
 	 * @return string Rendered HTML.
 	 */
-	public function dropdown( array $args = [], bool $echo = false ): string {
+	public function dropdown( array $args = array(), bool $echo = false ): string {
 		$output = Dropdown::get( $args );
 
 		if ( $echo ) {
@@ -233,7 +233,7 @@ class AUI {
 	 * @param bool  $echo Whether to echo instead of return.
 	 * @return string Rendered HTML.
 	 */
-	public function select( array $args = [], bool $echo = false ): string {
+	public function select( array $args = array(), bool $echo = false ): string {
 		$output = Input::select( $args );
 
 		if ( $echo ) {
@@ -251,7 +251,7 @@ class AUI {
 	 * @param bool  $echo Whether to echo instead of return.
 	 * @return string Rendered HTML.
 	 */
-	public function radio( array $args = [], bool $echo = false ): string {
+	public function radio( array $args = array(), bool $echo = false ): string {
 		$output = Input::radio( $args );
 
 		if ( $echo ) {
@@ -269,7 +269,7 @@ class AUI {
 	 * @param bool  $echo Whether to echo instead of return.
 	 * @return string Rendered HTML.
 	 */
-	public function pagination( array $args = [], bool $echo = false ): string {
+	public function pagination( array $args = array(), bool $echo = false ): string {
 		$output = Pagination::get( $args );
 
 		if ( $echo ) {
@@ -287,7 +287,7 @@ class AUI {
 	 * @param bool  $echo Whether to echo instead of return.
 	 * @return string Rendered HTML.
 	 */
-	public function wrap( array $args = [], bool $echo = false ): string {
+	public function wrap( array $args = array(), bool $echo = false ): string {
 		$output = Input::wrap( $args );
 
 		if ( $echo ) {

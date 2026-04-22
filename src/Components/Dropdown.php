@@ -26,26 +26,26 @@ class Dropdown {
 	 * @param array $args Component arguments.
 	 * @return string
 	 */
-	public static function get( array $args = [] ): string {
-		$defaults = [
-			'type'                  => 'button',
-			'href'                  => '#',
-			'class'                 => 'btn btn-primary dropdown-toggle',
-			'wrapper_class'         => '',
-			'dropdown_menu_class'   => '',
-			'id'                    => '',
-			'title'                 => '',
-			'value'                 => '',
-			'content'               => '',
-			'icon'                  => '',
-			'hover_content'         => '',
-			'hover_icon'            => '',
-			'data-toggle'           => 'dropdown',
-			'aria-haspopup'         => 'true',
-			'aria-expanded'         => 'false',
-			'dropdown_menu'         => '',
-			'dropdown_items'        => [],
-		];
+	public static function get( array $args = array() ): string {
+		$defaults = array(
+			'type'                => 'button',
+			'href'                => '#',
+			'class'               => 'btn btn-primary dropdown-toggle',
+			'wrapper_class'       => '',
+			'dropdown_menu_class' => '',
+			'id'                  => '',
+			'title'               => '',
+			'value'               => '',
+			'content'             => '',
+			'icon'                => '',
+			'hover_content'       => '',
+			'hover_icon'          => '',
+			'data-toggle'         => 'dropdown',
+			'aria-haspopup'       => 'true',
+			'aria-expanded'       => 'false',
+			'dropdown_menu'       => '',
+			'dropdown_items'      => array(),
+		);
 
 		$args   = wp_parse_args( $args, $defaults );
 		$output = '';

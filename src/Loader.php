@@ -28,31 +28,31 @@ class Loader {
 	 */
 	public function __construct() {
 		// Core initialization — reads settings, defines constants, adds body classes.
-		add_action( 'init', [ SettingsOrchestrator::instance(), 'init' ] );
+		add_action( 'init', array( SettingsOrchestrator::instance(), 'init' ) );
 
 		// Register settings with WordPress.
-		add_action( 'admin_init', [ SettingsOrchestrator::instance(), 'register_settings' ] );
+		add_action( 'admin_init', array( SettingsOrchestrator::instance(), 'register_settings' ) );
 
 		// Developer preview endpoint.
-		add_action( 'template_redirect', [ SettingsOrchestrator::instance(), 'maybe_show_examples' ] );
+		add_action( 'template_redirect', array( SettingsOrchestrator::instance(), 'maybe_show_examples' ) );
 
 		// Register all assets early so they can be conditionally enqueued.
-		add_action( 'wp_enqueue_scripts',    [ AssetManager::instance(), 'register_assets' ], 1 );
-		add_action( 'admin_enqueue_scripts', [ AssetManager::instance(), 'register_assets' ], 1 );
+		add_action( 'wp_enqueue_scripts', array( AssetManager::instance(), 'register_assets' ), 1 );
+		add_action( 'admin_enqueue_scripts', array( AssetManager::instance(), 'register_assets' ), 1 );
 
 		// Lazy-loading: detect AyeCode blocks during render and enqueue if found.
-		add_filter( 'render_block', [ AssetManager::instance(), 'detect_ayecode_blocks' ], 10, 2 );
-		add_action( 'wp_head',      [ AssetManager::instance(), 'enqueue_if_detected' ], 7 );
+		add_filter( 'render_block', array( AssetManager::instance(), 'detect_ayecode_blocks' ), 10, 2 );
+		add_action( 'wp_head', array( AssetManager::instance(), 'enqueue_if_detected' ), 7 );
 
 		// WordPress Customizer integration.
-		add_action( 'customize_register', [ Customizer::instance(), 'register_customizer_settings' ] );
+		add_action( 'customize_register', array( Customizer::instance(), 'register_customizer_settings' ) );
 
 		if ( defined( 'BLOCKSTRAP_VERSION' ) ) {
-			add_filter( 'sd_aui_colors', [ Customizer::instance(), 'add_blockstrap_colors' ], 10, 3 );
+			add_filter( 'sd_aui_colors', array( Customizer::instance(), 'add_blockstrap_colors' ), 10, 3 );
 		}
 
 		// Admin notices and fix handler.
-		add_action( 'admin_notices', [ Admin::instance(), 'show_admin_style_notice' ] );
-		add_action( 'admin_init',    [ Admin::instance(), 'maybe_fix_admin_settings' ] );
+		add_action( 'admin_notices', array( Admin::instance(), 'show_admin_style_notice' ) );
+		add_action( 'admin_init', array( Admin::instance(), 'maybe_fix_admin_settings' ) );
 	}
 }

@@ -68,7 +68,7 @@ class AssetManager {
 	 *
 	 * @var string
 	 */
-	private string $version = '3.0.0-beta';
+	private $version = AYECODE_UI_VERSION;
 
 	/**
 	 * Choices.js version.
