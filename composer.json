@@ -18,6 +18,9 @@
     "php": ">=7.4"
   },
   "autoload": {
-    "files": ["ayecode-ui-loader.php"]
+    "psr-4": {
+      "AyeCode\\UI\\": "src/"
+    },
+    "files": ["package-loader.php"]
   }
 }

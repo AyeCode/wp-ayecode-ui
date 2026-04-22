@@ -4,34 +4,35 @@
  *
  * Handles CSS generation, color manipulation, and minification for AyeCode UI.
  *
- * @since 2.0.0
- * @package AyeCode_UI
+ * @package AyeCode\UI
  */
+
+namespace AyeCode\UI;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * AUI_CSS_Generator class.
+ * CSS_Generator class.
  *
  * Manages all CSS generation and color manipulation functionality.
  */
-class AUI_CSS_Generator {
+class CSS_Generator {
 
 	/**
 	 * Singleton instance.
 	 *
-	 * @var AUI_CSS_Generator|null
+	 * @var CSS_Generator|null
 	 */
-	private static ?AUI_CSS_Generator $instance = null;
+	private static ?CSS_Generator $instance = null;
 
 	/**
 	 * Get singleton instance.
 	 *
-	 * @return AUI_CSS_Generator
+	 * @return CSS_Generator
 	 */
-	public static function instance(): AUI_CSS_Generator {
+	public static function instance(): CSS_Generator {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
 		}
@@ -41,21 +42,18 @@ class AUI_CSS_Generator {
 	/**
 	 * Constructor.
 	 */
-	private function __construct() {
-		// Nothing to initialize
-	}
+	private function __construct() {}
 
 	/**
 	 * Generate custom CSS for color customizations.
 	 *
 	 * @param bool|string $compatibility Compatibility mode setting.
-	 * @param bool        $is_fse Whether this is for FSE editor.
+	 * @param bool        $is_fse        Whether this is for the FSE editor.
 	 * @return string Minified custom CSS.
 	 */
 	public static function custom_css( $compatibility = true, bool $is_fse = false ): string {
 		$colors = [];
 
-		// Get colors from BlockStrap or settings
 		if ( defined( 'BLOCKSTRAP_VERSION' ) ) {
 			$setting = wp_get_global_settings();
 
@@ -93,16 +91,16 @@ class AUI_CSS_Generator {
         <?php
 
 		$custom_front = ! is_admin() ? true : apply_filters( 'ayecode_ui_custom_front', false );
-		$custom_admin = $is_fse || AyeCode_UI_Settings::is_preview() ? true : apply_filters( 'ayecode_ui_custom_admin', false );
+		$custom_admin = $is_fse || SettingsOrchestrator::is_preview() ? true : apply_filters( 'ayecode_ui_custom_admin', false );
 		$bs_custom_css = apply_filters( 'ayecode_ui_bs_custom_css', $custom_admin || $custom_front );
 
 		$colors_css = '';
 		if ( ! empty( $colors ) && $bs_custom_css ) {
-			$d_colors = AyeCode_UI_Settings::get_colors( true );
+			$d_colors = SettingsOrchestrator::get_colors( true );
 
 			foreach ( $colors as $key => $color ) {
 				if ( ( empty( $d_colors[ $key ] ) || $d_colors[ $key ] != $color ) || $is_fse ) {
-					$var = $is_fse ? "var(--wp--preset--color--$key)" : $color;
+					$var   = $is_fse ? "var(--wp--preset--color--$key)" : $color;
 					$compat = $is_fse ? '.editor-styles-wrapper' : $compatibility;
 
 					$colors_css .= self::css_overwrite( $key, $var, $compat, $color );
@@ -114,7 +112,6 @@ class AUI_CSS_Generator {
 			echo $colors_css; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 
-		// Set admin bar z-index lower when modal is open
 		echo ' body.modal-open #wpadminbar{z-index:999}.embed-responsive-16by9 .fluid-width-video-wrapper{padding:0 !important;position:initial}';
 
 		if ( is_admin() ) {
@@ -123,12 +120,10 @@ class AUI_CSS_Generator {
 
 		$custom_css = '';
 
-		// BlockStrap theme integration
 		if ( defined( 'BLOCKSTRAP_VERSION' ) && $bs_custom_css ) {
-			$css = '';
+			$css           = '';
 			$theme_settings = wp_get_global_styles();
 
-			// Font face
 			if ( ! empty( $theme_settings['typography']['fontFamily'] ) ) {
 				$t_fontface = str_replace(
 					[ 'var:preset|', 'font-family|' ],
@@ -138,37 +133,30 @@ class AUI_CSS_Generator {
 				$css .= '--bs-body-font-family: ' . esc_attr( $t_fontface ) . ';';
 			}
 
-			// Font size
 			if ( ! empty( $theme_settings['typography']['fontSize'] ) ) {
 				$css .= '--bs-body-font-size: ' . esc_attr( $theme_settings['typography']['fontSize'] ) . ' ;';
 			}
 
-			// Line height
 			if ( ! empty( $theme_settings['typography']['lineHeight'] ) ) {
 				$css .= '--bs-body-line-height: ' . esc_attr( $theme_settings['typography']['lineHeight'] ) . ';';
 			}
 
-			// Font weight
 			if ( ! empty( $theme_settings['typography']['fontWeight'] ) ) {
 				$css .= '--bs-body-font-weight: ' . esc_attr( $theme_settings['typography']['fontWeight'] ) . ';';
 			}
 
-			// Background
 			if ( ! empty( $theme_settings['color']['background'] ) ) {
 				$css .= '--bs-body-bg: ' . esc_attr( $theme_settings['color']['background'] ) . ';';
 			}
 
-			// Background Gradient
 			if ( ! empty( $theme_settings['color']['gradient'] ) ) {
 				$css .= 'background: ' . esc_attr( $theme_settings['color']['gradient'] ) . ';';
 			}
 
-			// Text color
 			if ( ! empty( $theme_settings['color']['text'] ) ) {
 				$css .= '--bs-body-color: ' . esc_attr( $theme_settings['color']['text'] ) . ';';
 			}
 
-			// Link colors
 			if ( ! empty( $theme_settings['elements']['link']['color']['text'] ) ) {
 				$css .= '--bs-link-color: ' . esc_attr( $theme_settings['elements']['link']['color']['text'] ) . ';';
 			}
@@ -182,18 +170,13 @@ class AUI_CSS_Generator {
 
 			$bep = $is_fse ? 'body.editor-styles-wrapper ' : '';
 
-			// Headings
 			$headings_css = '';
 			if ( ! empty( $theme_settings['elements']['heading']['color']['text'] ) ) {
 				$headings_css .= 'color: ' . esc_attr( $theme_settings['elements']['heading']['color']['text'] ) . ';';
 			}
-
-			// Heading background
 			if ( ! empty( $theme_settings['elements']['heading']['color']['background'] ) ) {
 				$headings_css .= 'background: ' . esc_attr( $theme_settings['elements']['heading']['color']['background'] ) . ';';
 			}
-
-			// Heading font family
 			if ( ! empty( $theme_settings['elements']['heading']['typography']['fontFamily'] ) ) {
 				$headings_css .= 'font-family: ' . esc_attr( $theme_settings['elements']['heading']['typography']['fontFamily'] ) . ';';
 			}
@@ -202,18 +185,15 @@ class AUI_CSS_Generator {
 				$custom_css .= "$bep h1,$bep h2,$bep h3, $bep h4,$bep h5,$bep h6{ " . esc_attr( $headings_css ) . '}';
 			}
 
-			// Individual heading styles
 			$hs = [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ];
 			foreach ( $hs as $hn ) {
 				$h_css = '';
 				if ( ! empty( $theme_settings['elements'][ $hn ]['color']['text'] ) ) {
 					$h_css .= 'color: ' . esc_attr( $theme_settings['elements'][ $hn ]['color']['text'] ) . ';';
 				}
-
 				if ( ! empty( $theme_settings['elements'][ $hn ]['typography']['fontSize'] ) ) {
 					$h_css .= 'font-size: ' . esc_attr( $theme_settings['elements'][ $hn ]['typography']['fontSize'] ) . ';';
 				}
-
 				if ( ! empty( $theme_settings['elements'][ $hn ]['typography']['fontFamily'] ) ) {
 					$h_css .= 'font-family: ' . esc_attr( $theme_settings['elements'][ $hn ]['typography']['fontFamily'] ) . ';';
 				}
@@ -228,12 +208,10 @@ class AUI_CSS_Generator {
 			echo $custom_css; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 
-		// Pagination on Hello Elementor theme
 		if ( function_exists( 'hello_elementor_setup' ) ) {
 			echo '.aui-nav-links .pagination{justify-content:inherit}';
 		}
 
-		// Astra theme - WooCommerce select2 modal fix
 		if ( defined( 'ASTRA_THEME_VERSION' ) ) {
 			echo '.woocommerce-js.modal-open .select2-container .select2-dropdown, .woocommerce-js.modal-open .select2-container .select2-search__field, .woocommerce-page.modal-open .select2-container .select2-dropdown, .woocommerce-page.modal-open .select2-container .select2-search__field{z-index: 1056;}';
 		}
@@ -241,17 +219,16 @@ class AUI_CSS_Generator {
 		?></style><?php
 		$custom_css = ob_get_clean();
 
-		// Strip <style> tags and minify
 		return str_replace( [ '<style>', '</style>' ], '', self::minify_css( $custom_css ) );
 	}
 
 	/**
-	 * Build the CSS to overwrite a bootstrap color variable.
+	 * Build the CSS to overwrite a Bootstrap color variable.
 	 *
-	 * @param string      $type Color type (primary, secondary, etc.).
-	 * @param string      $color_code Color code or CSS variable.
+	 * @param string      $type         Color type (primary, secondary, etc.).
+	 * @param string      $color_code   Color code or CSS variable.
 	 * @param bool|string $compatibility Compatibility mode.
-	 * @param string      $hex Hex color value.
+	 * @param string      $hex          Hex color value.
 	 * @return string Generated CSS.
 	 */
 	public static function css_overwrite( string $type, string $color_code, $compatibility, string $hex = '' ): string {
@@ -259,7 +236,7 @@ class AUI_CSS_Generator {
 			return '';
 		}
 
-		$is_var = strpos( $color_code, 'var' ) !== false;
+		$is_var    = strpos( $color_code, 'var' ) !== false;
 		$is_custom = strpos( $type, 'custom-' ) !== false;
 
 		if ( $is_var ) {
@@ -268,7 +245,6 @@ class AUI_CSS_Generator {
 
 		$rgb = self::hex_to_rgb( $hex );
 
-		// Handle compatibility prefix
 		if ( $compatibility === true || $compatibility === 1 ) {
 			$compatibility = '.bsui';
 		} elseif ( ! $compatibility ) {
@@ -278,13 +254,9 @@ class AUI_CSS_Generator {
 		}
 
 		$prefix = $compatibility ? $compatibility . ' ' : '';
-		$type = sanitize_html_class( $type );
-
+		$type   = sanitize_html_class( $type );
 		$output = '';
 
-		/**
-		 * c = color, b = background color, o = border-color, f = fill
-		 */
 		$selectors = [
 			".btn-{$type}"                                              => [ 'b', 'o' ],
 			".btn-{$type}.disabled"                                     => [ 'b', 'o' ],
@@ -314,7 +286,6 @@ class AUI_CSS_Generator {
 			];
 		}
 
-		// Link colors
 		if ( $type === 'primary' ) {
 			$output .= 'html body {--bs-link-hover-color: rgba(var(--bs-' . esc_attr( $type ) . '-rgb), .75); --bs-link-color: var(--bs-' . esc_attr( $type ) . '); }';
 			$output .= $prefix . ' .breadcrumb{--bs-breadcrumb-item-active-color: ' . esc_attr( $color_code ) . ';  }';
@@ -322,13 +293,11 @@ class AUI_CSS_Generator {
 			$output .= $prefix . ' a{color: var(--bs-' . esc_attr( $type ) . ');}';
 			$output .= $prefix . ' .text-primary{color: var(--bs-' . esc_attr( $type ) . ') !important;}';
 			$output .= $prefix . ' .dropdown-menu{--bs-dropdown-link-hover-color: var(--bs-' . esc_attr( $type ) . '); --bs-dropdown-link-active-color: var(--bs-' . esc_attr( $type ) . ');}';
-//			$output .= $prefix . ' .pagination{--bs-pagination-hover-color: var(--bs-' . esc_attr( $type ) . '); --bs-pagination-active-bg: var(--bs-' . esc_attr( $type ) . ');}'; // @todo this seems not needed in new ver
 		}
 
 		$output .= $prefix . ' .link-' . esc_attr( $type ) . ' {color: var(--bs-' . esc_attr( $type ) . '-rgb) !important;}';
 		$output .= $prefix . ' .link-' . esc_attr( $type ) . ':hover {color: rgba(var(--bs-' . esc_attr( $type ) . '-rgb), .8) !important;}';
 
-		// Button styles
 		$output .= $prefix . ' .btn-' . esc_attr( $type ) . '{';
 		$output .= '
 		--bs-btn-bg: ' . esc_attr( $color_code ) . ';
@@ -344,7 +313,6 @@ class AUI_CSS_Generator {
 		';
 		$output .= '}';
 
-		// Button outline styles
 		$output .= $prefix . ' .btn-outline-' . esc_attr( $type ) . '{';
 		$output .= '
 		--bs-btn-color: ' . esc_attr( $color_code ) . ';
@@ -360,24 +328,21 @@ class AUI_CSS_Generator {
 		';
 		$output .= '}';
 
-		// Button hover shadow
 		$output .= $prefix . ' .btn-' . esc_attr( $type ) . ':hover{';
 		$output .= ' box-shadow: 0 0.25rem 0.25rem 0.125rem rgb(var(--bs-' . esc_attr( $type ) . '-rgb), .1), 0 0.375rem 0.75rem -0.125rem rgb(var(--bs-' . esc_attr( $type ) . '-rgb) , .4);}';
 
-		// Set CSS variables
 		$output .= 'html body {--bs-' . esc_attr( $type ) . ': ' . esc_attr( $color_code ) . '; }';
 		$output .= 'html body {--bs-' . esc_attr( $type ) . '-rgb: ' . $rgb . '; }';
 
-		// Custom color selectors
 		if ( $is_custom ) {
-			$color = [];
+			$color      = [];
 			$background = [];
-			$border = [];
-			$fill = [];
+			$border     = [];
+			$fill       = [];
 
 			foreach ( $selectors as $selector => $types ) {
 				$selector = $compatibility ? $compatibility . ' ' . $selector : $selector;
-				$types = array_combine( $types, $types );
+				$types    = array_combine( $types, $types );
 				if ( isset( $types['c'] ) ) {
 					$color[] = $selector;
 				}
@@ -406,12 +371,11 @@ class AUI_CSS_Generator {
 			}
 		}
 
-		// Button states
-		$transition = $is_var ? 'transition: color 0.15s ease-in-out,background-color 0.15s ease-in-out,border-color 0.15s ease-in-out,box-shadow 0.15s ease-in-out,filter 0.15s ease-in-out;' : '';
-		$darker_075 = $is_var ? $color_code . ';filter:brightness(0.925)' : self::css_hex_lighten_darken( $color_code, '-0.075' );
-		$darker_10 = $is_var ? $color_code . ';filter:brightness(0.9)' : self::css_hex_lighten_darken( $color_code, '-0.10' );
-		$darker_125 = $is_var ? $color_code . ';filter:brightness(0.875)' : self::css_hex_lighten_darken( $color_code, '-0.125' );
-		$op_25 = $color_code . '40'; // 25% opacity
+		$transition  = $is_var ? 'transition: color 0.15s ease-in-out,background-color 0.15s ease-in-out,border-color 0.15s ease-in-out,box-shadow 0.15s ease-in-out,filter 0.15s ease-in-out;' : '';
+		$darker_075  = $is_var ? $color_code . ';filter:brightness(0.925)' : self::css_hex_lighten_darken( $color_code, '-0.075' );
+		$darker_10   = $is_var ? $color_code . ';filter:brightness(0.9)' : self::css_hex_lighten_darken( $color_code, '-0.10' );
+		$darker_125  = $is_var ? $color_code . ';filter:brightness(0.875)' : self::css_hex_lighten_darken( $color_code, '-0.125' );
+		$op_25       = $color_code . '40';
 
 		$output .= $is_var ? $prefix . " .btn-{$type}{{$transition }} " : '';
 		$output .= $prefix . " .btn-{$type}:hover, $prefix .btn-{$type}:focus, $prefix .btn-{$type}.focus{background-color: " . $darker_075 . ';    border-color: ' . $darker_10 . ';} ';
@@ -419,8 +383,6 @@ class AUI_CSS_Generator {
 		$output .= $prefix . " .btn-{$type}:not(:disabled):not(.disabled):active, $prefix .btn-{$type}:not(:disabled):not(.disabled).active, .show>$prefix .btn-{$type}.dropdown-toggle{background-color: " . $darker_10 . ';    border-color: ' . $darker_125 . ';} ';
 		$output .= $prefix . " .btn-{$type}:not(:disabled):not(.disabled):active:focus, $prefix .btn-{$type}:not(:disabled):not(.disabled).active:focus, .show>$prefix .btn-{$type}.dropdown-toggle:focus {box-shadow: 0 0 0 0.2rem $op_25;} ";
 		$output .= $prefix . " .btn-{$type}:not(:disabled):not(.disabled):active:focus, $prefix .btn-{$type}:not(:disabled):not(.disabled):focus {box-shadow: 0 0.25rem 0.25rem 0.125rem rgba(var(--bs-{$type}-rgb), 0.1), 0 0.375rem 0.75rem -0.125rem rgba(var(--bs-{$type}-rgb), 0.4);} ";
-
-		// Alerts
 		$output .= $prefix . " .alert-{$type} {--bs-alert-bg: rgba(var(--bs-{$type}-rgb), .1 ) !important;--bs-alert-border-color: rgba(var(--bs-{$type}-rgb), .25 ) !important;--bs-alert-color: rgba(var(--bs-{$type}-rgb), 1 ) !important;} ";
 
 		return $output;
@@ -433,26 +395,22 @@ class AUI_CSS_Generator {
 	 * @return string RGB values as comma-separated string.
 	 */
 	public static function hex_to_rgb( string $hex ): string {
-		// Remove '#' if present
 		$hex = str_replace( '#', '', $hex );
 
-		// Check if input is already RGB
 		if ( strpos( $hex, 'rgba(' ) === 0 || strpos( $hex, 'rgb(' ) === 0 ) {
 			$_rgb = explode( ',', str_replace( [ 'rgba(', 'rgb(', ')' ], '', $hex ) );
 
-			$rgb = ( isset( $_rgb[0] ) ? (int) trim( $_rgb[0] ) : '0' ) . ',';
+			$rgb  = ( isset( $_rgb[0] ) ? (int) trim( $_rgb[0] ) : '0' ) . ',';
 			$rgb .= ( isset( $_rgb[1] ) ? (int) trim( $_rgb[1] ) : '0' ) . ',';
 			$rgb .= ( isset( $_rgb[2] ) ? (int) trim( $_rgb[2] ) : '0' );
 
 			return $rgb;
 		}
 
-		// Convert 3-digit hex to 6-digit hex
 		if ( strlen( $hex ) === 3 ) {
 			$hex = str_repeat( substr( $hex, 0, 1 ), 2 ) . str_repeat( substr( $hex, 1, 1 ), 2 ) . str_repeat( substr( $hex, 2, 1 ), 2 );
 		}
 
-		// Convert hex to RGB
 		$r = hexdec( substr( $hex, 0, 2 ) );
 		$g = hexdec( substr( $hex, 2, 2 ) );
 		$b = hexdec( substr( $hex, 4, 2 ) );
@@ -463,19 +421,17 @@ class AUI_CSS_Generator {
 	/**
 	 * Lighten or darken a hex color by a percentage.
 	 *
-	 * @param string $hexCode Hex color code (with or without #).
+	 * @param string $hexCode       Hex color code (with or without #).
 	 * @param float  $adjustPercent Adjustment percentage (-1 to 1). Positive = lighter, negative = darker.
 	 * @return string Modified hex color.
 	 */
 	public static function css_hex_lighten_darken( string $hexCode, $adjustPercent ): string {
 		$hexCode = ltrim( $hexCode, '#' );
 
-		// Return unchanged if already RGB
 		if ( strpos( $hexCode, 'rgba(' ) !== false || strpos( $hexCode, 'rgb(' ) !== false ) {
 			return $hexCode;
 		}
 
-		// Convert 3-digit to 6-digit hex
 		if ( strlen( $hexCode ) === 3 ) {
 			$hexCode = $hexCode[0] . $hexCode[0] . $hexCode[1] . $hexCode[1] . $hexCode[2] . $hexCode[2];
 		}
@@ -484,9 +440,8 @@ class AUI_CSS_Generator {
 
 		foreach ( $hexCode as &$color ) {
 			$adjustableLimit = $adjustPercent < 0 ? $color : 255 - $color;
-			$adjustAmount = ceil( $adjustableLimit * $adjustPercent );
-
-			$color = str_pad( dechex( $color + $adjustAmount ), 2, '0', STR_PAD_LEFT );
+			$adjustAmount    = ceil( $adjustableLimit * $adjustPercent );
+			$color           = str_pad( dechex( $color + $adjustAmount ), 2, '0', STR_PAD_LEFT );
 		}
 
 		return '#' . implode( $hexCode );
@@ -505,26 +460,16 @@ class AUI_CSS_Generator {
 
 		return preg_replace(
 			[
-				// Remove comment(s)
 				'#("(?:[^"\\\]++|\\\.)*+"|\'(?:[^\'\\\\]++|\\\.)*+\')|\/\*(?!\!)(?>.*?\*\/)|^\s*|\s*$#s',
-				// Remove unused white-space(s)
 				'#("(?:[^"\\\]++|\\\.)*+"|\'(?:[^\'\\\\]++|\\\.)*+\'|\/\*(?>.*?\*\/))|\s*+;\s*+(})\s*+|\s*+([*$~^|]?+=|[{};,>~]|\s(?![0-9\.])|!important\b)\s*+|([[(:])\s++|\s++([])])|\s++(:)\s*+(?!(?>[^{}"\']++|"(?:[^"\\\]++|\\\.)*+"|\'(?:[^\'\\\\]++|\\\.)*+\')*+{)|^\s++|\s++\z|(\s)\s+#si',
-				// Replace `0(cm|em|ex|in|mm|pc|pt|px|vh|vw|%)` with `0`
 				'#(?<=[\s:])(0)(cm|em|ex|in|mm|pc|pt|px|vh|vw|%)#si',
-				// Replace `:0 0 0 0` with `:0`
 				'#:(0\s+0|0\s+0\s+0\s+0)(?=[;\}]|\!important)#i',
-				// Replace `background-position:0` with `background-position:0 0`
 				'#(background-position):0(?=[;\}])#si',
-				// Replace `0.6` with `.6`
 				'#(?<=[\s:,\-])0+\.(\d+)#s',
-				// Minify string value
 				'#(\/\*(?>.*?\*\/))|(?<!content\:)([\'"])([a-z_][a-z0-9\-_]*?)\2(?=[\s\{\}\];,])#si',
 				'#(\/\*(?>.*?\*\/))|(\burl\()([\'"])([^\s]+?)\3(\))#si',
-				// Minify HEX color code
 				'#(?<=[\s:,\-]\#)([a-f0-6]+)\1([a-f0-6]+)\2([a-f0-6]+)\3#i',
-				// Replace `(border|outline):none` with `(border|outline):0`
 				'#(?<=[\{;])(border|outline):none(?=[;\}\!])#',
-				// Remove empty selector(s)
 				'#(\/\*(?>.*?\*\/))|(^|[\{\}])(?:[^\s\{\}]+)\{\}#s',
 			],
 			[
@@ -557,15 +502,10 @@ class AUI_CSS_Generator {
 
 		return preg_replace(
 			[
-				// Remove comment(s)
 				'#\s*("(?:[^"\\\]++|\\\.)*+"|\'(?:[^\'\\\\]++|\\\.)*+\')\s*|\s*\/\*(?!\!|@cc_on)(?>[\s\S]*?\*\/)\s*|\s*(?<![\:\=])\/\/.*(?=[\n\r]|$)|^\s*|\s*$#',
-				// Remove white-space(s) outside the string and regex
 				'#("(?:[^"\\\]++|\\\.)*+"|\'(?:[^\'\\\\]++|\\\.)*+\'|\/\*(?>.*?\*\/)|\/(?!\/)[^\n\r]*?\/(?=[\s.,;]|[gimuy]|$))|\s*([!%&*\(\)\-=+\[\]\{\}|;:,.<>?\/])\s*#s',
-				// Remove the last semicolon
 				'#;+\}#',
-				// Minify object attribute(s)
 				'#([\{,])([\'])(\d+|[a-z_][a-z0-9_]*)\2(?=\:)#i',
-				// From `foo['bar']` to `foo.bar`
 				'#([a-z0-9_\)\]])\[([\'"])([a-z_][a-z0-9_]*)\2\]#i',
 			],
 			[

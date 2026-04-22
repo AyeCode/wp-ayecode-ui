@@ -2,6 +2,8 @@
 
 All notable changes to the AyeCode UI will be documented in this file.
 
+## [3.0.1-beta] - 2026-04-22
+- Refactored to meet the new AyeCode package standards - CHANGED
 
 ## [3.0.0-beta] - 2026-04-08
 - Initial beta release
