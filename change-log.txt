@@ -1,4 +1,4 @@
-= 0.2.48 - 2026-05-TBD =
+= 0.2.48 - 2026-05-14 =
 * Default value of 0 was ignored in Input fields - FIXED
 
 = 0.2.47 - 2026-04-02 =
