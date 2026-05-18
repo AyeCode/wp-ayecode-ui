@@ -50,7 +50,7 @@
   //width: 1em;
   height: 1em;
   width: auto;
-  display: inline-block;
+  //display: inline-block; // causes issue with icon hover swap like in GD search bar
   vertical-align: middle;
   flex-shrink: 0;
   max-width: unset;

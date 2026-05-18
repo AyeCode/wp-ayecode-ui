@@ -2,6 +2,10 @@
 
 All notable changes to the AyeCode UI will be documented in this file.
 
+## [3.0.2-beta] - 2026-05-18
+- .text-justify class was removed in BS5.3, we added it back in - ADDED
+- Several small style bug fixes - FIXED
+
 ## [3.0.1-beta] - 2026-04-22
 - Refactored to meet the new AyeCode package standards - CHANGED
 

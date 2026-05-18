@@ -1,5 +1,7 @@
 // Dropdowns with hover to open get a border on close, this hides it.
-//.nav-item.dropdown:focus-visible{
-//  outline: none;
-//  box-shadow: none;
-//}
+.nav-item.dropdown, .nav-link {
+	&:focus-visible {
+		outline: none;
+		box-shadow: none;
+	}
+}

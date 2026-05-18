@@ -10,3 +10,9 @@
   }
 }
 
+.btn-icon{
+	box-sizing: content-box;
+	&.rounded-circle{
+		box-sizing: border-box;
+	}
+}
