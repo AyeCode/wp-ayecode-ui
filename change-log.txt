@@ -1,4 +1,4 @@
-= 0.2.49 - 2026-06-TBD =
+= 0.2.49 - 2026-06-10 =
 * Background color conflict in Gutenberg editor - FIXED
 
 = 0.2.48 - 2026-05-14 =
