@@ -2,6 +2,9 @@
 
 All notable changes to the AyeCode UI will be documented in this file.
 
+## [3.0.3-beta] - 2026-TBD
+- WP 7.0 breaks backend switches styles - FIXED
+
 ## [3.0.2-beta] - 2026-05-18
 - .text-justify class was removed in BS5.3, we added it back in - ADDED
 - Several small style bug fixes - FIXED

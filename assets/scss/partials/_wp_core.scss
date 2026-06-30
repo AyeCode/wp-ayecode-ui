@@ -122,6 +122,10 @@ body.modal-open .modal{
   content: none;
 }
 
+.form-switch .form-check-input:checked{
+	background-repeat: no-repeat;
+}
+
 .zi-1 {
     z-index: 1 !important
 }
