@@ -1320,9 +1320,13 @@ $custom_css .= "
 				echo '.aui-nav-links .pagination{justify-content:inherit}';
 			}
 
-            // Astra theme - when woocommerce active they add compatibility CSS which breaks select2 in modals
+            // Astra theme compatibility fixes
             if( defined('ASTRA_THEME_VERSION')){
+				// WooCommerce active: breaks select2 z-index in modals
                 echo '.woocommerce-js.modal-open .select2-container .select2-dropdown, .woocommerce-js.modal-open .select2-container .select2-search__field, .woocommerce-page.modal-open .select2-container .select2-dropdown, .woocommerce-page.modal-open .select2-container .select2-search__field{z-index: 1056;}';
+
+				// Global image box-shadow breaks Google Maps / Leaflet tile rendering
+				echo '.leaflet-tile-container img,.gm-style img{box-shadow:none!important;}';
             }
 
 			?></style><?php
