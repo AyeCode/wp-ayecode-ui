@@ -136,19 +136,15 @@
      * Initiate Select2 items.
      */
     function aui_init_select2(){
-        var select2_args = jQuery.extend({}, aui_select2_locale());
+        var select2Args, select2Locale = aui_select2_locale();
         jQuery("select.aui-select2").each(function() {
             if (!jQuery(this).hasClass("select2-hidden-accessible")) {
-                var $el = jQuery(this);
-                var args = jQuery.extend({}, select2_args);
-                var $modal = $el.closest('.modal');
-
-                // Keep the dropdown inside the modal to prevent focus trapping.
-                if ($modal.length) {
-                    args.dropdownParent = $modal;
+                select2Args = jQuery.extend({}, select2Locale);
+                if (jQuery(this).closest('.modal.show').length) {
+                    // Keep the dropdown inside the modal to prevent focus trapping.
+                    select2Args.dropdownParent = jQuery(this).closest('.modal-body');
                 }
-
-                $el.select2(args);
+                jQuery(this).select2(select2Args);
             }
         });
     }

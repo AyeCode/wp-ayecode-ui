@@ -1,4 +1,4 @@
-= 0.2.53 - TBD =
+= 0.2.53 - 2026-09-09 =
 * Select2 dropdowns could not be used inside a modal - FIXED
 
 = 0.2.52 - 2026-08-18 =
