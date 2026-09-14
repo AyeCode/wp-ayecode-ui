@@ -775,6 +775,18 @@ $custom_css .= "
             // some hosts end up with /wp-content/wp-content/
             $url = str_replace( '/wp-content/wp-content/', '/wp-content/', $url );
 
+            /**
+             * Filters the URL to the AyeCode UI folder.
+             *
+             * Useful when the folder URL can't be worked out from its path, e.g. a symlinked plugin.
+             *
+             * @since 0.2.54
+             *
+             * @param string $url      The AyeCode UI folder URL.
+             * @param string $file_dir The AyeCode UI folder path.
+             */
+            $url = apply_filters( 'ayecode_ui_url', $url, $file_dir );
+
             return trailingslashit($url);
         }
 
