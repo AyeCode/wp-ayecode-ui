@@ -1,4 +1,4 @@
-= 0.2.54 - TBD =
+= 0.2.54 - 2026-09-16 =
 * Added ayecode_ui_url filter to override the AyeCode UI folder URL - ADDED
 
 = 0.2.53 - 2026-09-09 =
