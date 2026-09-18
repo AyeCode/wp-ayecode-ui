@@ -4,6 +4,8 @@ All notable changes to the AyeCode UI will be documented in this file.
 
 ## [3.0.3-beta] - 2026-TBD
 - WP 7.0 breaks backend switches styles - FIXED
+- Updatged the toasts to be light/dark - CHANGED
+- Updated the toast icons to use new AUI functions - CHANGED
 
 ## [3.0.2-beta] - 2026-05-18
 - .text-justify class was removed in BS5.3, we added it back in - ADDED

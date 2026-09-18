@@ -1214,28 +1214,28 @@
 		switch ($type) {
 			case 'success':
 				op = 'opacity:.92;';
-				tClass = 'alert bg-success w-auto';
-				thClass = 'bg-transparent border-0 text-white';
-				icon = "<div class='fs-5 m-0 p-0'><i class='fas fa-check-circle me-2'></i></div>";
+				tClass = 'alert alert-success bg-success-subtle text-success-emphasis border-success-subtle w-auto p-3 fs-6 mb-3';
+				thClass = 'bg-transparent border-0 text-reset';
+				icon = <?php echo wp_json_encode( '<div class="fs-5 m-0 p-0">' . trim( preg_replace( '/\s*\R\s*|^\s*<\?xml.*?\?>\s*/s', ' ', ayecode_get_icon( 'fas fa-check-circle me-2' ) ) ) . '</div>' ); ?>;
 				break;
 			case 'error':
 			case 'danger':
 				op = 'opacity:.92;';
-				tClass = 'alert bg-danger w-auto';
-				thClass = 'bg-transparent border-0 text-white';
-				icon = "<div class='s-5 m-0 p-0'><i class='far fa-times-circle me-2'></i></div>";
+				tClass = 'alert alert-danger bg-danger-subtle text-danger-emphasis border-danger-subtle w-auto p-3 fs-6 mb-3';
+				thClass = 'bg-transparent border-0 text-reset';
+				icon = <?php echo wp_json_encode( '<div class="fs-5 m-0 p-0">' . trim( preg_replace( '/\s*\R\s*|^\s*<\?xml.*?\?>\s*/s', ' ', ayecode_get_icon( 'far fa-times-circle me-2' ) ) ) . '</div>' ); ?>;
 				break;
 			case 'info':
 				op = 'opacity:.92;';
-				tClass = 'alert bg-info w-auto';
-				thClass = 'bg-transparent border-0 text-white';
-				icon = "<div class='fs-5 m-0 p-0'><i class='fas fa-info-circle me-2'></i></div>";
+				tClass = 'alert alert-info bg-info-subtle text-info-emphasis border-info-subtle w-auto p-3 fs-6 mb-3';
+				thClass = 'bg-transparent border-0 text-reset';
+				icon = <?php echo wp_json_encode( '<div class="fs-5 m-0 p-0">' . trim( preg_replace( '/\s*\R\s*|^\s*<\?xml.*?\?>\s*/s', ' ', ayecode_get_icon( 'fas fa-info-circle me-2' ) ) ) . '</div>' ); ?>;
 				break;
 			case 'warning':
 				op = 'opacity:.92;';
-				tClass = 'alert bg-warning w-auto';
-				thClass = 'bg-transparent border-0 text-dark';
-				icon = "<div class='fs-5 m-0 p-0'><i class='fas fa-exclamation-triangle me-2'></i></div>";
+				tClass = 'alert alert-warning bg-warning-subtle text-warning-emphasis border-warning-subtle w-auto p-3 fs-6 mb-3';
+				thClass = 'bg-transparent border-0 text-reset';
+				icon = <?php echo wp_json_encode( '<div class="fs-5 m-0 p-0">' . trim( preg_replace( '/\s*\R\s*|^\s*<\?xml.*?\?>\s*/s', ' ', ayecode_get_icon( 'fas fa-exclamation-triangle me-2' ) ) ) . '</div>' ); ?>;
 				break;
 		}
 
@@ -1285,7 +1285,7 @@
 			if ($can_close) {
 				var btn = document.createElement('button');
 				btn.type = 'button';
-				btn.className = 'ms-2 mb-1 btn-close';
+				btn.className = 'ms-3 mb-1 p-0 btn-close mt-n4 me-n1';
 				btn.setAttribute('data-bs-dismiss', 'toast');
 				btn.setAttribute('aria-label', 'Close');
 				header.appendChild(btn);
