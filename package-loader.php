@@ -42,6 +42,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 	 * Step 1: Version Negotiation (Priority 1)
 	 */
 	add_action( 'plugins_loaded', function () use ( $registry_key, $this_version, $this_path ) {
+		// A 2.x copy negotiates through $ayecode_ui_settings and never writes this registry,
+		// so without looking for it the two generations are invisible to each other and both
+		// load. Claim the registry on its behalf so that exactly one generation wins.
+		if ( empty( $GLOBALS[ $registry_key ] ) && class_exists( 'AyeCode_UI_Settings' ) ) {
+			$GLOBALS[ $registry_key ] = array(
+				'version' => defined( 'AYECODE_UI_VERSION' ) ? AYECODE_UI_VERSION : '0',
+				'path'    => '',
+			);
+		}
+
 		if ( empty( $GLOBALS[ $registry_key ] ) || version_compare( $this_version, $GLOBALS[ $registry_key ]['version'], '>' ) ) {
 			$GLOBALS[ $registry_key ] = [
 				'version' => $this_version,
