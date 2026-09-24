@@ -155,8 +155,7 @@ class SettingsOrchestrator {
 	 * @return void
 	 */
 	private function define_color_constants(): void {
-		// A 2.x copy of this package defines the same constants, unguarded, so on a site
-		// carrying one of each whichever runs second warns once per constant per request.
+		// Another copy of this package may have defined these already.
 		defined( 'AUI_PRIMARY_COLOR_ORIGINAL' ) || define( 'AUI_PRIMARY_COLOR_ORIGINAL', '#1e73be' );
 		defined( 'AUI_SECONDARY_COLOR_ORIGINAL' ) || define( 'AUI_SECONDARY_COLOR_ORIGINAL', '#6c757d' );
 		defined( 'AUI_INFO_COLOR_ORIGINAL' ) || define( 'AUI_INFO_COLOR_ORIGINAL', '#17a2b8' );
