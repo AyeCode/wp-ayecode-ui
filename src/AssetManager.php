@@ -225,7 +225,18 @@ class AssetManager {
 		}
 
 		$content_basename = basename( $content_dir );
-		$after_content    = substr( $plugin_dir, strpos( $plugin_dir, '/' . $content_basename . '/' ) + strlen( '/' . $content_basename . '/' ) );
+		$needle           = '/' . $content_basename . '/';
+		$at               = strpos( $plugin_dir, $needle );
+
+		// A plugin symlinked in from outside wp-content has no content directory in its real
+		// path. Without this guard strpos() returns false, false + strlen( $needle ) is the
+		// length itself, and substr() chops that many characters off the front of an absolute
+		// path, producing a URL that points nowhere.
+		if ( false === $at ) {
+			return trailingslashit( plugins_url( '', AYECODE_UI_PLUGIN_FILE ) );
+		}
+
+		$after_content = substr( $plugin_dir, $at + strlen( $needle ) );
 
 		$url = trailingslashit( $content_url ) . $after_content;
 		$url = str_replace( '/wp-content/wp-content/', '/wp-content/', $url );

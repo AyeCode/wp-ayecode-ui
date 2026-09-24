@@ -104,7 +104,7 @@ class Pagination {
 				$output .= '</section>';
 			}
 
-			$output = str_replace( 'screen-reader-text', 'screen-reader-text sr-only', $output );
+			$output = str_replace( 'screen-reader-text', 'screen-reader-text visually-hidden', $output );
 			$output = str_replace( 'nav-links', 'aui-nav-links', $output );
 		}
 
