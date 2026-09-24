@@ -261,6 +261,9 @@
 		selects.forEach((select) => {
 			const config = aui_get_choices_config(select);
 			new Choices(select, config);
+			// A 2.x copy of this package initialises select2 over the same class at window
+			// load. Choices owns this select now, so drop the marker it matches on.
+			select.classList.remove('aui-select2');
 		});
 	}
 
