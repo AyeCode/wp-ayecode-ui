@@ -98,20 +98,6 @@ class SettingsOrchestrator {
 	 * @return void
 	 */
 	public function init(): void {
-		// Handle fix-admin request (submitted before headers are sent).
-		if ( ! empty( $_REQUEST['aui-fix-admin'] ) && ! empty( $_REQUEST['nonce'] )
-			&& wp_verify_nonce( sanitize_key( wp_unslash( $_REQUEST['nonce'] ) ), 'aui-fix-admin' )
-		) {
-			$db_settings = get_option( 'ayecode-ui-settings', array() );
-			if ( ! empty( $db_settings ) ) {
-				$db_settings['css_backend'] = 'compatibility';
-				$db_settings['js_backend']  = 'core-popper';
-				update_option( 'ayecode-ui-settings', $db_settings );
-				wp_safe_redirect( admin_url( 'options-general.php?page=ayecode-ui-settings&updated=true' ) );
-				exit;
-			}
-		}
-
 		$this->define_color_constants();
 
 		// Add BS5 body classes.
@@ -434,7 +420,8 @@ class SettingsOrchestrator {
 	 */
 	public static function is_cornerstone_preview(): bool {
 		return ! empty( $_REQUEST['cornerstone_preview'] )
-			|| ( ! empty( $_SERVER['REQUEST_URI'] ) && basename( $_SERVER['REQUEST_URI'] ) === 'cornerstone-endpoint' );
+			|| ( ! empty( $_SERVER['REQUEST_URI'] )
+				&& basename( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ) === 'cornerstone-endpoint' );
 	}
 
 	/**
@@ -452,10 +439,14 @@ class SettingsOrchestrator {
 	 * @return bool
 	 */
 	public static function is_oxygen_preview(): bool {
+		$action = isset( $_REQUEST['action'] ) && is_string( $_REQUEST['action'] )
+			? sanitize_key( wp_unslash( $_REQUEST['action'] ) )
+			: '';
+
 		return ! empty( $_REQUEST['ct_builder'] )
-			|| ( ! empty( $_REQUEST['action'] )
-				&& ( str_starts_with( $_REQUEST['action'], 'oxy_render_' )
-					|| str_starts_with( $_REQUEST['action'], 'ct_render_' ) ) );
+			|| ( '' !== $action
+				&& ( str_starts_with( $action, 'oxy_render_' )
+					|| str_starts_with( $action, 'ct_render_' ) ) );
 	}
 
 	/**

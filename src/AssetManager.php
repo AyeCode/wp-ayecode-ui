@@ -516,16 +516,16 @@ class AssetManager {
 		$day_s5 = [];
 
 		for ( $i = 1; $i <= 7; $i++ ) {
-			$day_s3[] = addslashes( $params[ 'day_s3_' . $i ] );
-			$day_s5[] = addslashes( $params[ 'day_s3_' . $i ] );
+			$day_s3[] = esc_js( $params[ 'day_s3_' . $i ] );
+			$day_s5[] = esc_js( $params[ 'day_s3_' . $i ] );
 		}
 
 		$month_s    = [];
 		$month_long = [];
 
 		for ( $i = 1; $i <= 12; $i++ ) {
-			$month_s[]    = addslashes( $params[ 'month_s_' . $i ] );
-			$month_long[] = addslashes( $params[ 'month_long_' . $i ] );
+			$month_s[]    = esc_js( $params[ 'month_s_' . $i ] );
+			$month_long[] = esc_js( $params[ 'month_long_' . $i ] );
 		}
 
 		ob_start();
@@ -551,14 +551,14 @@ class AssetManager {
 					default: return "th";
 				}
 			},
-			rangeSeparator: '<?php echo esc_attr( $params['rangeSeparator'] ); ?>',
-			weekAbbreviation: '<?php echo esc_attr( $params['weekAbbreviation'] ); ?>',
-			scrollTitle: '<?php echo esc_attr( $params['scrollTitle'] ); ?>',
-			toggleTitle: '<?php echo esc_attr( $params['toggleTitle'] ); ?>',
-			amPM: ['<?php echo esc_attr( $params['am_upper'] ); ?>','<?php echo esc_attr( $params['pm_upper'] ); ?>'],
-			yearAriaLabel: '<?php echo esc_attr( $params['year'] ); ?>',
-			hourAriaLabel: '<?php echo esc_attr( $params['hour'] ); ?>',
-			minuteAriaLabel: '<?php echo esc_attr( $params['minute'] ); ?>',
+			rangeSeparator: '<?php echo esc_js( $params['rangeSeparator'] ); ?>',
+			weekAbbreviation: '<?php echo esc_js( $params['weekAbbreviation'] ); ?>',
+			scrollTitle: '<?php echo esc_js( $params['scrollTitle'] ); ?>',
+			toggleTitle: '<?php echo esc_js( $params['toggleTitle'] ); ?>',
+			amPM: ['<?php echo esc_js( $params['am_upper'] ); ?>','<?php echo esc_js( $params['pm_upper'] ); ?>'],
+			yearAriaLabel: '<?php echo esc_js( $params['year'] ); ?>',
+			hourAriaLabel: '<?php echo esc_js( $params['hour'] ); ?>',
+			minuteAriaLabel: '<?php echo esc_js( $params['minute'] ); ?>',
 			time_24hr: <?php echo ( $params['time_24hr'] ? 'true' : 'false' ); ?>
 		}
 		<?php if ( 0 ) { ?></script><?php } ?>

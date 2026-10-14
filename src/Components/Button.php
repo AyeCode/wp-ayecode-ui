@@ -55,7 +55,7 @@ class Button {
 
 			if ( 'a' === $type ) {
 				$new_window = ! empty( $args['new_window'] ) ? ' target="_blank" ' : '';
-				$output    .= '<a href="' . $args['href'] . '"' . $new_window;
+				$output    .= '<a href="' . esc_url( $args['href'] ) . '"' . $new_window;
 			} elseif ( 'badge' === $type ) {
 				$output .= '<span ';
 			} else {
@@ -85,17 +85,17 @@ class Button {
 			}
 
 			if ( ! empty( $args['onclick'] ) ) {
-				$output .= ' onclick="' . $args['onclick'] . '" ';
+				$output .= ' onclick="' . esc_attr( $args['onclick'] ) . '" ';
 			}
 			if ( ! empty( $args['style'] ) ) {
-				$output .= ' style="' . $args['style'] . '" ';
+				$output .= ' style="' . esc_attr( $args['style'] ) . '" ';
 			}
 
 			$output .= ' >';
 
 			$hover_content = false;
 			if ( ! empty( $args['hover_content'] ) || ! empty( $args['hover_icon'] ) ) {
-				$output       .= "<span class='hover-content'>" . Helper::icon( $args['hover_icon'], $args['hover_content'] ) . $args['hover_content'] . '</span>';
+				$output       .= "<span class='hover-content'>" . Helper::icon( $args['hover_icon'], $args['hover_content'] ) . Helper::sanitize_html_field( $args['hover_content'] ) . '</span>';
 				$hover_content = true;
 			}
 

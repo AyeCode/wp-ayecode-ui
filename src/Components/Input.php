@@ -116,7 +116,7 @@ class Input {
 			} elseif ( $type === 'datepicker' || $type === 'timepicker' ) {
 				$type            = 'text';
 				$args['class']  .= ' bg-initial ';
-				$clear_function .= "jQuery(this).parent().parent().find('input[name=\'" . esc_attr( $args['name'] ) . "\']').trigger('change');";
+				$clear_function .= "jQuery(this).parent().parent().find('input[name=\'" . esc_js( $args['name'] ) . "\']').trigger('change');";
 
 				$args['extra_attributes']['data-aui-init'] = 'flatpickr';
 
@@ -171,14 +171,14 @@ class Input {
 				$output .= ' checked ';
 			}
 			if ( ! empty( $args['validation_text'] ) ) {
-				$output .= ' oninvalid="setCustomValidity(\'' . esc_attr( addslashes( $args['validation_text'] ) ) . '\')" ';
+				$output .= ' oninvalid="setCustomValidity(\'' . esc_js( $args['validation_text'] ) . '\')" ';
 				$output .= ' onchange="try{setCustomValidity(\'\')}catch(e){}" ';
 			}
 			if ( ! empty( $args['validation_pattern'] ) ) {
 				$output .= ' pattern="' . esc_attr( $args['validation_pattern'] ) . '" ';
 			}
 			if ( ! empty( $args['step'] ) ) {
-				$output .= ' step="' . $args['step'] . '" ';
+				$output .= ' step="' . esc_attr( $args['step'] ) . '" ';
 			}
 			if ( ! empty( $args['required'] ) ) {
 				$output .= ' required ';
@@ -418,14 +418,14 @@ else{$eli.attr(\'type\',\'password\');}"
 			$output .= ' >';
 
 			if ( ! empty( $args['input_group_left'] ) ) {
-				$input_group_left = strpos( $args['input_group_left'], '<' ) !== false ? $args['input_group_left'] : '<span class="input-group-text">' . $args['input_group_left'] . '</span>';
+				$input_group_left = strpos( $args['input_group_left'], '<' ) !== false ? $args['input_group_left'] : '<span class="input-group-text">' . esc_html( $args['input_group_left'] ) . '</span>';
 				$output          .= $input_group_left;
 			}
 
 			$output .= $args['content'];
 
 			if ( ! empty( $args['input_group_right'] ) ) {
-				$input_group_right = strpos( $args['input_group_right'], '<' ) !== false ? $args['input_group_right'] : '<span class="input-group-text">' . $args['input_group_right'] . '</span>';
+				$input_group_right = strpos( $args['input_group_right'], '<' ) !== false ? $args['input_group_right'] : '<span class="input-group-text">' . esc_html( $args['input_group_right'] ) . '</span>';
 				$output           .= str_replace( 'input-group-text', 'input-group-text top-0 end-0', $input_group_right );
 			}
 
@@ -542,7 +542,7 @@ else{$eli.attr(\'type\',\'password\');}"
 				$output .= ' title="' . esc_attr( $args['title'] ) . '" ';
 			}
 			if ( ! empty( $args['validation_text'] ) ) {
-				$output .= ' oninvalid="setCustomValidity(\'' . esc_attr( addslashes( $args['validation_text'] ) ) . '\')" ';
+				$output .= ' oninvalid="setCustomValidity(\'' . esc_js( $args['validation_text'] ) . '\')" ';
 				$output .= ' onchange="try{setCustomValidity(\'\')}catch(e){}" ';
 			}
 			if ( ! empty( $args['validation_pattern'] ) ) {
@@ -556,7 +556,7 @@ else{$eli.attr(\'type\',\'password\');}"
 			}
 
 			$class   = ! empty( $args['class'] ) ? $args['class'] : '';
-			$output .= ' class="form-control ' . $class . '" ';
+			$output .= ' class="form-control ' . Helper::esc_classes( $class ) . '" ';
 
 			if ( ! empty( $args['extra_attributes'] ) ) {
 				$output .= Helper::extra_attributes( $args['extra_attributes'] );
@@ -794,7 +794,7 @@ else{$eli.attr(\'type\',\'password\');}"
 								$selected = selected( $option_value, $args['value'], false );
 							}
 
-							$output .= '<option value="' . esc_attr( $option_value ) . '" ' . $selected . ' ' . $extra_attributes . '>' . $option_label . '</option>';
+							$output .= '<option value="' . esc_attr( $option_value ) . '" ' . $selected . ' ' . $extra_attributes . '>' . esc_html( $option_label ) . '</option>';
 						}
 					} else {
 						if ( ! empty( $args['value'] ) ) {

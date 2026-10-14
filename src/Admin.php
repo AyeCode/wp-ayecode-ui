@@ -311,6 +311,11 @@ class Admin extends \AyeCode\SettingsFramework\Settings_Framework {
 	 * @return void
 	 */
 	public function show_admin_style_notice(): void {
+		// The notice carries a fix-admin nonce, so only show it to users who may act on it.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
 		$screen = get_current_screen();
 		if ( ! $screen || 'settings_page_' . $this->page_slug === $screen->id ) {
 			return;

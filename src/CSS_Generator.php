@@ -59,21 +59,27 @@ class CSS_Generator {
 
 			if ( ! empty( $setting['color']['palette']['theme'] ) ) {
 				foreach ( $setting['color']['palette']['theme'] as $color ) {
-					$colors[ $color['slug'] ] = esc_attr( $color['color'] );
+					$colors[ sanitize_key( $color['slug'] ) ] = self::sanitize_css_color( (string) $color['color'] );
 				}
 			}
 
 			if ( ! empty( $setting['color']['palette']['custom'] ) ) {
 				foreach ( $setting['color']['palette']['custom'] as $color ) {
-					$colors[ $color['slug'] ] = esc_attr( $color['color'] );
+					$colors[ sanitize_key( $color['slug'] ) ] = self::sanitize_css_color( (string) $color['color'] );
 				}
 			}
+
+			$colors = array_filter( $colors );
 		} else {
 			$settings = get_option( 'aui_options', [] );
 
+			// The option is trusted by the customizer on write, but not on read.
+			$primary   = self::sanitize_css_color( (string) ( $settings['color_primary'] ?? '' ) );
+			$secondary = self::sanitize_css_color( (string) ( $settings['color_secondary'] ?? '' ) );
+
 			$colors = [
-				'primary'   => $settings['color_primary'] ?? AUI_PRIMARY_COLOR,
-				'secondary' => $settings['color_secondary'] ?? AUI_SECONDARY_COLOR,
+				'primary'   => '' !== $primary ? $primary : AUI_PRIMARY_COLOR,
+				'secondary' => '' !== $secondary ? $secondary : AUI_SECONDARY_COLOR,
 			];
 		}
 
@@ -100,7 +106,7 @@ class CSS_Generator {
 
 			foreach ( $colors as $key => $color ) {
 				if ( ( empty( $d_colors[ $key ] ) || $d_colors[ $key ] != $color ) || $is_fse ) {
-					$var   = $is_fse ? "var(--wp--preset--color--$key)" : $color;
+					$var   = $is_fse ? 'var(--wp--preset--color--' . sanitize_key( $key ) . ')' : $color;
 					$compat = $is_fse ? '.editor-styles-wrapper' : $compatibility;
 
 					$colors_css .= self::css_overwrite( $key, $var, $compat, $color );
@@ -236,12 +242,15 @@ class CSS_Generator {
 			return '';
 		}
 
+		// Reject anything that is not a recognised color before it reaches the stylesheet.
+		$color_code = self::sanitize_css_color( $color_code );
+
+		if ( '' === $color_code ) {
+			return '';
+		}
+
 		$is_var    = strpos( $color_code, 'var' ) !== false;
 		$is_custom = strpos( $type, 'custom-' ) !== false;
-
-		if ( $is_var ) {
-			$color_code = esc_attr( $color_code );
-		}
 
 		$rgb = self::hex_to_rgb( $hex );
 
@@ -288,8 +297,8 @@ class CSS_Generator {
 
 		if ( $type === 'primary' ) {
 			$output .= 'html body {--bs-link-hover-color: rgba(var(--bs-' . esc_attr( $type ) . '-rgb), .75); --bs-link-color: var(--bs-' . esc_attr( $type ) . '); }';
-			$output .= $prefix . ' .breadcrumb{--bs-breadcrumb-item-active-color: ' . esc_attr( $color_code ) . ';  }';
-			$output .= $prefix . ' .navbar { --bs-nav-link-hover-color: ' . esc_attr( $color_code ) . '; --bs-navbar-hover-color: ' . esc_attr( $color_code ) . '; --bs-navbar-active-color: ' . esc_attr( $color_code ) . '; }';
+			$output .= $prefix . ' .breadcrumb{--bs-breadcrumb-item-active-color: ' . $color_code . ';  }';
+			$output .= $prefix . ' .navbar { --bs-nav-link-hover-color: ' . $color_code . '; --bs-navbar-hover-color: ' . $color_code . '; --bs-navbar-active-color: ' . $color_code . '; }';
 			$output .= $prefix . ' a{color: var(--bs-' . esc_attr( $type ) . ');}';
 			$output .= $prefix . ' .text-primary{color: var(--bs-' . esc_attr( $type ) . ') !important;}';
 			$output .= $prefix . ' .dropdown-menu{--bs-dropdown-link-hover-color: var(--bs-' . esc_attr( $type ) . '); --bs-dropdown-link-active-color: var(--bs-' . esc_attr( $type ) . ');}';
@@ -300,8 +309,8 @@ class CSS_Generator {
 
 		$output .= $prefix . ' .btn-' . esc_attr( $type ) . '{';
 		$output .= '
-		--bs-btn-bg: ' . esc_attr( $color_code ) . ';
-		--bs-btn-border-color: ' . esc_attr( $color_code ) . ';
+		--bs-btn-bg: ' . $color_code . ';
+		--bs-btn-border-color: ' . $color_code . ';
 		--bs-btn-hover-bg: rgba(var(--bs-' . esc_attr( $type ) . '-rgb), .9);
 		--bs-btn-hover-border-color: rgba(var(--bs-' . esc_attr( $type ) . '-rgb), .9);
 		--bs-btn-focus-shadow-rgb: --bs-' . esc_attr( $type ) . '-rgb;
@@ -315,8 +324,8 @@ class CSS_Generator {
 
 		$output .= $prefix . ' .btn-outline-' . esc_attr( $type ) . '{';
 		$output .= '
-		--bs-btn-color: ' . esc_attr( $color_code ) . ';
-		--bs-btn-border-color: ' . esc_attr( $color_code ) . ';
+		--bs-btn-color: ' . $color_code . ';
+		--bs-btn-border-color: ' . $color_code . ';
 		--bs-btn-hover-bg: rgba(var(--bs-' . esc_attr( $type ) . '-rgb), .9);
 		--bs-btn-hover-border-color: rgba(var(--bs-' . esc_attr( $type ) . '-rgb), .9);
 		--bs-btn-focus-shadow-rgb: --bs-' . esc_attr( $type ) . '-rgb;
@@ -331,7 +340,7 @@ class CSS_Generator {
 		$output .= $prefix . ' .btn-' . esc_attr( $type ) . ':hover{';
 		$output .= ' box-shadow: 0 0.25rem 0.25rem 0.125rem rgb(var(--bs-' . esc_attr( $type ) . '-rgb), .1), 0 0.375rem 0.75rem -0.125rem rgb(var(--bs-' . esc_attr( $type ) . '-rgb) , .4);}';
 
-		$output .= 'html body {--bs-' . esc_attr( $type ) . ': ' . esc_attr( $color_code ) . '; }';
+		$output .= 'html body {--bs-' . esc_attr( $type ) . ': ' . $color_code . '; }';
 		$output .= 'html body {--bs-' . esc_attr( $type ) . '-rgb: ' . $rgb . '; }';
 
 		if ( $is_custom ) {
@@ -386,6 +395,48 @@ class CSS_Generator {
 		$output .= $prefix . " .alert-{$type} {--bs-alert-bg: rgba(var(--bs-{$type}-rgb), .1 ) !important;--bs-alert-border-color: rgba(var(--bs-{$type}-rgb), .25 ) !important;--bs-alert-color: rgba(var(--bs-{$type}-rgb), 1 ) !important;} ";
 
 		return $output;
+	}
+
+	/**
+	 * Validate a value that will be written into a CSS declaration.
+	 *
+	 * Output escapers such as esc_attr() are not sufficient inside a <style>
+	 * element: they leave `;`, `{`, `}` and `(` untouched, so a crafted value can
+	 * still close the declaration and inject new rules. Colors are therefore
+	 * validated against the forms we actually support and rejected outright when
+	 * they do not match.
+	 *
+	 * @param string $color Color value from settings or theme.json.
+	 * @return string The color if it is valid, an empty string otherwise.
+	 */
+	public static function sanitize_css_color( string $color ): string {
+		$color = trim( $color );
+
+		if ( '' === $color ) {
+			return '';
+		}
+
+		// Hex colors, validated by WordPress.
+		if ( 0 === strpos( $color, '#' ) ) {
+			return (string) sanitize_hex_color( $color );
+		}
+
+		// Custom property references, e.g. var(--wp--preset--color--primary).
+		if ( preg_match( '/^var\(\s*--[A-Za-z0-9_-]+\s*\)$/', $color ) ) {
+			return $color;
+		}
+
+		// Functional notations, e.g. rgb(0 0 0 / 50%) or hsla(120, 50%, 50%, .5).
+		if ( preg_match( '/^(?:rgb|rgba|hsl|hsla)\([0-9%.,\s\/+-]+\)$/', $color ) ) {
+			return $color;
+		}
+
+		// Named colors such as "red" or "transparent".
+		if ( preg_match( '/^[A-Za-z]+$/', $color ) ) {
+			return $color;
+		}
+
+		return '';
 	}
 
 	/**

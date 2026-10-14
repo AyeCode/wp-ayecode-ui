@@ -238,7 +238,15 @@ class Helper {
 	/**
 	 * Generate extra HTML attributes from an array or string.
 	 *
-	 * @param array|string $args Attribute key/value pairs.
+	 * Array values are escaped here: keys via sanitize_html_class() and values
+	 * via esc_attr(). Pass an array wherever possible.
+	 *
+	 * A string is injected verbatim so that callers can emit attribute forms the
+	 * array syntax cannot express, such as standalone boolean attributes. Nothing
+	 * is escaped on that path, so a caller passing a string is responsible for
+	 * escaping it first. Never hand it unfiltered user input.
+	 *
+	 * @param array|string $args Attribute key/value pairs, or a pre-escaped attribute string.
 	 * @return string
 	 */
 	public static function extra_attributes( $args ): string {

@@ -67,7 +67,7 @@ class Pagination {
 			$custom_prev_link = '';
 			$custom_next_link = '';
 
-			$links_html = "<ul class='pagination m-0 p-0 $class'>";
+			$links_html = "<ul class='pagination m-0 p-0 " . Helper::esc_classes( $class ) . "'>";
 			if ( ! empty( $links ) ) {
 				foreach ( $links as $link ) {
 					$_link       = $link;
@@ -89,9 +89,9 @@ class Pagination {
 						$btn_link = str_replace( 'text-dark link-primary current', 'current', $btn_link );
 
 						if ( strpos( $_link, 'next page-numbers' ) && ! empty( $args['custom_next_text'] ) ) {
-							$custom_next_link = str_replace( $args['next_text'], $args['custom_next_text'], $btn_link );
+							$custom_next_link = str_replace( $args['next_text'], Helper::sanitize_html_field( $args['custom_next_text'] ), $btn_link );
 						} elseif ( strpos( $_link, 'prev page-numbers' ) && ! empty( $args['custom_prev_text'] ) ) {
-							$custom_prev_link = str_replace( $args['prev_text'], $args['custom_prev_text'], $btn_link );
+							$custom_prev_link = str_replace( $args['prev_text'], Helper::sanitize_html_field( $args['custom_prev_text'] ), $btn_link );
 						}
 					}
 				}
@@ -111,7 +111,7 @@ class Pagination {
 		if ( $output ) {
 			if ( $custom_next_link || $custom_prev_link ) {
 				$current = get_query_var( 'paged' ) ? (int) get_query_var( 'paged' ) : 1;
-				$output  = '<div class="row d-flex align-items-center justify-content-between"><div class="col text-start">' . $custom_prev_link . '</div><div class="col text-center d-none d-md-block">' . $output . '</div><div class="col text-center d-md-none">' . $current . '/' . $args['total'] . '</div><div class="col text-end">' . $custom_next_link . '</div></div>';
+				$output  = '<div class="row d-flex align-items-center justify-content-between"><div class="col text-start">' . $custom_prev_link . '</div><div class="col text-center d-none d-md-block">' . $output . '</div><div class="col text-center d-md-none">' . $current . '/' . absint( $args['total'] ) . '</div><div class="col text-end">' . $custom_next_link . '</div></div>';
 			}
 
 			if ( ! empty( $args['before_paging'] ) ) {

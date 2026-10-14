@@ -70,12 +70,12 @@ class Alert {
 				}
 			}
 
-			$class = ! empty( $args['class'] ) ? esc_attr( $args['class'] ) : '';
+			$class = ! empty( $args['class'] ) ? Helper::esc_classes( $args['class'] ) : '';
 			if ( $args['dismissible'] ) {
 				$class .= ' alert-dismissible fade show';
 			}
 
-			$output .= '<div class="alert alert-' . esc_attr( $type ) . ' ' . esc_attr( $class ) . '" role="alert">';
+			$output .= '<div class="alert alert-' . esc_attr( $type ) . ' ' . $class . '" role="alert">';
 
 			if ( ! empty( $args['heading'] ) ) {
 				$output .= '<h4 class="alert-heading">' . wp_kses_post( $args['heading'] ) . '</h4>';
@@ -85,7 +85,7 @@ class Alert {
 				$output .= $icon . ' ';
 			}
 
-			$output .= $args['content'];
+			$output .= Helper::sanitize_html_field( $args['content'] );
 
 			if ( $args['dismissible'] ) {
 				$output .= '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="' . esc_attr__( 'Close', 'ayecode-connect' ) . '"></button>';

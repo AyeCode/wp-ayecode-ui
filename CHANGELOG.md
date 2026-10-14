@@ -6,6 +6,11 @@ All notable changes to the AyeCode UI will be documented in this file.
 - WP 7.0 breaks backend switches styles - FIXED
 - Updatged the toasts to be light/dark - CHANGED
 - Updated the toast icons to use new AUI functions - CHANGED
+- Escaped component output (button href/onclick/style, textarea and pagination classes, select option labels) - FIXED
+- Added a capability check to the fix-admin settings handler - FIXED
+- Added a sanitize callback to the settings registration - FIXED
+- Validated theme colors before writing them into generated CSS - FIXED
+- Package loader now returns instead of exiting when WordPress is absent, so it no longer kills composer CLI tooling in host repos - FIXED
 
 ## [3.0.2-beta] - 2026-05-18
 - .text-justify class was removed in BS5.3, we added it back in - ADDED

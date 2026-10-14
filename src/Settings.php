@@ -9,6 +9,8 @@
 
 namespace AyeCode\UI;
 
+use AyeCode\UI\Components\Helper;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -59,7 +61,83 @@ class Settings {
 	 * @return void
 	 */
 	public function register_settings(): void {
-		register_setting( 'ayecode-ui-settings', 'ayecode-ui-settings' );
+		register_setting(
+			'ayecode-ui-settings',
+			'ayecode-ui-settings',
+			array(
+				'type'              => 'array',
+				'sanitize_callback' => array( $this, 'sanitize_settings' ),
+				'default'           => array(),
+			)
+		);
+	}
+
+	/**
+	 * Sanitize the settings array before it is stored.
+	 *
+	 * Known keys are sanitized according to the value they hold. Unknown keys are
+	 * kept but run through a generic text sanitizer, so that settings added via the
+	 * `ayecode-ui-default-settings` filter survive a save instead of being dropped.
+	 *
+	 * @param mixed $settings Raw settings submitted from the settings page.
+	 * @return array
+	 */
+	public function sanitize_settings( $settings ): array {
+		if ( ! is_array( $settings ) ) {
+			return array();
+		}
+
+		$clean = array();
+
+		foreach ( $settings as $key => $value ) {
+			$key = sanitize_key( $key );
+
+			switch ( $key ) {
+				case 'css':
+				case 'js':
+				case 'css_backend':
+				case 'js_backend':
+					$clean[ $key ] = is_scalar( $value ) ? sanitize_key( $value ) : '';
+					break;
+
+				case 'html_font_size':
+					$clean[ $key ] = absint( $value );
+					break;
+
+				case 'disable_admin':
+					$clean[ $key ] = is_scalar( $value ) ? Helper::sanitize_textarea_field( (string) $value ) : '';
+					break;
+
+				default:
+					$clean[ $key ] = $this->sanitize_unknown( $value );
+					break;
+			}
+		}
+
+		return $clean;
+	}
+
+	/**
+	 * Sanitize a setting we have no specific rule for.
+	 *
+	 * Arrays are walked so that settings added by other plugins through the
+	 * `ayecode-ui-default-settings` filter keep their shape instead of collapsing.
+	 *
+	 * @param mixed $value Value to sanitize.
+	 * @return array|string
+	 */
+	private function sanitize_unknown( $value ) {
+		if ( is_array( $value ) ) {
+			$clean = array();
+
+			foreach ( $value as $key => $item ) {
+				$clean[ sanitize_key( $key ) ] = $this->sanitize_unknown( $item );
+			}
+
+			return $clean;
+		}
+
+		return is_scalar( $value ) ? sanitize_text_field( (string) $value ) : '';
 	}
 
 	/**
@@ -134,9 +212,15 @@ class Settings {
 			return true;
 		}
 
+		$request_uri = ! empty( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+
+		if ( '' === $request_uri ) {
+			return true;
+		}
+
 		$url_parts = explode( "\n", $disable_admin );
 		foreach ( $url_parts as $part ) {
-			if ( ! empty( $_SERVER['REQUEST_URI'] ) && strpos( $_SERVER['REQUEST_URI'], trim( $part ) ) !== false ) {
+			if ( strpos( $request_uri, trim( $part ) ) !== false ) {
 				return false;
 			}
 		}
