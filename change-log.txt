@@ -1,4 +1,4 @@
-= 0.2.58 - 2026-10-TBD =
+= 0.2.58 - 2026-10-20 =
 * FSE editor input fields slow to respond while typing - FIXED
 
 = 0.2.57 - 2026-10-15 =
