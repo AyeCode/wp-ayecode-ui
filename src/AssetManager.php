@@ -78,6 +78,15 @@ class AssetManager {
 	private string $choices_version = '11.1.0';
 
 	/**
+	 * Embla Carousel version bundled in assets/js/aui-carousel.min.js.
+	 *
+	 * Change this when the bundled file is rebuilt against a new Embla release.
+	 *
+	 * @var string
+	 */
+	public const EMBLA_VERSION = '9.0.0-rc04';
+
+	/**
 	 * Get singleton instance.
 	 *
 	 * @return AssetManager
@@ -139,6 +148,8 @@ class AssetManager {
 		wp_add_inline_script( 'iconpicker', $this->inline_script_iconpicker(), 'before' );
 
 		wp_register_script( 'sd-dynamic-data-button', $this->url . 'assets/libs/universal-icon-picker/js/dynamic-data-picker-react.js', [], $this->version, true );
+
+		$this->register_carousel();
 
 		wp_register_script( 'aui-custom-file-input', $this->url . 'assets/js/bs-custom-file-input.min.js', [ 'jquery' ], $this->version, true );
 		wp_add_inline_script( 'aui-custom-file-input', $this->inline_script_file_browser() );
@@ -482,6 +493,71 @@ class AssetManager {
 	public function enqueue_flatpickr(): void {
 		wp_enqueue_style( 'flatpickr' );
 		wp_enqueue_script( 'flatpickr' );
+	}
+
+	/**
+	 * Register the carousel script. It is only enqueued when a carousel is rendered.
+	 *
+	 * @return void
+	 */
+	private function register_carousel(): void {
+		if ( wp_script_is( 'aui-carousel', 'registered' ) ) {
+			return;
+		}
+
+		wp_register_script(
+			'aui-carousel',
+			$this->url . 'assets/js/aui-carousel.min.js',
+			array(),
+			$this->version . '-' . self::EMBLA_VERSION,
+			array(
+				'in_footer' => true,
+				'strategy'  => 'defer',
+			)
+		);
+		wp_add_inline_script( 'aui-carousel', 'var aui_carousel_i18n = ' . wp_json_encode( self::carousel_i18n() ) . ';', 'before' );
+	}
+
+	/**
+	 * Enqueue the carousel script.
+	 *
+	 * Called automatically by aui()->carousel(). Plugins that print their own
+	 * carousel markup call this, or aui()->enqueue_carousel(), instead.
+	 *
+	 * @return void
+	 */
+	public function enqueue_carousel(): void {
+		$this->register_carousel();
+		wp_enqueue_script( 'aui-carousel' );
+	}
+
+	/**
+	 * Screen reader strings for the carousel accessibility plugin.
+	 *
+	 * The %1$s style placeholders are filled in by the script with slide numbers.
+	 *
+	 * @return array
+	 */
+	public static function carousel_i18n(): array {
+		return array(
+			'carousel'      => __( 'Carousel', 'ayecode-connect' ),
+			'carousel_role' => __( 'carousel', 'ayecode-connect' ),
+			'slide_role'    => __( 'slide', 'ayecode-connect' ),
+			'prev'          => __( 'Previous slide', 'ayecode-connect' ),
+			'next'          => __( 'Next slide', 'ayecode-connect' ),
+			/* translators: 1: slide number, 2: total slides. */
+			'slide'         => __( 'Slide %1$s of %2$s', 'ayecode-connect' ),
+			/* translators: 1: first slide number, 2: last slide number, 3: total slides. */
+			'slides'        => __( 'Slides %1$s to %2$s of %3$s', 'ayecode-connect' ),
+			/* translators: 1: slide number, 2: total slides. */
+			'dot'           => __( 'Go to slide %1$s of %2$s', 'ayecode-connect' ),
+			/* translators: 1: first slide number, 2: last slide number, 3: total slides. */
+			'dots'          => __( 'Go to slides %1$s to %2$s of %3$s', 'ayecode-connect' ),
+			/* translators: 1: slide number, 2: total slides. */
+			'live'          => __( 'Showing slide %1$s of %2$s', 'ayecode-connect' ),
+			/* translators: 1: first slide number, 2: last slide number, 3: total slides. */
+			'lives'         => __( 'Showing slides %1$s to %2$s of %3$s', 'ayecode-connect' ),
+		);
 	}
 
 	/**

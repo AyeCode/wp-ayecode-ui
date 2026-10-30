@@ -11,6 +11,7 @@ namespace AyeCode\UI;
 
 use AyeCode\UI\Components\Alert;
 use AyeCode\UI\Components\Button;
+use AyeCode\UI\Components\Carousel;
 use AyeCode\UI\Components\Dropdown;
 use AyeCode\UI\Components\Input;
 use AyeCode\UI\Components\Pagination;
@@ -296,6 +297,33 @@ class AUI {
 		}
 
 		return $output;
+	}
+
+	/**
+	 * Render an Embla carousel. Enqueues the carousel script when there is more than one slide.
+	 *
+	 * @param array $args Component arguments.
+	 * @param bool  $echo Whether to echo instead of return.
+	 * @return string Rendered HTML.
+	 */
+	public function carousel( array $args = array(), bool $echo = false ): string {
+		$output = Carousel::get( $args );
+
+		if ( $echo ) {
+			echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			return '';
+		}
+
+		return $output;
+	}
+
+	/**
+	 * Enqueue the carousel script, for plugins that print their own carousel markup.
+	 *
+	 * @return void
+	 */
+	public function enqueue_carousel(): void {
+		AssetManager::instance()->enqueue_carousel();
 	}
 
 	/**

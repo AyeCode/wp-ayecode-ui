@@ -745,6 +745,10 @@
 
 	/**
 	 * Maybe show multiple carousel items if set to do so.
+	 *
+	 * @deprecated 3.0.3 Use the Embla based carousel instead, aui()->carousel() in PHP or
+	 *             .aui-carousel markup, which sets slides per view with row-cols classes.
+	 *             Kept so existing .carousel-multiple-items markup keeps working.
 	 */
 	function aui_carousel_maybe_show_multiple_items($carousel) {
 		var $items = {};
@@ -871,6 +875,8 @@
 
 	/**
 	 * Init Multiple item carousels.
+	 *
+	 * @deprecated 3.0.3 Replaced by the Embla based carousel, see aui_carousel_maybe_show_multiple_items().
 	 */
 	function aui_init_carousel_multiple_items() {
 		// on resize, rerun for each carousel

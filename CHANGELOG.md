@@ -11,6 +11,7 @@ All notable changes to the AyeCode UI will be documented in this file.
 - Added a sanitize callback to the settings registration - FIXED
 - Validated theme colors before writing them into generated CSS - FIXED
 - Package loader now returns instead of exiting when WordPress is absent, so it no longer kills composer CLI tooling in host repos - FIXED
+- Embla Carousel v9 slider component, aui()->carousel(), loaded only when a carousel is rendered - ADDED
 
 ## [3.0.2-beta] - 2026-05-18
 - .text-justify class was removed in BS5.3, we added it back in - ADDED
