@@ -532,6 +532,29 @@ class AssetManager {
 	}
 
 	/**
+	 * Everything the inline lightbox loader needs: the two script URLs and the strings.
+	 *
+	 * The lightbox loads on demand on the first click, so the scripts are not registered
+	 * with WordPress. The carousel URL is skipped by the loader when a carousel on the
+	 * page has already loaded it.
+	 *
+	 * @return array
+	 */
+	public function lightbox_params(): array {
+		return array(
+			'carousel' => add_query_arg( 'ver', $this->version . '-' . self::EMBLA_VERSION, $this->url . 'assets/js/aui-carousel.min.js' ),
+			'lightbox' => add_query_arg( 'ver', $this->version, $this->url . 'assets/js/aui-lightbox.min.js' ),
+			'i18n'     => array_merge(
+				self::carousel_i18n(),
+				array(
+					'lightbox' => __( 'Image gallery', 'ayecode-connect' ),
+					'close'    => __( 'Close', 'ayecode-connect' ),
+				)
+			),
+		);
+	}
+
+	/**
 	 * Screen reader strings for the carousel accessibility plugin.
 	 *
 	 * The %1$s style placeholders are filled in by the script with slide numbers.

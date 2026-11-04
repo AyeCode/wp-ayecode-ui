@@ -150,6 +150,37 @@ aui_carousel_init( container ); // or aui_carousel_init() for the whole document
 
 It is safe to call more than once.
 
+## Lightbox gallery
+
+Clicking an `.aui-lightbox-image` or `.aui-lightbox-iframe` link opens every such link inside the closest `.aui-gallery` in a modal, on this carousel, starting at the clicked one. Links outside an `.aui-gallery` open on their own.
+
+- Nothing loads with the page. The inline script (`includes/inc/bs5-js.php`, `aui_lightbox_embed()`) opens the modal with a spinner, then fetches `assets/js/aui-carousel.min.js` (unless a carousel on the page already loaded it) and `assets/js/aui-lightbox.min.js` the first time a link is clicked. The URLs and screen reader strings are printed in `aui_lightbox_params`.
+- Images: the link `href` is the full size image. A `srcset` (or `data-srcset`) on the thumbnail inside the link is carried over with `sizes="98vw"`. All but the clicked image carry `loading="lazy"`, so the browser fetches the rest as they come near.
+- Captions: a `.carousel-caption` or `.figure-caption` that is a sibling of the link (a child of `link.parentElement`) is cloned under the image, with `visually-hidden` removed.
+- Iframe links (video) load their `src` when selected, with autoplay, and are unloaded when another slide is selected or the modal closes.
+- The arrows and the indicator lines are Bootstrap's own carousel controls (`carousel-control-prev/next`, `carousel-indicators`), so the lightbox adds no CSS of its own.
+- Arrow keys move the gallery, swapped in RTL. Escape closes it.
+
+```php
+// GeoDirectory's Post Images block prints this shape.
+<div class="aui-gallery">
+	<div class="position-relative">
+		<a href="full.jpg" class="aui-lightbox-image"><img src="thumb.jpg" srcset="..." alt="..."></a>
+		<div class="carousel-caption">...</div>
+	</div>
+</div>
+```
+
+To rebuild the lightbox file after editing `assets/js/src/aui-lightbox.js` (needs a global `terser`):
+
+```sh
+{
+	printf '/*! AyeCode UI lightbox gallery | loaded on demand after aui-carousel.min.js | rebuild: docs/dev/CAROUSEL.md */\n'
+	terser assets/js/src/aui-lightbox.js -c -m --comments false
+	echo
+} > assets/js/aui-lightbox.min.js
+```
+
 ## Updating Embla
 
 There is no build step in this repo. `assets/js/aui-carousel.min.js` is the prebuilt Embla files followed by `assets/js/src/aui-carousel.js` minified. To rebuild (needs `curl` and a global `terser`):

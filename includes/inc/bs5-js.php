@@ -958,187 +958,83 @@
 
 
 
+	var aui_lightbox_params = <?php echo wp_json_encode( $this->lightbox_params() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>;
+
+	/**
+	 * Load a script once and resolve when it has run.
+	 */
+	function aui_load_script(src) {
+		return new Promise((resolve, reject) => {
+			const script = document.createElement('script');
+			script.src = src;
+			script.async = true;
+			script.onload = resolve;
+			script.onerror = reject;
+			document.head.appendChild(script);
+		});
+	}
+
+	/**
+	 * Fetch the carousel (unless a carousel on the page already loaded it) and the lightbox
+	 * gallery, the first time they are needed. Later calls share the same promise.
+	 */
+	function aui_load_lightbox() {
+		if (window.aui_lightbox_open) {
+			return Promise.resolve();
+		}
+
+		if (!window.aui_lightbox_loading) {
+			window.aui_carousel_i18n = window.aui_carousel_i18n || aui_lightbox_params.i18n;
+			const carousel = window.aui_carousel_init ? Promise.resolve() : aui_load_script(aui_lightbox_params.carousel);
+			window.aui_lightbox_loading = carousel.then(() => aui_load_script(aui_lightbox_params.lightbox));
+		}
+
+		return window.aui_lightbox_loading;
+	}
+
 	/**
 	 * Open a lightbox when an embed item is clicked.
+	 *
+	 * The modal opens at once with a spinner; the gallery itself is built by
+	 * assets/js/aui-lightbox.js once it (and the carousel) have loaded.
 	 */
 	function aui_lightbox_embed(link, ele) {
-		ele.preventDefault();
+		if (ele && ele.preventDefault) {
+			ele.preventDefault();
+		}
 
 		// remove existing modal
 		document.querySelectorAll('.aui-carousel-modal').forEach(el => el.remove());
 
 		// create and append modal wrapper
 		const modalHTML = `
-		<div class="modal fade aui-carousel-modal bsui" id="aui-carousel-modal" tabindex="-1" role="dialog" aria-labelledby="aui-modal-title" aria-hidden="true">
+		<div class="modal fade aui-carousel-modal bsui" id="aui-carousel-modal" tabindex="-1" role="dialog" aria-label="${aui_lightbox_params.i18n.lightbox}" aria-hidden="true">
 		<div class="modal-dialog modal-dialog-centered modal-xl mw-100">
 			<div class="modal-content bg-transparent border-0 shadow-none">
-			<div class="modal-header">
-				<h5 class="modal-title" id="aui-modal-title"></h5>
-			</div>
-			<div class="modal-body text-center">
-				<i class="fas fa-circle-notch fa-spin fa-3x"></i>
+			<button type="button" class="btn-close btn-close-white position-fixed" style="right:20px;top:10px;z-index:1056" data-bs-dismiss="modal" aria-label="${aui_lightbox_params.i18n.close}"></button>
+			<div class="modal-body text-center text-light p-0">
+				<div class="spinner-border" role="status"></div>
 			</div>
 			</div>
 		</div>
 		</div>`;
 		document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-		// initialize Bootstrap modal
-		const ayeModal = new bootstrap.Modal(document.querySelector('.aui-carousel-modal'), {});
+		const modalEl = document.getElementById('aui-carousel-modal');
+		const ayeModal = new bootstrap.Modal(modalEl, {});
+		ayeModal.show();
 
-		// clear iframe src on hide
-		const myModalEl = document.getElementById('aui-carousel-modal');
-		myModalEl.addEventListener('hidden.bs.modal', () => {
-			document.querySelectorAll('.aui-carousel-modal iframe').forEach(iframe => {
-				iframe.src = '';
-			});
+		aui_load_lightbox().then(() => {
+			if (modalEl.isConnected && window.aui_lightbox_open) {
+				window.aui_lightbox_open(link, modalEl);
+			}
+		}, () => {
+			// The scripts did not arrive, so show the clicked image on its own.
+			const href = link.getAttribute('href');
+			if (modalEl.isConnected && href && !link.classList.contains('aui-lightbox-iframe')) {
+				modalEl.querySelector('.modal-body').innerHTML = `<img src="${href}" alt="" class="mw-100 rounded" style="max-height:90vh">`;
+			}
 		});
-
-		// find gallery container & hrefs
-		const $container = link.closest('.aui-gallery');
-		const $clicked_href = link.getAttribute('href');
-		const $images = [];
-		$container.querySelectorAll('.aui-lightbox-image, .aui-lightbox-iframe').forEach(a => {
-			const href = a.getAttribute('href');
-			if (href) $images.push(href);
-		});
-
-		if ($images.length) {
-			let $carousel = `<div id="aui-embed-slider-modal" class="carousel slide">`;
-
-			// indicators
-			if ($images.length > 1) {
-				$carousel += `<div class="carousel-indicators position-fixed">`;
-				$container.querySelectorAll('.aui-lightbox-image, .aui-lightbox-iframe').forEach((el, i) => {
-					const active = ($clicked_href === el.getAttribute('href')) ? 'active' : '';
-					$carousel += `<button type="button" data-bs-target="#aui-embed-slider-modal" data-bs-slide-to="${i}" class="${active}"></button>`;
-				});
-				$carousel += `</div>`;
-			}
-
-			// determine RTL
-			const rtlClass = document.documentElement.dir === 'rtl'
-				? 'justify-content-end'
-				: 'justify-content-start';
-
-			// carousel-inner start
-			$carousel += `<div class="carousel-inner d-flex align-items-center ${rtlClass}">`;
-
-			// image slides
-			$container.querySelectorAll('.aui-lightbox-image').forEach(el => {
-				const href = el.getAttribute('href');
-				const active = ($clicked_href === href) ? 'active' : '';
-				const cssHeight = window.innerWidth > window.innerHeight ? '90vh' : 'auto';
-
-				// build srcset/sizes if present
-				const imgElem = el.querySelector('img');
-				const srcset = imgElem.getAttribute('srcset') || '';
-				let sizes = '';
-				if (srcset) {
-					const sources = srcset.split(',').map(s => {
-						const [url, desc] = s.trim().split(' ');
-						return {
-							width: parseInt(desc.replace('w',''), 10),
-							descriptor: desc.replace('w','px')
-						};
-					}).sort((a, b) => b.width - a.width);
-
-					sizes = sources
-						.map((src, idx, arr) =>
-							idx === 0
-								? `${src.descriptor}`
-								: `(max-width: ${src.width - 1}px) ${arr[idx-1].descriptor}`
-						)
-						.reverse()
-						.join(', ');
-				}
-
-				// image tag
-				$carousel += `
-			<div class="carousel-item ${active}">
-			<div>
-				<img
-				src="${href}"
-				${srcset ? `srcset="${srcset}" sizes="${sizes}"` : ''}
-				class="mx-auto d-block w-auto rounded"
-				style="max-height:${cssHeight};max-width:98%;"
-				>
-		`;
-
-				// captions
-				const cap = el.parentElement.querySelector('.carousel-caption');
-				const fig = el.parentElement.querySelector('.figure-caption');
-				if (cap) {
-					$carousel += cap.cloneNode(true).outerHTML.replace(/sr-only|visually-hidden/g, '');
-				} else if (fig) {
-					const cloned = fig.cloneNode(true);
-					cloned.classList.add('carousel-caption');
-					cloned.classList.remove('sr-only', 'visually-hidden');
-					$carousel += cloned.outerHTML;
-				}
-
-				$carousel += `</div></div>`;
-			});
-
-			// iframe slides
-			$container.querySelectorAll('.aui-lightbox-iframe').forEach(el => {
-				const href = el.getAttribute('href');
-				const active = ($clicked_href === href) ? 'active' : '';
-				const cssHeight = window.innerWidth > window.innerHeight ? '90vh' : 'auto';
-				const styleWidth = $images.length > 1 ? 'max-width:70%;' : '';
-
-				$carousel += `
-			<div class="carousel-item ${active}">
-			<div class="modal-xl mx-auto ratio ratio-16x9" style="max-height:${cssHeight};${styleWidth}">
-				<div class="ac-preview-loading text-light d-none" style="left:0;top:0;height:${cssHeight}">
-				<div class="spinner-border m-auto" role="status"></div>
-				</div>
-				<iframe
-				class="aui-carousel-iframe"
-				style="height:${cssHeight}"
-				src=""
-				data-src="${href}?rel=0&amp;showinfo=0&amp;modestbranding=1&amp;autoplay=1"
-				allow="autoplay"
-				></iframe>
-			</div>
-			</div>`;
-			});
-
-			$carousel += `</div>`; // end .carousel-inner
-
-			// controls
-			if ($images.length > 1) {
-				$carousel += `
-			<a class="carousel-control-prev" href="#aui-embed-slider-modal" role="button" data-bs-slide="prev">
-			<span class="carousel-control-prev-icon" aria-hidden="true"></span>
-			</a>
-			<a class="carousel-control-next" href="#aui-embed-slider-modal" role="button" data-bs-slide="next">
-			<span class="carousel-control-next-icon" aria-hidden="true"></span>
-			</a>`;
-			}
-
-			$carousel += `</div>`; // end #aui-embed-slider-modal
-
-			// inject content & show
-			const closeBtn = `
-		<button
-			type="button"
-			class="btn-close btn-close-white text-end position-fixed"
-			style="right:20px;top:10px;z-index:1055;"
-			data-bs-dismiss="modal"
-			aria-label="Close"
-		></button>`;
-			document.querySelector('.aui-carousel-modal .modal-content').innerHTML = closeBtn + $carousel;
-
-			ayeModal.show();
-
-			// enable touch swipe
-			if ('ontouchstart' in document.documentElement || navigator.maxTouchPoints > 0) {
-				try {
-					new bootstrap.Carousel('#aui-embed-slider-modal');
-				} catch (e) { /* ignore */ }
-			}
-		}
 	}
 
 
@@ -1474,46 +1370,6 @@
 				});
 			}
 
-			document.addEventListener('slide.bs.carousel', event => {
-				const related = event.relatedTarget;
-				if (!related) return;
-
-				const modalEl = related.closest('.aui-carousel-modal');
-				if (
-					!modalEl ||
-					modalEl.offsetParent === null ||
-					!modalEl.querySelector('iframe.aui-carousel-iframe')
-				) return;
-
-				// clear old iframe
-				modalEl
-					.querySelectorAll('.carousel-item.active iframe.aui-carousel-iframe')
-					.forEach(iframe => {
-						if (iframe.src) {
-							iframe.dataset.src = iframe.src;
-							iframe.src = '';
-						}
-					});
-
-				// show loader + set new src
-				const loading = related.querySelector('.ac-preview-loading');
-				if (loading) {
-					loading.classList.replace('d-none','d-flex');
-				}
-				const cIframe = related.querySelector('iframe.aui-carousel-iframe');
-				if (cIframe && !cIframe.src && cIframe.dataset.src) {
-					cIframe.src = cIframe.dataset.src;
-				}
-				if (cIframe) {
-					cIframe.addEventListener('load', () => {
-						setTimeout(() =>
-								modalEl
-									.querySelectorAll('.ac-preview-loading')
-									.forEach(el => el.classList.replace('d-flex','d-none')),
-							1250);
-					});
-				}
-			});
 		}
 
 		// Self‐execute on DOM ready

@@ -3,6 +3,7 @@
 All notable changes to the AyeCode UI will be documented in this file.
 
 ## [3.0.3-beta] - 2026-TBD
+- Lightbox gallery now runs on the Embla carousel (swipe, arrow keys, images fetched as they come near) with Bootstrap's own arrows and indicators, and its script loads on demand on the first click, so pages no longer carry the gallery builder inline - CHANGED
 - WP 7.0 breaks backend switches styles - FIXED
 - Updatged the toasts to be light/dark - CHANGED
 - Updated the toast icons to use new AUI functions - CHANGED
