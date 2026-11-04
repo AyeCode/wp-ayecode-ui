@@ -33,6 +33,13 @@ class Carousel {
 	private const BREAKPOINTS = array( 'xs', 'sm', 'md', 'lg', 'xl', 'xxl' );
 
 	/**
+	 * Transparent 1x1 GIF that holds the place of a lazy slide image until the script loads it.
+	 *
+	 * @var string
+	 */
+	public const PLACEHOLDER = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+
+	/**
 	 * Build and return the carousel HTML.
 	 *
 	 * @param array $args Component arguments.
@@ -56,6 +63,7 @@ class Carousel {
 			'per_view'    => 1,
 			'scroll'      => 1,
 			'gap'         => 3,
+			'lazy'        => true,
 			'options'     => array(),
 		);
 
@@ -79,10 +87,19 @@ class Carousel {
 		// and the script shows them again just before it starts Embla.
 		$defer_slides = $args['auto_height'] && ( $args['fade'] || 1 === self::max_per_view( $args['per_view'] ) );
 
+		// Images in the slides that show first load as normal; the script loads the rest as they come into view.
+		$eager = $args['fade'] ? 1 : self::max_per_view( $args['per_view'] );
+
 		$slides_html = '';
 		foreach ( $slides as $i => $slide ) {
-			$deferred     = $defer_slides && $i > 0 ? ' d-none" data-aui-carousel-deferred="' : '';
-			$slides_html .= '<div class="aui-carousel-slide' . $slide_class . $deferred . '">' . Helper::sanitize_html_field( $slide ) . '</div>';
+			$deferred = $defer_slides && $i > 0 ? ' d-none" data-aui-carousel-deferred="' : '';
+			$slide    = Helper::sanitize_html_field( $slide );
+
+			if ( $args['lazy'] && $count > 1 && $i >= $eager ) {
+				$slide = self::lazy_images( $slide );
+			}
+
+			$slides_html .= '<div class="aui-carousel-slide' . $slide_class . $deferred . '">' . $slide . '</div>';
 		}
 
 		$root_class = 'aui-carousel position-relative';
@@ -207,6 +224,26 @@ class Carousel {
 	}
 
 	/**
+	 * Hand the image sources of a slide to the script, which sets them back as the slide
+	 * comes into view. A tiny GIF keeps the place so the box and alt text behave as before.
+	 *
+	 * @param string $html Slide HTML.
+	 * @return string
+	 */
+	private static function lazy_images( string $html ): string {
+		return preg_replace_callback(
+			'/<img\b[^>]*\ssrc=[^>]*>/i',
+			function ( $m ) {
+				$tag = preg_replace( '/\s(src|srcset)=/i', ' data-$1=', $m[0] );
+				$tag = preg_replace( '/\s(loading|fetchpriority)=(["\'])[^"\']*\2/i', '', $tag );
+
+				return str_replace( '<img', '<img src="' . self::PLACEHOLDER . '"', $tag );
+			},
+			$html
+		);
+	}
+
+	/**
 	 * Clamp a gap value to a Bootstrap gutter step.
 	 *
 	 * @param mixed $gap Gap value.
@@ -265,7 +302,7 @@ class Carousel {
 		foreach ( $thumbnails as $i => $thumbnail ) {
 			$state   = 0 === $i ? ' aria-current="true"' : '';
 			$output .= '<div><button type="button" class="btn p-0 border-0 w-100' . ( 0 === $i ? '' : ' opacity-50' ) . '"' . $state . ' aria-label="' . esc_attr( sprintf( /* translators: %d: slide number. */ __( 'Go to slide %d', 'ayecode-connect' ), $i + 1 ) ) . '">'
-				. Helper::sanitize_html_field( $thumbnail ) . '</button></div>';
+				. preg_replace( '/<img\b(?![^>]*\sloading=)/i', '<img loading="lazy" decoding="async"', Helper::sanitize_html_field( $thumbnail ) ) . '</button></div>';
 		}
 
 		return $output . '</div></div>';

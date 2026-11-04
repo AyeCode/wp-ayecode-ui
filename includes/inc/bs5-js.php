@@ -975,8 +975,8 @@
 	}
 
 	/**
-	 * Fetch the carousel (unless a carousel on the page already loaded it) and the lightbox
-	 * gallery, the first time they are needed. Later calls share the same promise.
+	 * Fetch the carousel script, which carries the lightbox gallery, the first time it is
+	 * needed. Pages with a carousel already have it. Later calls share the same promise.
 	 */
 	function aui_load_lightbox() {
 		if (window.aui_lightbox_open) {
@@ -985,8 +985,7 @@
 
 		if (!window.aui_lightbox_loading) {
 			window.aui_carousel_i18n = window.aui_carousel_i18n || aui_lightbox_params.i18n;
-			const carousel = window.aui_carousel_init ? Promise.resolve() : aui_load_script(aui_lightbox_params.carousel);
-			window.aui_lightbox_loading = carousel.then(() => aui_load_script(aui_lightbox_params.lightbox));
+			window.aui_lightbox_loading = aui_load_script(aui_lightbox_params.carousel);
 		}
 
 		return window.aui_lightbox_loading;
@@ -996,7 +995,7 @@
 	 * Open a lightbox when an embed item is clicked.
 	 *
 	 * The modal opens at once with a spinner; the gallery itself is built by
-	 * assets/js/aui-lightbox.js once it (and the carousel) have loaded.
+	 * aui_lightbox_open() in assets/js/aui-carousel.min.js once that has loaded.
 	 */
 	function aui_lightbox_embed(link, ele) {
 		if (ele && ele.preventDefault) {
