@@ -24,13 +24,13 @@ Pass `true` as the second argument to echo instead of return. Calling `carousel(
 
 | Argument | Type | Default | Description |
 |---|---|---|---|
-| `slides` | array | `[]` | Slide HTML, one string per slide. Run through `wp_kses` (post tags plus iframes). |
+| `slides` | array | `[]` | Slide HTML, one string per slide. Run through `wp_kses` (post tags plus iframes) unless `raw` is set. |
 | `thumbnails` | array | `[]` | Thumbnail HTML, one per slide. Adds a synced thumbnail strip and replaces the dots. Use with one slide per view. |
 | `id` | string | `''` | Root element id. |
 | `class` | string | `''` | Extra classes on the root. |
 | `slide_class` | string | `''` | Extra classes on every slide wrapper. |
 | `aria_label` | string | `'Carousel'` | Accessible name of the carousel region. Give each carousel a meaningful one. |
-| `arrows` | bool | `true` | Previous and next buttons. |
+| `arrows` | bool\|string | `true` | Previous and next buttons: `true` or `'edge'` on the slide edges, `'hover'` on the edges but only while the slides are hovered or focused (card galleries), `'end'` in a row above the slides on the end side (card rows), `false` for none. |
 | `dots` | bool | `true` | Dot buttons, one per page of slides. |
 | `autoplay` | bool\|int | `false` | `true` for every 5 seconds, or a delay in milliseconds. |
 | `fade` | bool | `false` | Fade between slides instead of sliding. Forces one slide per view. |
@@ -41,6 +41,7 @@ Pass `true` as the second argument to echo instead of return. Calling `carousel(
 | `scroll` | int\|string | `1` | How far the arrows, dots and swipes move: a number of slides, or `'page'` for all the slides in view. |
 | `gap` | int | `3` | Space between slides as a Bootstrap gutter step, 0 to 5. |
 | `lazy` | bool | `true` | Load slide images as they come into view, see below. |
+| `raw` | bool | `false` | Print the slide and thumbnail HTML as given. For markup your own code built and escaped, which may carry `srcset`, inline SVG or data attributes that kses would strip. |
 | `options` | array | `[]` | Any other [Embla options](https://www.embla-carousel.com/api/options/), merged last. |
 
 A single slide is printed as static markup with no script at all.

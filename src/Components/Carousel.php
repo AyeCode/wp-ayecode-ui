@@ -64,6 +64,7 @@ class Carousel {
 			'scroll'      => 1,
 			'gap'         => 3,
 			'lazy'        => true,
+			'raw'         => false,
 			'options'     => array(),
 		);
 
@@ -93,7 +94,7 @@ class Carousel {
 		$slides_html = '';
 		foreach ( $slides as $i => $slide ) {
 			$deferred = $defer_slides && $i > 0 ? ' d-none" data-aui-carousel-deferred="' : '';
-			$slide    = Helper::sanitize_html_field( $slide );
+			$slide    = $args['raw'] ? $slide : Helper::sanitize_html_field( $slide );
 
 			if ( $args['lazy'] && $count > 1 && $i >= $eager ) {
 				$slide = self::lazy_images( $slide );
@@ -105,6 +106,12 @@ class Carousel {
 		$root_class = 'aui-carousel position-relative';
 		if ( ! empty( $args['class'] ) ) {
 			$root_class .= ' ' . Helper::esc_classes( $args['class'] );
+		}
+
+		// Arrow placement: on the slide edges, on the edges only while hovered, or in a row above on the end side.
+		$arrows = true === $args['arrows'] ? 'edge' : $args['arrows'];
+		if ( ! in_array( $arrows, array( 'edge', 'hover', 'end' ), true ) ) {
+			$arrows = '';
 		}
 
 		$aria_label = $args['aria_label'] ? $args['aria_label'] : __( 'Carousel', 'ayecode-connect' );
@@ -121,13 +128,17 @@ class Carousel {
 		$output  = '<div' . Helper::id( $args['id'] ) . ' class="' . esc_attr( $root_class ) . '"';
 		$output .= " data-aui-carousel='" . esc_attr( wp_json_encode( self::config( $args ) ) ) . "'>";
 
-		$output .= '<div class="aui-carousel-main position-relative">';
+		if ( 'end' === $arrows ) {
+			$output .= '<div class="aui-carousel-arrows d-flex justify-content-end gap-2 mb-3">' . self::arrow( 'prev', $arrows ) . self::arrow( 'next', $arrows ) . '</div>';
+		}
+
+		$output .= '<div class="aui-carousel-main position-relative' . ( 'hover' === $arrows ? ' hover-effect-opacity' : '' ) . '">';
 		// The accessibility plugin makes the viewport the labelled region, so the label lives there.
 		$output .= '<div class="aui-carousel-viewport overflow-hidden" role="region" aria-roledescription="' . esc_attr__( 'carousel', 'ayecode-connect' ) . '" aria-label="' . esc_attr( $aria_label ) . '">';
 		$output .= '<div class="' . esc_attr( $row_class ) . '">' . $slides_html . '</div></div>';
 
-		if ( $args['arrows'] ) {
-			$output .= self::arrow( 'prev' ) . self::arrow( 'next' );
+		if ( 'edge' === $arrows || 'hover' === $arrows ) {
+			$output .= self::arrow( 'prev', $arrows ) . self::arrow( 'next', $arrows );
 		}
 
 		$output .= '</div>';
@@ -137,7 +148,7 @@ class Carousel {
 		}
 
 		if ( ! empty( $args['thumbnails'] ) && is_array( $args['thumbnails'] ) ) {
-			$output .= self::thumbnails( array_slice( array_values( $args['thumbnails'] ), 0, $count ) );
+			$output .= self::thumbnails( array_slice( array_values( $args['thumbnails'] ), 0, $count ), (bool) $args['raw'] );
 		}
 
 		$output .= '<div class="aui-carousel-live visually-hidden"></div>';
@@ -257,18 +268,31 @@ class Carousel {
 	 * Build a previous or next arrow button.
 	 *
 	 * @param string $direction 'prev' or 'next'.
+	 * @param string $placement 'edge', 'hover' or 'end'.
 	 * @return string
 	 */
-	private static function arrow( string $direction ): string {
+	private static function arrow( string $direction, string $placement = 'edge' ): string {
 		$is_prev = 'prev' === $direction;
 		$label   = $is_prev ? __( 'Previous slide', 'ayecode-connect' ) : __( 'Next slide', 'ayecode-connect' );
-		$side    = $is_prev ? 'start-0 ms-2' : 'end-0 me-2';
+
+		if ( 'end' === $placement ) {
+			$side = '';
+		} else {
+			$side = 'position-absolute top-50 translate-middle-y z-1 ' . ( $is_prev ? 'start-0 ms-2' : 'end-0 me-2' );
+			if ( 'hover' === $placement ) {
+				$side .= ' hover-effect-target opacity-0';
+			}
+		}
 
 		// Point the chevrons the other way in RTL, where the previous arrow sits on the right.
 		$points_left = is_rtl() ? ! $is_prev : $is_prev;
-		$icon        = Helper::icon( $points_left ? 'fas fa-chevron-left' : 'fas fa-chevron-right', false, array( 'aria-hidden' => 'true' ) );
+		$icon        = Helper::icon( $points_left ? 'fas fa-chevron-left fs-lg animate-target' : 'fas fa-chevron-right fs-lg animate-target', false, array( 'aria-hidden' => 'true' ) );
 
-		return '<button type="button" class="aui-carousel-' . esc_attr( $direction ) . ' btn btn-light shadow-sm rounded-circle position-absolute top-50 translate-middle-y z-1 ' . esc_attr( $side ) . '" aria-label="' . esc_attr( $label ) . '">' . $icon . '</button>';
+		// Round icon button on a body coloured disc with a light border, which reads on both light and dark slides.
+		// On hover the chevron slides out the way it points and back in from the other side.
+		$side .= $points_left ? ' animate-slide-start' : ' animate-slide-end';
+
+		return '<button type="button" class="aui-carousel-' . esc_attr( $direction ) . ' btn btn-icon btn-outline-secondary bg-body border-secondary-subtle rounded-circle ' . esc_attr( trim( $side ) ) . '" aria-label="' . esc_attr( $label ) . '">' . $icon . '</button>';
 	}
 
 	/**
@@ -294,15 +318,16 @@ class Carousel {
 	 * Build the thumbnail strip, which runs as a second synced Embla instance.
 	 *
 	 * @param array $thumbnails Thumbnail HTML, one per slide.
+	 * @param bool  $raw        Print the thumbnail HTML as given instead of running it through kses.
 	 * @return string
 	 */
-	private static function thumbnails( array $thumbnails ): string {
+	private static function thumbnails( array $thumbnails, bool $raw = false ): string {
 		$output = '<div class="aui-carousel-thumbs overflow-hidden mt-2"><div class="row flex-nowrap gx-2 gy-0 row-cols-4 row-cols-sm-5 row-cols-md-6">';
 
 		foreach ( $thumbnails as $i => $thumbnail ) {
 			$state   = 0 === $i ? ' aria-current="true"' : '';
 			$output .= '<div><button type="button" class="btn p-0 border-0 w-100' . ( 0 === $i ? '' : ' opacity-50' ) . '"' . $state . ' aria-label="' . esc_attr( sprintf( /* translators: %d: slide number. */ __( 'Go to slide %d', 'ayecode-connect' ), $i + 1 ) ) . '">'
-				. preg_replace( '/<img\b(?![^>]*\sloading=)/i', '<img loading="lazy" decoding="async"', Helper::sanitize_html_field( $thumbnail ) ) . '</button></div>';
+				. preg_replace( '/<img\b(?![^>]*\sloading=)/i', '<img loading="lazy" decoding="async"', $raw ? $thumbnail : Helper::sanitize_html_field( $thumbnail ) ) . '</button></div>';
 		}
 
 		return $output . '</div></div>';

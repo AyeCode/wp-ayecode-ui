@@ -1007,7 +1007,7 @@
 
 		// create and append modal wrapper
 		const modalHTML = `
-		<div class="modal fade aui-carousel-modal bsui" id="aui-carousel-modal" tabindex="-1" role="dialog" aria-label="${aui_lightbox_params.i18n.lightbox}" aria-hidden="true">
+		<div class="modal fade aui-carousel-modal bsui" id="aui-carousel-modal" tabindex="-1" role="dialog" data-bs-theme="light" aria-label="${aui_lightbox_params.i18n.lightbox}" aria-hidden="true">
 		<div class="modal-dialog modal-dialog-centered modal-xl mw-100">
 			<div class="modal-content bg-transparent border-0 shadow-none">
 			<button type="button" class="btn-close btn-close-white position-fixed" style="right:20px;top:10px;z-index:1056" data-bs-dismiss="modal" aria-label="${aui_lightbox_params.i18n.close}"></button>

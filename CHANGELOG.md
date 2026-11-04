@@ -3,6 +3,8 @@
 All notable changes to the AyeCode UI will be documented in this file.
 
 ## [3.0.3-beta] - 2026-TBD
+- Carousel arrows are round icon buttons on a body coloured disc, and the arrows arg takes edge, hover or end for their placement - CHANGED
+- Carousel raw arg prints slides built and escaped by the caller without running them through kses - ADDED
 - Carousel slides past the first view hand their image sources to the script, which loads them one slide ahead as they come into view (lazy arg, on by default), and thumbnails use the browser's lazy loading - ADDED
 - Lightbox gallery now runs on the Embla carousel (swipe, arrow keys) with Bootstrap's own arrows and indicators, lives in the carousel script and loads on demand on the first click, so pages no longer carry the gallery builder inline - CHANGED
 - WP 7.0 breaks backend switches styles - FIXED
