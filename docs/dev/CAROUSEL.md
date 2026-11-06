@@ -30,18 +30,22 @@ Pass `true` as the second argument to echo instead of return. Calling `carousel(
 | `class` | string | `''` | Extra classes on the root. |
 | `slide_class` | string | `''` | Extra classes on every slide wrapper. |
 | `aria_label` | string | `'Carousel'` | Accessible name of the carousel region. Give each carousel a meaningful one. |
-| `arrows` | bool\|string | `true` | Previous and next buttons: `true` or `'edge'` on the slide edges, `'hover'` on the edges but only while the slides are hovered or focused (card galleries), `'end'` in a row above the slides on the end side (card rows), `false` for none. |
+| `arrows` | bool\|string | `true` | Previous and next buttons: `true` or `'edge'` on the slide edges, `'hover'` on the edges but only while the slides are hovered or focused (card galleries), `'end'` in a row above the slides on the end side (card rows), `'external'` for buttons you print elsewhere with `Carousel::arrows()` (see below), `false` for none. |
+| `arrow_offset` | string | `''` | Margin between an edge or hover arrow and the slide edge, as a Bootstrap spacer step: `'0'` to `'12'`, or `'n1'` to `'n12'` to push the arrows out past the edges, over the page around the carousel. Empty is `2`. The viewport clips the slides, not the arrows, so a negative offset only needs room around the carousel. |
 | `dots` | bool | `true` | Dot buttons, one per page of slides. |
 | `autoplay` | bool\|int | `false` | `true` for every 5 seconds, or a delay in milliseconds. |
 | `fade` | bool | `false` | Fade between slides instead of sliding. Forces one slide per view. |
 | `auto_height` | bool | `false` | Resize to the slides in view. Useful for mixed image ratios. |
 | `loop` | bool | `false` | Wrap around at the ends. |
-| `align` | string | `'start'` | `start`, `center` or `end`. |
+| `align` | string | `'start'` | `start`, `center` or `end`. With `peek`, `center` shows part of the previous and next slides on both sides. |
 | `per_view` | int\|array | `1` | Slides per view, see below. |
 | `scroll` | int\|string | `1` | How far the arrows, dots and swipes move: a number of slides, or `'page'` for all the slides in view. |
 | `gap` | int | `3` | Space between slides as a Bootstrap gutter step, 0 to 5. |
 | `lazy` | bool | `true` | Load slide images as they come into view, see below. |
 | `raw` | bool | `false` | Print the slide and thumbnail HTML as given. For markup your own code built and escaped, which may carry `srcset`, inline SVG or data attributes that kses would strip. |
+| `peek` | int\|string | `''` | Percent of the width that shows the next slide, 1 to 50, so visitors know there is more (`'small'` and `'large'` still mean 12 and 25). The slide row is made that much narrower than the viewport with one inline width, so the row-cols maths keeps the chosen columns inside the rest and the next slide fills the strip. No CSS of its own. The row sits inside a full width `data-aui-carousel-peek` container, which is the one Embla measures, and the script hands Embla the slides inside it. The gutter's negative margin sits on that container rather than the row, so the first slide starts at the container's edge (Embla takes the distance to a slide as always positive, and a slide that starts before its container lands one gutter off its snap). With `'align' => 'center'` the current slide sits in the middle and half the strip shows on each side. Ignored with `fade`. |
+| `edge_fade` | bool\|int | `false` | Fades the slides into the background at the edges through a `mask-fade-*` class on the viewport. With `peek` it is the edge the next (or previous) slide peeks at, both when `align` is `center`, and `true` fades across the peek strip so the current slide stays sharp. Without a peek both edges fade at the class's default width, the look of a continuous scroll. A percent sets the width. A mask, not an overlay, so it is right on any background and in both colour modes. Ignored with `fade`. |
+| `auto_scroll` | bool\|int | `0` | Continuous scrolling instead of stepping: `true` for Embla's default speed, or pixels per frame from 0.1 (a crawl) to 10 (fast), decimals allowed, negative to run backward. Pauses while hovered and stops once the visitor drags or uses a control, like `autoplay`, which wins when both are set. |
 | `options` | array | `[]` | Any other [Embla options](https://www.embla-carousel.com/api/options/), merged last. |
 
 A single slide is printed as static markup with no script at all.
@@ -57,6 +61,18 @@ For your own markup, enqueue the script yourself:
 ```php
 aui()->enqueue_carousel();
 ```
+
+### Arrows elsewhere
+
+A block that wants the arrows in its title row prints them itself and tells the carousel not to:
+
+```php
+$id = 'my-carousel-' . $hash;
+$this->set_title_actions( \AyeCode\UI\Components\Carousel::arrows( $id ) );   // Super Duper title row
+echo aui()->carousel( array( 'id' => $id, 'arrows' => 'external', 'slides' => $slides ) );
+```
+
+`Carousel::arrows()` returns the two buttons in a `d-flex gap-2` wrapper that carries `data-aui-carousel-for="<id>"`. The script looks the buttons up by that id, so they can sit anywhere on the page, and they get the same disabled state and accessibility wiring as built-in arrows. One pair per carousel.
 
 ## Slides per view
 
@@ -109,6 +125,7 @@ All configuration is one JSON object in `data-aui-carousel`. The attribute is al
 | Key | Value | Description |
 |---|---|---|
 | `autoplay` | `true` or ms | Autoplay, every 5 seconds or the given delay. |
+| `autoScroll` | px per frame | Continuous scrolling with the auto scroll plugin. Ignored when `autoplay` is set. |
 | `fade` | `true` | Fade plugin. |
 | `autoHeight` | `true` | Auto-height plugin. |
 | `accessibility` | `false` | Turn the accessibility plugin off. It is on by default. |
@@ -186,10 +203,10 @@ There is no build step in this repo. `assets/js/aui-carousel.min.js` is the preb
 ```sh
 V=9.0.0-rc04   # the new Embla version
 P=https://cdn.jsdelivr.net/combine/npm
-curl -sfo /tmp/embla.js "$P/embla-carousel@$V/embla-carousel.umd.min.js,npm/embla-carousel-autoplay@$V/embla-carousel-autoplay.umd.min.js,npm/embla-carousel-fade@$V/embla-carousel-fade.umd.min.js,npm/embla-carousel-auto-height@$V/embla-carousel-auto-height.umd.min.js,npm/embla-carousel-accessibility@$V/embla-carousel-accessibility.umd.min.js"
+curl -sfo /tmp/embla.js "$P/embla-carousel@$V/embla-carousel.umd.min.js,npm/embla-carousel-autoplay@$V/embla-carousel-autoplay.umd.min.js,npm/embla-carousel-auto-scroll@$V/embla-carousel-auto-scroll.umd.min.js,npm/embla-carousel-fade@$V/embla-carousel-fade.umd.min.js,npm/embla-carousel-auto-height@$V/embla-carousel-auto-height.umd.min.js,npm/embla-carousel-accessibility@$V/embla-carousel-accessibility.umd.min.js"
 terser assets/js/src/aui-carousel.js -c -m --comments false -o /tmp/aui-carousel.js
 {
-	printf '/*! AyeCode UI carousel | Embla Carousel %s (MIT, David Jerleke): core, autoplay, fade, auto-height, accessibility | rebuild: docs/dev/CAROUSEL.md */\n(function(define,exports,module){\n' "$V"
+	printf '/*! AyeCode UI carousel | Embla Carousel %s (MIT, David Jerleke): core, autoplay, auto-scroll, fade, auto-height, accessibility | rebuild: docs/dev/CAROUSEL.md */\n(function(define,exports,module){\n' "$V"
 	sed -n '/^\/\*\*$/,/^ \*\/$/!p' /tmp/embla.js | grep -v '^//# sourceMappingURL'
 	printf '\n}).call(window);\n'
 	cat /tmp/aui-carousel.js

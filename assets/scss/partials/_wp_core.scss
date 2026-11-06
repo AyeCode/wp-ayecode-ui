@@ -224,3 +224,10 @@ input[type=checkbox], input[type=radio] {
   border: none !important;
   box-shadow: none !important;
 }
+
+
+/* Reboot's body rule nests to ".editor-styles-wrapper body", but in the editor iframe the body is the wrapper itself. */
+body.editor-styles-wrapper {
+	color: var(--bs-body-color);
+	background-color: var(--bs-body-bg);
+}

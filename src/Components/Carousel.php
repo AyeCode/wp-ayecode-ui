@@ -47,25 +47,29 @@ class Carousel {
 	 */
 	public static function get( array $args = array() ): string {
 		$defaults = array(
-			'slides'      => array(),
-			'thumbnails'  => array(),
-			'id'          => '',
-			'class'       => '',
-			'slide_class' => '',
-			'aria_label'  => '',
-			'arrows'      => true,
-			'dots'        => true,
-			'autoplay'    => false,
-			'fade'        => false,
-			'auto_height' => false,
-			'loop'        => false,
-			'align'       => 'start',
-			'per_view'    => 1,
-			'scroll'      => 1,
-			'gap'         => 3,
-			'lazy'        => true,
-			'raw'         => false,
-			'options'     => array(),
+			'slides'       => array(),
+			'thumbnails'   => array(),
+			'id'           => '',
+			'class'        => '',
+			'slide_class'  => '',
+			'aria_label'   => '',
+			'arrows'       => true,
+			'arrow_offset' => '',
+			'dots'         => true,
+			'autoplay'     => false,
+			'fade'         => false,
+			'auto_height'  => false,
+			'loop'         => false,
+			'align'        => 'start',
+			'per_view'     => 1,
+			'scroll'       => 1,
+			'gap'          => 3,
+			'lazy'         => true,
+			'raw'          => false,
+			'peek'         => '',
+			'edge_fade'    => false,
+			'auto_scroll'  => 0,
+			'options'      => array(),
 		);
 
 		$args   = wp_parse_args( $args, $defaults );
@@ -88,8 +92,53 @@ class Carousel {
 		// and the script shows them again just before it starts Embla.
 		$defer_slides = $args['auto_height'] && ( $args['fade'] || 1 === self::max_per_view( $args['per_view'] ) );
 
+		// Part of the next slide shows at the end: the row is narrower than the viewport by the peek
+		// percent, so the row-cols maths keeps the chosen columns inside the rest and the next slide
+		// fills the strip. Embla takes its view size from the container it is handed, so the narrow row
+		// sits inside a full width container and the script points Embla at the slides within it.
+		// The gutter's negative margin moves from the row to that container: Embla takes the distance
+		// to a slide as always positive, so a first slide that starts before its container lands one
+		// gutter off its snap. On the container the margin is clipped by the viewport as it is on a
+		// plain row, and the first slide starts exactly at the container's edge.
+		$peek       = '';
+		$track_open = '';
+		if ( ! $args['fade'] && $args['peek'] ) {
+			$aliases  = array(
+				'small' => 12,
+				'large' => 25,
+			);
+			$peek_pct = isset( $aliases[ $args['peek'] ] ) ? $aliases[ $args['peek'] ] : min( 50, absint( $args['peek'] ) );
+
+			if ( $peek_pct ) {
+				$peek       = ' style="width:' . ( 100 - $peek_pct ) . '%"';
+				$row_class .= ' mx-0';
+				$track_open = '<div class="gx-' . self::gap( $args['gap'] ) . '" data-aui-carousel-peek="' . (int) $peek_pct . '" style="margin:0 calc(var(--bs-gutter-x) * -.5)">';
+			}
+		}
+		$track_close = $peek ? '</div>' : '';
+
+		// The slides fade into the background at the edges through a mask on the viewport. With a peek
+		// it is the edge the next or previous slide peeks at, both when the current slide is centered,
+		// and the fade covers the peek strip so the current slide stays sharp. Without a peek the
+		// slides pass under both edges, so both fade at the class's own width. A percent overrides.
+		$viewport_class = 'aui-carousel-viewport overflow-hidden';
+		$viewport_style = '';
+		if ( $args['edge_fade'] && ! $args['fade'] ) {
+			$sides           = array(
+				'center' => 'x',
+				'end'    => 'start',
+			);
+			$viewport_class .= ' mask-fade-' . ( $peek && isset( $sides[ $args['align'] ] ) ? $sides[ $args['align'] ] : ( $peek ? 'end' : 'x' ) );
+
+			if ( true !== $args['edge_fade'] ) {
+				$viewport_style = ' style="--bs-mask-fade:' . min( 50, max( 1, absint( $args['edge_fade'] ) ) ) . '%"';
+			} elseif ( $peek ) {
+				$viewport_style = ' style="--bs-mask-fade:' . (float) ( 'center' === $args['align'] ? $peek_pct / 2 : $peek_pct ) . '%"';
+			}
+		}
+
 		// Images in the slides that show first load as normal; the script loads the rest as they come into view.
-		$eager = $args['fade'] ? 1 : self::max_per_view( $args['per_view'] );
+		$eager = $args['fade'] ? 1 : self::max_per_view( $args['per_view'] ) + ( $peek ? 1 : 0 );
 
 		$slides_html = '';
 		foreach ( $slides as $i => $slide ) {
@@ -108,18 +157,23 @@ class Carousel {
 			$root_class .= ' ' . Helper::esc_classes( $args['class'] );
 		}
 
-		// Arrow placement: on the slide edges, on the edges only while hovered, or in a row above on the end side.
+		// Arrow placement: on the slide edges, on the edges only while hovered, in a row above on the
+		// end side, or 'external' for buttons the caller prints elsewhere with self::arrows().
 		$arrows = true === $args['arrows'] ? 'edge' : $args['arrows'];
-		if ( ! in_array( $arrows, array( 'edge', 'hover', 'end' ), true ) ) {
+		if ( ! in_array( $arrows, array( 'edge', 'hover', 'end', 'external' ), true ) ) {
 			$arrows = '';
 		}
+
+		// Edge arrows sit a spacer step in from the slide edges: a Bootstrap spacer 0 to 12, or n1 to n12
+		// to push them out past the edges, over the page. Two is the default.
+		$arrow_offset = preg_match( '/^n?(1[0-2]|[0-9])$/', (string) $args['arrow_offset'] ) ? (string) $args['arrow_offset'] : '2';
 
 		$aria_label = $args['aria_label'] ? $args['aria_label'] : __( 'Carousel', 'ayecode-connect' );
 
 		// A single slide needs no script, so it is printed as static markup and nothing is enqueued.
 		if ( 1 === $count ) {
 			return '<div' . Helper::id( $args['id'] ) . ' class="' . esc_attr( $root_class ) . '">'
-				. '<div class="aui-carousel-viewport overflow-hidden"><div class="' . esc_attr( $row_class ) . '">' . $slides_html . '</div></div>'
+				. '<div class="' . esc_attr( $viewport_class ) . '"' . $viewport_style . '>' . $track_open . '<div class="' . esc_attr( $row_class ) . '"' . $peek . '>' . $slides_html . '</div>' . $track_close . '</div>'
 				. '</div>';
 		}
 
@@ -134,11 +188,11 @@ class Carousel {
 
 		$output .= '<div class="aui-carousel-main position-relative' . ( 'hover' === $arrows ? ' hover-effect-opacity' : '' ) . '">';
 		// The accessibility plugin makes the viewport the labelled region, so the label lives there.
-		$output .= '<div class="aui-carousel-viewport overflow-hidden" role="region" aria-roledescription="' . esc_attr__( 'carousel', 'ayecode-connect' ) . '" aria-label="' . esc_attr( $aria_label ) . '">';
-		$output .= '<div class="' . esc_attr( $row_class ) . '">' . $slides_html . '</div></div>';
+		$output .= '<div class="' . esc_attr( $viewport_class ) . '"' . $viewport_style . ' role="region" aria-roledescription="' . esc_attr__( 'carousel', 'ayecode-connect' ) . '" aria-label="' . esc_attr( $aria_label ) . '">';
+		$output .= $track_open . '<div class="' . esc_attr( $row_class ) . '"' . $peek . '>' . $slides_html . '</div>' . $track_close . '</div>';
 
 		if ( 'edge' === $arrows || 'hover' === $arrows ) {
-			$output .= self::arrow( 'prev', $arrows ) . self::arrow( 'next', $arrows );
+			$output .= self::arrow( 'prev', $arrows, $arrow_offset ) . self::arrow( 'next', $arrows, $arrow_offset );
 		}
 
 		$output .= '</div>';
@@ -178,6 +232,11 @@ class Carousel {
 
 		if ( $args['autoplay'] ) {
 			$config['autoplay'] = true === $args['autoplay'] ? 5000 : absint( $args['autoplay'] );
+		} elseif ( $args['auto_scroll'] ) {
+			// Pixels per frame for the auto scroll plugin: 1 is slow, 2 is its default, 4 is fast.
+			// A negative speed runs it backward.
+			$speed                = true === $args['auto_scroll'] ? 2 : (float) $args['auto_scroll'];
+			$config['autoScroll'] = ( $speed < 0 ? -1 : 1 ) * min( 10, max( 0.1, round( abs( $speed ), 1 ) ) );
 		}
 
 		if ( $args['fade'] ) {
@@ -265,20 +324,38 @@ class Carousel {
 	}
 
 	/**
+	 * Previous and next buttons for a carousel printed elsewhere, such as a block's title row.
+	 *
+	 * The carousel must have the same id and `'arrows' => 'external'`. The script finds the
+	 * buttons by the id, so they can sit anywhere on the page.
+	 *
+	 * @param string $carousel_id The carousel's id.
+	 * @return string
+	 */
+	public static function arrows( string $carousel_id ): string {
+		if ( '' === $carousel_id ) {
+			return '';
+		}
+
+		return '<div class="aui-carousel-arrows d-flex gap-2" data-aui-carousel-for="' . esc_attr( sanitize_html_class( $carousel_id ) ) . '">' . self::arrow( 'prev', 'end' ) . self::arrow( 'next', 'end' ) . '</div>';
+	}
+
+	/**
 	 * Build a previous or next arrow button.
 	 *
 	 * @param string $direction 'prev' or 'next'.
 	 * @param string $placement 'edge', 'hover' or 'end'.
+	 * @param string $offset    Spacer step between an edge arrow and the slide edge, n1 to n12 for outside.
 	 * @return string
 	 */
-	private static function arrow( string $direction, string $placement = 'edge' ): string {
+	private static function arrow( string $direction, string $placement = 'edge', string $offset = '2' ): string {
 		$is_prev = 'prev' === $direction;
 		$label   = $is_prev ? __( 'Previous slide', 'ayecode-connect' ) : __( 'Next slide', 'ayecode-connect' );
 
 		if ( 'end' === $placement ) {
 			$side = '';
 		} else {
-			$side = 'position-absolute top-50 translate-middle-y z-1 ' . ( $is_prev ? 'start-0 ms-2' : 'end-0 me-2' );
+			$side = 'position-absolute top-50 translate-middle-y z-1 ' . ( $is_prev ? 'start-0 ms-' . $offset : 'end-0 me-' . $offset );
 			if ( 'hover' === $placement ) {
 				$side .= ' hover-effect-target opacity-0';
 			}

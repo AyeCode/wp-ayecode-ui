@@ -17,7 +17,7 @@
 	}
 
 	var ROOT = '[data-aui-carousel]';
-	var OWN_KEYS = [ 'autoplay', 'fade', 'autoHeight', 'accessibility' ];
+	var OWN_KEYS = [ 'autoplay', 'autoScroll', 'fade', 'autoHeight', 'accessibility' ];
 	var i18n = window.aui_carousel_i18n || {};
 	var reduced = window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' );
 	var observer = null;
@@ -200,6 +200,17 @@
 			} ) );
 		}
 
+		if ( config.autoScroll && ! config.autoplay && ! is_reduced && window.EmblaCarouselAutoScroll ) {
+			plugins.push( window.EmblaCarouselAutoScroll( {
+				speed: Math.abs( parseFloat( config.autoScroll ) ) || 2,
+				direction: parseFloat( config.autoScroll ) < 0 ? 'backward' : 'forward',
+				startDelay: 1000,
+				rootNode: function () {
+					return root;
+				}
+			} ) );
+		}
+
 		if ( false !== config.accessibility && window.EmblaCarouselAccessibility ) {
 			var a11y = {
 				announceChanges: true,
@@ -230,11 +241,20 @@
 			slide.removeAttribute( 'data-aui-carousel-deferred' );
 		} );
 
+		// With peek the wide row sits inside a full width container so Embla measures the real view,
+		// and it is told where the slides are, see Carousel.php.
+		var peek_row = viewport.firstElementChild && viewport.firstElementChild.hasAttribute( 'data-aui-carousel-peek' ) ? viewport.firstElementChild.firstElementChild : null;
+		if ( peek_row ) {
+			options.slides = peek_row.children;
+		}
+
 		viewport.firstElementChild.style.touchAction = 'axis' in options && 'y' === options.axis ? 'pan-x pinch-zoom' : 'pan-y pinch-zoom';
 
 		var api = window.EmblaCarousel( viewport, options, plugins );
-		var prev = find( root, '.aui-carousel-prev' );
-		var next = find( root, '.aui-carousel-next' );
+		// Arrows printed outside the root (a title row) carry the root's id, see Carousel::arrows().
+		var external = root.id ? '[data-aui-carousel-for="' + root.id + '"] ' : '';
+		var prev = find( root, '.aui-carousel-prev' ) || ( external && document.querySelector( external + '.aui-carousel-prev' ) );
+		var next = find( root, '.aui-carousel-next' ) || ( external && document.querySelector( external + '.aui-carousel-next' ) );
 		var dots = find( root, '.aui-carousel-dots' );
 		var live = find( root, '.aui-carousel-live' );
 		var thumbs = find( root, '.aui-carousel-thumbs' );
@@ -277,8 +297,8 @@
 				a11y.setupLiveRegion( live );
 			}
 			// A live region that reads out every autoplay step is noise, so only announce while stopped.
-			if ( plugin.autoplay ) {
-				a11y.setUpdateLiveRegion( ! plugin.autoplay.isPlaying() );
+			if ( motor() ) {
+				a11y.setUpdateLiveRegion( ! motor().isPlaying() );
 			}
 		}
 
@@ -305,40 +325,42 @@
 			sync_dots( api, dots, instant );
 		}
 
-		api.on( 'autoplay:play', function () {
-			var a11y = api.plugins().accessibility;
-			if ( a11y ) {
-				a11y.setUpdateLiveRegion( false );
-			}
-		} ).on( 'autoplay:stop', function () {
-			var a11y = api.plugins().accessibility;
-			if ( a11y ) {
-				a11y.setUpdateLiveRegion( true );
-			}
-		} );
+		function announce( on ) {
+			return function () {
+				var a11y = api.plugins().accessibility;
+				if ( a11y ) {
+					a11y.setUpdateLiveRegion( on );
+				}
+			};
+		}
+
+		api.on( 'autoplay:play', announce( false ) ).on( 'autoplay:stop', announce( true ) )
+			.on( 'autoscroll:play', announce( false ) ).on( 'autoscroll:stop', announce( true ) );
 
 		setup_a11y();
 
-		// v9 autoplay no longer starts itself. Pause while hovered, and stop for good once the
-		// visitor drags, focuses or uses a control, as the WAI carousel pattern asks.
+		// Neither v9 autoplay nor auto scroll starts itself. Pause while hovered, and stop for good
+		// once the visitor drags, focuses or uses a control, as the WAI carousel pattern asks.
 		var user_stopped = false;
 
+		function motor() {
+			return api.plugins().autoplay || api.plugins().autoScroll;
+		}
+
 		function play() {
-			var autoplay = api.plugins().autoplay;
-			if ( autoplay && ! user_stopped ) {
-				autoplay.play();
+			if ( motor() && ! user_stopped ) {
+				motor().play();
 			}
 		}
 
 		function stop( for_good ) {
-			var autoplay = api.plugins().autoplay;
 			user_stopped = user_stopped || for_good;
-			if ( autoplay ) {
-				autoplay.stop();
+			if ( motor() ) {
+				motor().stop();
 			}
 		}
 
-		if ( config.autoplay && api.plugins().autoplay ) {
+		if ( motor() ) {
 			api.on( 'pointerdown', function () {
 				stop( true );
 			} ).on( 'reinit', play );
@@ -489,7 +511,9 @@
 				} );
 			} );
 		} );
-		observer.observe( document.body, { childList: true, subtree: true } );
+		// The document node, not the body: the block editor builds its canvas iframe with
+		// document.open(), which keeps the Document but throws away the body this script saw.
+		observer.observe( document, { childList: true, subtree: true } );
 	}
 
 	window.aui_carousel_init = aui_carousel_init;
