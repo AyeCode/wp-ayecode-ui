@@ -71,22 +71,22 @@ class Pagination {
 			if ( ! empty( $links ) ) {
 				foreach ( $links as $link ) {
 					$_link       = $link;
-					$link_class  = $args['rounded_style'] ? 'page-link badge rounded-pill border-0 mx-1 fs-base text-dark link-primary' : 'page-link';
+					$link_class  = $args['rounded_style'] ? 'page-link badge rounded-pill border-0 mx-1 fs-base text-dark-emphasis' : 'page-link';
 					$link_active = $args['rounded_style'] ? ' current active fw-bold badge rounded-pill' : ' current active';
 
 					$links_html .= "<li class='page-item mx-0'>";
 					$link        = str_replace( array( 'page-numbers', ' current' ), array( $link_class, $link_active ), $link );
-					$link        = str_replace( 'text-dark link-primary current', 'current', $link );
+					$link        = str_replace( 'text-dark-emphasis current', 'current', $link );
 					$links_html .= $link;
 					$links_html .= '</li>';
 
 					if ( strpos( $_link, 'next page-numbers' ) || strpos( $_link, 'prev page-numbers' ) ) {
 						$btn_link = str_replace(
 							array( 'page-numbers', ' current' ),
-							array( 'btn btn-outline-primary rounded' . ( $args['rounded_style'] ? '-pill' : '' ) . ' mx-1 fs-base text-dark link-primary', ' current active fw-bold badge rounded-pill' ),
+							array( 'btn btn-outline-primary rounded' . ( $args['rounded_style'] ? '-pill' : '' ) . ' mx-1 fs-base text-dark-emphasis', ' current active fw-bold badge rounded-pill' ),
 							$_link
 						);
-						$btn_link = str_replace( 'text-dark link-primary current', 'current', $btn_link );
+						$btn_link = str_replace( 'text-dark-emphasis current', 'current', $btn_link );
 
 						if ( strpos( $_link, 'next page-numbers' ) && ! empty( $args['custom_next_text'] ) ) {
 							$custom_next_link = str_replace( $args['next_text'], Helper::sanitize_html_field( $args['custom_next_text'] ), $btn_link );
