@@ -251,6 +251,17 @@
 		viewport.firstElementChild.style.touchAction = 'axis' in options && 'y' === options.axis ? 'pan-x pinch-zoom' : 'pan-y pinch-zoom';
 
 		var api = window.EmblaCarousel( viewport, options, plugins );
+
+		// A carousel inside a slide (an image slider in a listing card) takes its own swipes: the
+		// outer one drops a drag that starts in a nested viewport, else both would move. Returning
+		// false from the pointerdown listener cancels Embla's drag.
+		api.on( 'pointerdown', function ( instance, event ) {
+			var target = event && event.detail ? event.detail.target : null;
+			var inner = target && target.closest ? target.closest( '.aui-carousel-viewport' ) : null;
+			if ( inner && inner !== viewport ) {
+				return false;
+			}
+		} );
 		// Arrows printed outside the root (a title row) carry the root's id, see Carousel::arrows().
 		var external = root.id ? '[data-aui-carousel-for="' + root.id + '"] ' : '';
 		var prev = find( root, '.aui-carousel-prev' ) || ( external && document.querySelector( external + '.aui-carousel-prev' ) );

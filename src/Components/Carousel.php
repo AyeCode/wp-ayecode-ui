@@ -158,9 +158,10 @@ class Carousel {
 		}
 
 		// Arrow placement: on the slide edges, on the edges only while hovered, in a row above on the
-		// end side, or 'external' for buttons the caller prints elsewhere with self::arrows().
+		// end side, in a row below around the dots, or 'external' for buttons the caller prints
+		// elsewhere with self::arrows().
 		$arrows = true === $args['arrows'] ? 'edge' : $args['arrows'];
-		if ( ! in_array( $arrows, array( 'edge', 'hover', 'end', 'external' ), true ) ) {
+		if ( ! in_array( $arrows, array( 'edge', 'hover', 'end', 'bottom', 'external' ), true ) ) {
 			$arrows = '';
 		}
 
@@ -197,8 +198,13 @@ class Carousel {
 
 		$output .= '</div>';
 
-		if ( $args['dots'] && empty( $args['thumbnails'] ) ) {
-			$output .= self::dots( $count );
+		$dots = $args['dots'] && empty( $args['thumbnails'] ) ? self::dots( $count, 'bottom' !== $arrows ) : '';
+
+		if ( 'bottom' === $arrows ) {
+			// The dots sit between the arrows, so the row reads as one control.
+			$output .= '<div class="aui-carousel-arrows d-flex justify-content-center align-items-center gap-2 mt-2">' . self::arrow( 'prev', $arrows ) . $dots . self::arrow( 'next', $arrows ) . '</div>';
+		} else {
+			$output .= $dots;
 		}
 
 		if ( ! empty( $args['thumbnails'] ) && is_array( $args['thumbnails'] ) ) {
@@ -344,7 +350,7 @@ class Carousel {
 	 * Build a previous or next arrow button.
 	 *
 	 * @param string $direction 'prev' or 'next'.
-	 * @param string $placement 'edge', 'hover' or 'end'.
+	 * @param string $placement 'edge', 'hover', 'end' or 'bottom'.
 	 * @param string $offset    Spacer step between an edge arrow and the slide edge, n1 to n12 for outside.
 	 * @return string
 	 */
@@ -352,7 +358,7 @@ class Carousel {
 		$is_prev = 'prev' === $direction;
 		$label   = $is_prev ? __( 'Previous slide', 'ayecode-connect' ) : __( 'Next slide', 'ayecode-connect' );
 
-		if ( 'end' === $placement ) {
+		if ( 'end' === $placement || 'bottom' === $placement ) {
 			$side = '';
 		} else {
 			$side = 'position-absolute top-50 translate-middle-y z-1 ' . ( $is_prev ? 'start-0 ms-' . $offset : 'end-0 me-' . $offset );
@@ -376,11 +382,12 @@ class Carousel {
 	 * Build the dot buttons. One per slide is printed so the row has its final
 	 * height before the script runs; the script trims them to the number of snaps.
 	 *
-	 * @param int $count Number of slides.
+	 * @param int  $count  Number of slides.
+	 * @param bool $spaced Whether the row carries its own top margin; false when it sits inside the bottom arrow row.
 	 * @return string
 	 */
-	private static function dots( int $count ): string {
-		$output = '<div class="aui-carousel-dots d-flex flex-wrap justify-content-center mt-2">';
+	private static function dots( int $count, bool $spaced = true ): string {
+		$output = '<div class="aui-carousel-dots d-flex flex-wrap justify-content-center' . ( $spaced ? ' mt-2' : '' ) . '">';
 
 		for ( $i = 0; $i < $count; $i++ ) {
 			$dot_class = 0 === $i ? 'bg-primary' : 'bg-secondary bg-opacity-25';

@@ -4,6 +4,8 @@ All notable changes to the AyeCode UI will be documented in this file.
 
 ## [3.0.3-beta] - 2026-TBD
 - Overlay classes are back: img-overlay, img-gradient-overlay and content-overlay, with the tint on a --bs-img-overlay-rgb custom property, and new mask-fade-x, mask-fade-start and mask-fade-end classes that fade an element's inline edges through a mask, direction aware, with the width on --bs-mask-fade - ADDED
+- Carousel arrows arg takes bottom, a centred row below the slides with the dots between the two buttons - ADDED
+- Carousel inside a carousel slide, such as an image slider in a listing card, takes its own swipes: the outer carousel ignores a drag that starts in a nested viewport - FIXED
 - Carousel arrow_offset arg sets the margin between the edge arrows and the slide edges as a spacer step, negative to push them outside the carousel - ADDED
 - Carousel edge_fade arg fades the slides into the background at the edges with the mask classes, across the peek strip or at both edges of a plain or scrolling carousel - ADDED
 - Carousel peek with a centered slide: the first slide sat one gutter off center until it was scrolled past, as the row's negative margin started it before Embla's container; the margin now sits on the container - FIXED

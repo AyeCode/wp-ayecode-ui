@@ -30,7 +30,7 @@ Pass `true` as the second argument to echo instead of return. Calling `carousel(
 | `class` | string | `''` | Extra classes on the root. |
 | `slide_class` | string | `''` | Extra classes on every slide wrapper. |
 | `aria_label` | string | `'Carousel'` | Accessible name of the carousel region. Give each carousel a meaningful one. |
-| `arrows` | bool\|string | `true` | Previous and next buttons: `true` or `'edge'` on the slide edges, `'hover'` on the edges but only while the slides are hovered or focused (card galleries), `'end'` in a row above the slides on the end side (card rows), `'external'` for buttons you print elsewhere with `Carousel::arrows()` (see below), `false` for none. |
+| `arrows` | bool\|string | `true` | Previous and next buttons: `true` or `'edge'` on the slide edges, `'hover'` on the edges but only while the slides are hovered or focused (card galleries), `'end'` in a row above the slides on the end side (card rows), `'bottom'` in a centred row below the slides with the dots between them, `'external'` for buttons you print elsewhere with `Carousel::arrows()` (see below), `false` for none. |
 | `arrow_offset` | string | `''` | Margin between an edge or hover arrow and the slide edge, as a Bootstrap spacer step: `'0'` to `'12'`, or `'n1'` to `'n12'` to push the arrows out past the edges, over the page around the carousel. Empty is `2`. The viewport clips the slides, not the arrows, so a negative offset only needs room around the carousel. |
 | `dots` | bool | `true` | Dot buttons, one per page of slides. |
 | `autoplay` | bool\|int | `false` | `true` for every 5 seconds, or a delay in milliseconds. |
@@ -174,6 +174,8 @@ aui_carousel_init( container ); // or aui_carousel_init() for the whole document
 ```
 
 It is safe to call more than once.
+
+A carousel may sit inside another carousel's slide (an image slider in a listing card). Each one finds only its own controls, and the outer carousel drops a drag that starts inside a nested viewport (its `pointerdown` listener returns `false`, which cancels Embla's drag), so the inner one takes the swipe.
 
 ## Lightbox gallery
 
