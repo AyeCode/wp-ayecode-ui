@@ -1,0 +1,274 @@
+/**
+ * Dynamic data tag grammar, the JS twin of AyeCode\SuperDuper\DynamicData\Grammar.
+ *
+ *   {name}
+ *   {name:primary value}
+ *   {name @key:'value' @key:value @flag}
+ *   {name:primary value @key:'value' @flag}
+ *
+ * Both parsers are held to wp-super-duper/tests/fixtures/dynamic-data-grammar.json
+ * (run tests/js/dynamic-data-grammar.test.js), so change them together.
+ */
+(function (root) {
+    'use strict';
+
+    const MAX_TAG_LENGTH = 1024;
+
+    // PHP's ctype_space and PCRE \s, rather than JS \s which also matches Unicode spaces.
+    const isSpace = (c) => c === ' ' || c === '\t' || c === '\n' || c === '\r' || c === '\v' || c === '\f';
+    const NAME_RE = /^[a-z0-9_]+/;
+
+    /**
+     * Parse a single tag, braces included.
+     *
+     * @param {string} raw
+     * @returns {{name: string, primary: ?string, args: Object<string, string|true>}|null}
+     */
+    function parse(raw) {
+        if (typeof raw !== 'string' || raw.length < 3 || raw[0] !== '{' || raw[raw.length - 1] !== '}') {
+            return null;
+        }
+
+        const inner = raw.slice(1, -1);
+        const len = inner.length;
+        const nameMatch = inner.match(NAME_RE);
+
+        if (!nameMatch) {
+            return null;
+        }
+
+        const name = nameMatch[0];
+        let i = name.length;
+        let primary = null;
+        const args = {};
+
+        if (i < len && inner[i] === ':') {
+            i++;
+
+            if (i < len && inner[i] === "'") {
+                const quoted = readQuoted(inner, i, len);
+                if (!quoted) {
+                    return null;
+                }
+                [primary, i] = quoted;
+            } else {
+                const stop = findArgStart(inner, i, len);
+                const part = inner.slice(i, stop);
+
+                if (/[{}']|[\r\n]/.test(part)) {
+                    return null;
+                }
+
+                primary = part.replace(/^[ \t\n\r\v\f]+|[ \t\n\r\v\f]+$/g, '');
+                i = stop;
+            }
+        }
+
+        while (i < len) {
+            if (!isSpace(inner[i])) {
+                return null;
+            }
+
+            while (i < len && isSpace(inner[i])) {
+                i++;
+            }
+
+            if (i >= len) {
+                break;
+            }
+
+            const keyMatch = inner[i] === '@' ? inner.slice(i + 1).match(NAME_RE) : null;
+            if (!keyMatch) {
+                return null;
+            }
+
+            const key = keyMatch[0];
+            i += 1 + key.length;
+
+            if (i < len && inner[i] === ':') {
+                i++;
+                let value;
+
+                if (i < len && inner[i] === "'") {
+                    const quoted = readQuoted(inner, i, len);
+                    if (!quoted) {
+                        return null;
+                    }
+                    [value, i] = quoted;
+                } else {
+                    const start = i;
+                    while (i < len && !isSpace(inner[i])) {
+                        if ("{}'@".includes(inner[i])) {
+                            return null;
+                        }
+                        i++;
+                    }
+                    value = inner.slice(start, i);
+                }
+
+                args[key] = value;
+            } else {
+                args[key] = true;
+            }
+        }
+
+        return { name, primary, args };
+    }
+
+    /**
+     * Find every well formed tag in a string.
+     *
+     * @param {string} text
+     * @returns {Array<{offset: number, length: number, raw: string, tag: Object}>}
+     */
+    function find(text) {
+        const found = [];
+        const length = text.length;
+        let pos = 0;
+
+        while (true) {
+            const start = text.indexOf('{', pos);
+            if (start === -1) {
+                break;
+            }
+
+            const end = scanToClose(text, start, length);
+
+            if (end !== null) {
+                const raw = text.slice(start, end + 1);
+                const tag = parse(raw);
+
+                if (tag) {
+                    found.push({ offset: start, length: end - start + 1, raw, tag });
+                    pos = end + 1;
+                    continue;
+                }
+            }
+
+            pos = start + 1;
+        }
+
+        return found;
+    }
+
+    /**
+     * The tag the caret sits inside or directly after, if any.
+     *
+     * @param {string} text
+     * @param {number} caret
+     * @returns {{offset: number, length: number, raw: string, tag: Object}|null}
+     */
+    function findAt(text, caret) {
+        return find(text).find((m) => caret > m.offset && caret <= m.offset + m.length) || null;
+    }
+
+    /**
+     * Build the shortest tag string that parses back to the given parts.
+     *
+     * @param {string} name
+     * @param {?string} primary
+     * @param {Object<string, string|boolean|number|null>} args True is a flag; false, null and undefined are omitted.
+     * @returns {string}
+     */
+    function build(name, primary, args) {
+        let out = '{' + name;
+
+        if (primary !== null && primary !== undefined && primary !== '') {
+            primary = String(primary);
+            out += ':' + (primaryNeedsQuotes(primary) ? quote(primary) : primary);
+        }
+
+        Object.keys(args || {}).forEach((key) => {
+            let value = args[key];
+
+            if (value === null || value === undefined || value === false) {
+                return;
+            }
+
+            out += ' @' + key;
+
+            if (value !== true) {
+                value = String(value);
+                out += ':' + (/^[^ \t\n\r\v\f{}'@]+$/.test(value) ? value : quote(value));
+            }
+        });
+
+        return out + '}';
+    }
+
+    function scanToClose(text, start, length) {
+        if (start + 1 >= length || !/[a-z0-9_]/.test(text[start + 1])) {
+            return null;
+        }
+
+        const limit = Math.min(length, start + MAX_TAG_LENGTH);
+        let inQuote = false;
+
+        for (let i = start + 1; i < limit; i++) {
+            const c = text[i];
+
+            if (inQuote) {
+                if (c === '\\') {
+                    i++;
+                } else if (c === "'") {
+                    inQuote = false;
+                }
+                continue;
+            }
+
+            if (c === "'") {
+                inQuote = true;
+            } else if (c === '}') {
+                return i;
+            } else if (c === '{' || c === '\n' || c === '\r') {
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    function readQuoted(s, i, len) {
+        let value = '';
+
+        for (i++; i < len; i++) {
+            const c = s[i];
+
+            if (c === '\\' && i + 1 < len) {
+                value += s[++i];
+            } else if (c === "'") {
+                return [value, i + 1];
+            } else {
+                value += c;
+            }
+        }
+
+        return null;
+    }
+
+    function findArgStart(s, i, len) {
+        const re = /[ \t\n\r\v\f]+@/g;
+        re.lastIndex = i;
+        const m = re.exec(s);
+
+        return m ? m.index : len;
+    }
+
+    function primaryNeedsQuotes(value) {
+        return value[0] === "'"
+            || value.replace(/^[ \t\n\r\v\f]+|[ \t\n\r\v\f]+$/g, '') !== value
+            || /[{}'\r\n]|[ \t\n\r\v\f]@/.test(value);
+    }
+
+    function quote(value) {
+        return "'" + value.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + "'";
+    }
+
+    const api = { parse, find, findAt, build };
+
+    root.sdDynamicDataGrammar = api;
+
+    if (typeof module === 'object' && module.exports) {
+        module.exports = api;
+    }
+})(typeof window !== 'undefined' ? window : globalThis);

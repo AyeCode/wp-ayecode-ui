@@ -1,239 +1,553 @@
 /**
  * Dynamic Data Picker for WordPress - PORTAL VERSION
  *
- * This version uses a React Portal to ensure the modal displays correctly
- * over the entire editor, including within the Site Editor's iframe.
+ * The modal is rendered through a React Portal so it displays over the entire
+ * editor, including within the Site Editor's iframe.
+ *
+ * Tags, their args and the shared modifiers come from the ayecode/v3/dynamic-data
+ * REST endpoint (wp-super-duper), fetched the first time the modal opens. Tags with
+ * args open a configure pane; the tag string itself is written by
+ * window.sdDynamicDataGrammar so it always matches what the PHP parser reads.
  */
 (function(wp) {
-    if (!wp.element) return;
+    if (!wp || !wp.element) return;
 
-    // We add `createPortal` to our list of functions from wp.element
-    const { createElement, useState, useMemo, Fragment, createPortal } = wp.element;
+    const { createElement: el, useState, useMemo, useEffect, Fragment, createPortal } = wp.element;
+    const __ = (wp.i18n && wp.i18n.__) ? (text) => wp.i18n.__(text, 'ayecode-connect') : (text) => text;
+    const grammar = window.sdDynamicDataGrammar;
 
     /**
      * ------------------------------------------------------------------------
-     * 1. The Extensible Data Source (Exhaustive List)
+     * 1. Data
      * ------------------------------------------------------------------------
      */
-    window.sdDynamicData = window.sdDynamicData || {};
 
-    Object.assign(window.sdDynamicData, {
-        "post": {
-            "label": "Post",
-            "tags": [
-                { "label": "Post Title", "tag": "{post_title}" },
-                { "label": "Post ID", "tag": "{post_id}" },
-                { "label": "Post URL", "tag": "{post_url}" },
-                { "label": "Post Slug", "tag": "{post_slug}" },
-                { "label": "Post Content", "tag": "{post_content}" },
-                { "label": "Post Excerpt", "tag": "{post_excerpt}" },
-                { "label": "Post Date", "tag": "{post_date}" },
-                { "label": "Post Modified Date", "tag": "{post_modified_date}" },
-                { "label": "Post Status", "tag": "{post_status}" },
-                { "label": "Post Type", "tag": "{post_type}" },
-                { "label": "Comment Count", "tag": "{comment_count}" },
-                { "label": "Comments Link", "tag": "{comments_link}" },
-                { "label": "Post Terms (e.g., Categories)", "tag": "{post_terms:category}" }
-            ]
-        },
-        "featured_image": {
-            "label": "Featured Image",
-            "tags": [
-                { "label": "Image URL", "tag": "{featured_image_url}" },
-                { "label": "Image ID", "tag": "{featured_image_id}" },
-                { "label": "Alt Text", "tag": "{featured_image_alt}" },
-                { "label": "Title", "tag": "{featured_image_title}" },
-                { "label": "Caption", "tag": "{featured_image_caption}" },
-            ]
-        },
-        "author": {
-            "label": "Post Author",
-            "tags": [
-                { "label": "Author Name", "tag": "{author_name}" },
-                { "label": "Author ID", "tag": "{author_id}" },
-                { "label": "Author Email", "tag": "{author_email}" },
-                { "label": "Author Bio", "tag": "{author_bio}" },
-                { "label": "Author Website", "tag": "{author_website}" },
-                { "label": "Author Posts URL", "tag": "{author_url}" },
-                { "label": "Author Profile Picture URL", "tag": "{author_profile_picture_url}" }
-            ]
-        },
-        "user": {
-            "label": "Current User",
-            "tags": [
-                { "label": "Display Name", "tag": "{user_display_name}" },
-                { "label": "User ID", "tag": "{user_id}" },
-                { "label": "Email", "tag": "{user_email}" },
-                { "label": "First Name", "tag": "{user_first_name}" },
-                { "label": "Last Name", "tag": "{user_last_name}" },
-                { "label": "Website", "tag": "{user_website}" },
-                { "label": "Profile Picture URL", "tag": "{user_profile_picture_url}" }
-            ]
-        },
-        "archive": {
-            "label": "Archive & Term",
-            "tags": [
-                { "label": "Archive Title", "tag": "{archive_title}" },
-                { "label": "Archive Description", "tag": "{archive_description}" },
-                { "label": "Archive URL", "tag": "{archive_url}" },
-                { "label": "Term Name", "tag": "{term_name}" },
-                { "label": "Term ID", "tag": "{term_id}" },
-                { "label": "Term Post Count", "tag": "{term_post_count}" },
-                { "label": "Query Results Count", "tag": "{query_results_count}" }
-            ]
-        },
-        "site": {
-            "label": "Site",
-            "tags": [
-                { "label": "Site Title", "tag": "{site_title}" },
-                { "label": "Site Tagline", "tag": "{site_tagline}" },
-                { "label": "Site URL", "tag": "{site_url}" },
-                { "label": "Admin Email", "tag": "{admin_email}" },
-                { "label": "WordPress Version", "tag": "{wp_version}" },
-                { "label": "Current Date", "tag": "{current_date}" },
-                { "label": "Current Time", "tag": "{current_time}" }
-            ]
-        },
-        "request": {
-            "label": "Request",
-            "tags": [
-                { "label": "Request Parameter", "tag": "{request_parameter:your_key}" }
-            ]
+    // Used when the schema endpoint is missing, i.e. an older Super Duper copy won
+    // the version negotiation. Plain tags only, so there is nothing to configure.
+    const LEGACY_TAGS = {
+        post: ['Post', [['post_title', 'Post Title'], ['post_id', 'Post ID'], ['post_url', 'Post URL'], ['post_slug', 'Post Slug'], ['post_content', 'Post Content'], ['post_excerpt', 'Post Excerpt'], ['post_date', 'Post Date'], ['post_modified_date', 'Post Modified Date'], ['post_status', 'Post Status'], ['post_type', 'Post Type'], ['comment_count', 'Comment Count'], ['comments_link', 'Comments Link']]],
+        featured_image: ['Featured Image', [['featured_image_url', 'Image URL'], ['featured_image_id', 'Image ID'], ['featured_image_alt', 'Alt Text'], ['featured_image_title', 'Title'], ['featured_image_caption', 'Caption']]],
+        author: ['Post Author', [['author_name', 'Author Name'], ['author_id', 'Author ID'], ['author_email', 'Author Email'], ['author_bio', 'Author Bio'], ['author_website', 'Author Website'], ['author_url', 'Author Posts URL'], ['author_profile_picture_url', 'Author Profile Picture URL']]],
+        user: ['Current User', [['user_display_name', 'Display Name'], ['user_id', 'User ID'], ['user_email', 'Email'], ['user_first_name', 'First Name'], ['user_last_name', 'Last Name'], ['user_website', 'Website'], ['user_profile_picture_url', 'Profile Picture URL']]],
+        archive: ['Archive & Term', [['archive_title', 'Archive Title'], ['archive_description', 'Archive Description'], ['archive_url', 'Archive URL'], ['term_name', 'Term Name'], ['term_id', 'Term ID'], ['term_post_count', 'Term Post Count'], ['query_results_count', 'Query Results Count']]],
+        site: ['Site', [['site_title', 'Site Title'], ['site_tagline', 'Site Tagline'], ['site_url', 'Site URL'], ['admin_email', 'Admin Email'], ['wp_version', 'WordPress Version'], ['current_date', 'Current Date'], ['current_time', 'Current Time']]]
+    };
+
+    function legacySchema() {
+        const schema = { groups: [], tags: [], modifiers: {} };
+        Object.keys(LEGACY_TAGS).forEach((key) => {
+            const [label, tags] = LEGACY_TAGS[key];
+            schema.groups.push({ key, label });
+            tags.forEach(([name, tagLabel]) => schema.tags.push({ name, label: tagLabel, group: key, description: '', primary: null, args: [], modifiers: [] }));
+        });
+        return schema;
+    }
+
+    let schemaPromise = null;
+
+    function loadSchema() {
+        if (!schemaPromise) {
+            schemaPromise = (window.sdDynamicDataSchema
+                ? Promise.resolve(window.sdDynamicDataSchema)
+                : wp.apiFetch({ path: '/ayecode/v3/dynamic-data' })
+            ).catch(() => legacySchema());
         }
-    });
+        return schemaPromise;
+    }
+
+    const optionsCache = {};
+
+    function editorSelect(fn) {
+        const editor = wp.data && wp.data.select('core/editor');
+        return editor && editor[fn] ? editor[fn]() : null;
+    }
+
+    // Previews run against the post being edited. In the Site Editor the "post" is a
+    // template whose ID is a string, so there is none to preview against.
+    function previewPostId() {
+        const id = editorSelect('getCurrentPostId');
+        return typeof id === 'number' && id > 0 ? id : 0;
+    }
+
+    function loadOptions(source) {
+        const postType = editorSelect('getCurrentPostType') || '';
+        const path = '/ayecode/v3/dynamic-data/options/' + source + (postType ? '?post_type=' + encodeURIComponent(postType) : '');
+
+        if (!optionsCache[path]) {
+            optionsCache[path] = wp.apiFetch({ path }).catch(() => []);
+        }
+        return optionsCache[path];
+    }
 
     /**
      * ------------------------------------------------------------------------
-     * 2. The Modal Component (NOW WITH PORTAL LOGIC)
+     * 2. Building and reading tag strings
      * ------------------------------------------------------------------------
      */
-    function DynamicDataModal({ isOpen, onClose, onSelect }) {
-        const [allData] = useState(window.sdDynamicData);
-        const [activeCategory, setActiveCategory] = useState(Object.keys(allData)[0] || '');
+
+    // The fields a tag shows: its own args, then the shared modifiers it accepts.
+    function fieldsFor(tag, schema) {
+        const modifiers = (tag.modifiers || []).map((key) => schema.modifiers[key]).filter(Boolean);
+        return { args: tag.args || [], modifiers };
+    }
+
+    function defaultValues(tag, schema) {
+        const values = {};
+        const { args, modifiers } = fieldsFor(tag, schema);
+        args.concat(modifiers).forEach((field) => { values[field.key] = field.default; });
+        return values;
+    }
+
+    // Values from a parsed tag, for re-opening an existing tag in the configure pane.
+    function valuesFromParsed(tag, schema, parsed) {
+        const values = defaultValues(tag, schema);
+        const given = Object.assign({}, parsed.args);
+
+        if (parsed.primary !== null && tag.primary && given[tag.primary] === undefined) {
+            given[tag.primary] = parsed.primary;
+        }
+
+        const { args, modifiers } = fieldsFor(tag, schema);
+        args.concat(modifiers).forEach((field) => {
+            if (given[field.key] === undefined) return;
+            values[field.key] = field.type === 'toggle' ? given[field.key] === true || !['0', 'false', 'no', 'off', ''].includes(String(given[field.key]).toLowerCase()) : given[field.key];
+        });
+
+        return values;
+    }
+
+    function isEmpty(value) {
+        return value === null || value === undefined || value === '' || value === false;
+    }
+
+    // The shortest tag that produces the chosen values; anything at its default is left out.
+    function buildTag(tag, schema, values) {
+        const { args, modifiers } = fieldsFor(tag, schema);
+        const named = {};
+        let primary = null;
+
+        args.concat(modifiers).forEach((field) => {
+            const value = values[field.key];
+
+            if (isEmpty(value) || String(value) === String(field.default)) return;
+            if (field.key === 'new_tab' && !values.link) return;
+
+            if (field.key === tag.primary) {
+                primary = String(value);
+            } else {
+                named[field.key] = field.type === 'toggle' ? true : value;
+            }
+        });
+
+        return grammar.build(tag.name, primary, named);
+    }
+
+    function missingRequired(tag, values) {
+        return (tag.args || []).filter((arg) => arg.required && isEmpty(values[arg.key]));
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * 3. Fields
+     * ------------------------------------------------------------------------
+     */
+
+    function useSourceOptions(field) {
+        const [options, setOptions] = useState(field.source ? null : field.options || []);
+
+        useEffect(() => {
+            if (!field.source) return;
+            let live = true;
+            loadOptions(field.source).then((list) => { if (live) setOptions(Array.isArray(list) ? list : []); });
+            return () => { live = false; };
+        }, [field.source]);
+
+        return options;
+    }
+
+    function Field({ field, value, onChange, idPrefix }) {
+        const id = idPrefix + field.key;
+        const options = useSourceOptions(field);
+        const [custom, setCustom] = useState(false);
+        const label = el('label', { className: 'form-label mb-1', htmlFor: id }, field.label, field.required ? el('span', { className: 'text-danger ms-1' }, '*') : null);
+        const help = field.help ? el('div', { className: 'form-text' }, field.help) : null;
+        const text = (extra) => el('input', Object.assign({ id, type: 'text', className: 'form-control', value: value === null || value === undefined ? '' : value, placeholder: field.placeholder || '', onChange: (e) => onChange(e.target.value) }, extra));
+
+        switch (field.type) {
+            case 'toggle':
+                return el('div', { className: 'form-check form-switch mb-3' },
+                    el('input', { id, type: 'checkbox', role: 'switch', className: 'form-check-input', checked: !!value, onChange: (e) => onChange(e.target.checked) }),
+                    el('label', { className: 'form-check-label', htmlFor: id }, field.label),
+                    help
+                );
+
+            case 'number':
+                return el('div', { className: 'mb-3' }, label, text({ type: 'number', min: 0 }), help);
+
+            case 'select':
+                if (options === null) {
+                    return el('div', { className: 'mb-3' }, label, el('select', { id, className: 'form-select', disabled: true }, el('option', null, __('Loading…'))));
+                }
+                return el('div', { className: 'mb-3' }, label,
+                    el('select', { id, className: 'form-select', value: value || '', onChange: (e) => onChange(e.target.value) },
+                        // Keep a saved value selectable even if the source no longer lists it.
+                        value && !options.some((o) => o.value === value) ? el('option', { value }, value) : null,
+                        options.map((o) => el('option', { key: o.value, value: o.value }, o.label))
+                    ),
+                    help
+                );
+
+            case 'combobox':
+                return el('div', { className: 'mb-3' }, label,
+                    text({ list: id + '-list', autoComplete: 'off' }),
+                    el('datalist', { id: id + '-list' }, (options || []).map((o) => el('option', { key: o.value, value: o.value }, o.label !== o.value ? o.label : null))),
+                    help
+                );
+
+            case 'date_format': {
+                const presets = options || [];
+                const isPreset = !custom && presets.some((o) => o.value === (value || ''));
+                return el('div', { className: 'mb-3' }, label,
+                    el('select', {
+                        id, className: 'form-select', value: isPreset ? (value || '') : '__custom',
+                        onChange: (e) => {
+                            if (e.target.value === '__custom') {
+                                setCustom(true);
+                            } else {
+                                setCustom(false);
+                                onChange(e.target.value);
+                            }
+                        }
+                    },
+                        presets.map((o) => el('option', { key: o.value, value: o.value }, o.value ? o.label + ' (' + o.value + ')' : o.label)),
+                        el('option', { value: '__custom' }, __('Custom…'))
+                    ),
+                    isPreset ? null : el('input', { type: 'text', className: 'form-control mt-2 font-monospace', value: value || '', placeholder: 'D j M, g:i A', 'aria-label': __('Custom format'), onChange: (e) => onChange(e.target.value) }),
+                    help
+                );
+            }
+
+            default:
+                return el('div', { className: 'mb-3' }, label, text(), help);
+        }
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * 4. Panes
+     * ------------------------------------------------------------------------
+     */
+
+    function TagList({ schema, activeGroup, searchTerm, onInsert, onConfigure }) {
+        const groupLabels = useMemo(() => Object.fromEntries(schema.groups.map((g) => [g.key, g.label])), [schema]);
+
+        const tags = useMemo(() => {
+            const term = searchTerm.trim().toLowerCase();
+            if (!term) {
+                return schema.tags.filter((t) => t.group === activeGroup);
+            }
+            // Searching looks across every group.
+            return schema.tags.filter((t) => t.label.toLowerCase().includes(term) || t.name.includes(term));
+        }, [schema, activeGroup, searchTerm]);
+
+        if (!tags.length) {
+            return el('p', { className: 'text-body-secondary' }, __('No tags found.'));
+        }
+
+        return el('div', { className: 'list-group' },
+            tags.map((tag) => {
+                const hasArgs = tag.args && tag.args.length > 0;
+                const configurable = hasArgs || (tag.modifiers && tag.modifiers.length > 0);
+
+                return el('div', { key: tag.name, className: 'list-group-item list-group-item-action p-0 d-flex align-items-stretch' },
+                    el('button', {
+                        type: 'button',
+                        className: 'btn border-0 rounded-0 text-start flex-grow-1 d-flex justify-content-between align-items-center gap-2 py-2 px-3',
+                        onClick: () => (hasArgs ? onConfigure(tag) : onInsert(tag))
+                    },
+                        el('span', null,
+                            tag.label,
+                            searchTerm.trim() && groupLabels[tag.group] ? el('span', { className: 'badge text-bg-light border ms-2 fw-normal' }, groupLabels[tag.group]) : null
+                        ),
+                        el('span', { className: 'd-flex align-items-center gap-2' },
+                            el('code', { className: 'small' }, '{' + tag.name + '}'),
+                            hasArgs ? el('i', { className: 'fas fa-chevron-right text-body-secondary small', 'aria-hidden': 'true' }) : null
+                        )
+                    ),
+                    !hasArgs && configurable ? el('button', {
+                        type: 'button',
+                        className: 'btn border-0 border-start rounded-0 px-3 text-body-secondary',
+                        title: __('Options'),
+                        'aria-label': __('Options'),
+                        onClick: () => onConfigure(tag)
+                    }, el('i', { className: 'fas fa-cog', 'aria-hidden': 'true' })) : null
+                );
+            })
+        );
+    }
+
+    /**
+     * The rendered value of a tag string, fetched shortly after it stops changing.
+     *
+     * @returns {{state: string, html: string}} state is loading, ready or error.
+     */
+    function usePreview(text) {
+        const [preview, setPreview] = useState({ state: 'loading', html: '' });
+
+        useEffect(() => {
+            if (!text) {
+                setPreview({ state: 'ready', html: '' });
+                return;
+            }
+
+            let live = true;
+            setPreview((prev) => Object.assign({}, prev, { state: 'loading' }));
+
+            const timer = setTimeout(() => {
+                wp.apiFetch({ path: '/ayecode/v3/dynamic-data/preview', method: 'POST', data: { text, post_id: previewPostId() } })
+                    .then((res) => { if (live) setPreview({ state: 'ready', html: res && typeof res.html === 'string' ? res.html : '' }); })
+                    .catch(() => { if (live) setPreview({ state: 'error', html: '' }); });
+            }, 350);
+
+            return () => { live = false; clearTimeout(timer); };
+        }, [text]);
+
+        return preview;
+    }
+
+    function Preview({ text, disabled }) {
+        const preview = usePreview(disabled ? '' : text);
+        let content;
+
+        if (disabled) {
+            content = el('span', { className: 'text-body-secondary fst-italic' }, __('Fill in the required fields to see a preview.'));
+        } else if (preview.state === 'error') {
+            content = el('span', { className: 'text-body-secondary fst-italic' }, __('Preview unavailable.'));
+        } else if (preview.html === '') {
+            content = el('span', { className: 'text-body-secondary fst-italic' }, previewPostId() ? __('Empty for this post.') : __('Empty here. Values that depend on a post or archive show on the frontend.'));
+        } else {
+            // Rendered and escaped server side, exactly as the frontend would print it.
+            content = el('span', { dangerouslySetInnerHTML: { __html: preview.html } });
+        }
+
+        return el('div', { className: 'mb-3' },
+            el('div', { className: 'small text-body-secondary mb-1 d-flex align-items-center gap-2' },
+                __('Preview'),
+                preview.state === 'loading' && !disabled ? el('span', { className: 'spinner-border spinner-border-sm', role: 'status', 'aria-hidden': 'true' }) : null
+            ),
+            el('div', { className: 'border rounded px-2 py-1 text-break', style: { pointerEvents: 'none', opacity: preview.state === 'loading' ? 0.6 : 1 } }, content)
+        );
+    }
+
+    function ConfigurePane({ tag, schema, initialValues, onBack, onInsert }) {
+        const [values, setValues] = useState(() => initialValues || defaultValues(tag, schema));
+        const { args, modifiers } = fieldsFor(tag, schema);
+        const setValue = (key) => (value) => setValues((prev) => Object.assign({}, prev, { [key]: value }));
+        const result = buildTag(tag, schema, values);
+        const missing = missingRequired(tag, values);
+        const idPrefix = 'sd-dd-' + tag.name + '-';
+
+        const visibleModifiers = modifiers.filter((m) => m.key !== 'new_tab' || values.link);
+
+        return el('div', { className: 'd-flex flex-column h-100' },
+            el('div', { className: 'd-flex align-items-center gap-2 mb-3' },
+                el('button', { type: 'button', className: 'btn btn-sm btn-outline-secondary', onClick: onBack },
+                    el('i', { className: 'fas fa-arrow-left me-1', 'aria-hidden': 'true' }), __('Back')),
+                el('h6', { className: 'mb-0' }, tag.label)
+            ),
+            tag.description ? el('p', { className: 'text-body-secondary small' }, tag.description) : null,
+            el('form', {
+                className: 'flex-grow-1 overflow-auto pe-1',
+                onSubmit: (e) => { e.preventDefault(); if (!missing.length) onInsert(result); }
+            },
+                args.map((field) => el(Field, { key: field.key, field, value: values[field.key], onChange: setValue(field.key), idPrefix })),
+                visibleModifiers.length ? el(Fragment, null,
+                    args.length ? el('hr', { className: 'my-3' }) : null,
+                    el('div', { className: 'small text-uppercase fw-semibold text-body-secondary mb-2' }, __('Options')),
+                    visibleModifiers.map((field) => el(Field, { key: field.key, field, value: values[field.key], onChange: setValue(field.key), idPrefix }))
+                ) : null,
+                // Lets Enter in a text field insert the tag.
+                el('button', { type: 'submit', className: 'd-none', tabIndex: -1 })
+            ),
+            el('div', { className: 'border-top pt-3 mt-2' },
+                el(Preview, { text: result, disabled: missing.length > 0 }),
+                el('div', { className: 'small text-body-secondary mb-1' }, __('Result')),
+                el('div', { className: 'd-flex flex-wrap align-items-center gap-2' },
+                    el('code', { className: 'bg-body-tertiary border rounded px-2 py-1 flex-grow-1 text-break' }, result),
+                    el('button', {
+                        type: 'button',
+                        className: 'btn btn-primary',
+                        disabled: missing.length > 0,
+                        title: missing.length ? missing.map((m) => m.label).join(', ') : '',
+                        onClick: () => onInsert(result)
+                    }, __('Insert'))
+                )
+            )
+        );
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * 5. The Modal Component
+     * ------------------------------------------------------------------------
+     *
+     * Props: isOpen, onClose, onSelect( tagString ), and optionally initialTag,
+     * an existing tag string to open straight in the configure pane.
+     */
+    function DynamicDataModal({ isOpen, onClose, onSelect, initialTag }) {
+        const [schema, setSchema] = useState(null);
+        const [activeGroup, setActiveGroup] = useState('');
         const [searchTerm, setSearchTerm] = useState('');
+        const [configuring, setConfiguring] = useState(null);
 
-        const filteredTags = useMemo(() => {
-            if (!allData[activeCategory]) return [];
-            const tags = allData[activeCategory].tags;
-            if (!searchTerm) return tags;
-            return tags.filter(item =>
-                item.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                item.tag.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }, [allData, activeCategory, searchTerm]);
+        useEffect(() => {
+            if (!isOpen) return;
+            let live = true;
 
-        const handleSelectAndClose = (tag) => {
-            onClose();
-            onSelect(tag);
-        };
+            loadSchema().then((loaded) => {
+                if (!live) return;
+                setSchema(loaded);
+
+                const parsed = initialTag && grammar ? grammar.parse(initialTag) : null;
+                const tag = parsed ? loaded.tags.find((t) => t.name === parsed.name) : null;
+
+                setActiveGroup(tag ? tag.group : (loaded.groups[0] ? loaded.groups[0].key : ''));
+                if (tag) {
+                    setConfiguring({ tag, values: valuesFromParsed(tag, loaded, parsed) });
+                }
+            });
+
+            return () => { live = false; };
+        }, [isOpen]);
+
+        useEffect(() => {
+            if (!isOpen) return;
+            const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+            document.addEventListener('keydown', onKey);
+            return () => document.removeEventListener('keydown', onKey);
+        }, [isOpen, onClose]);
 
         if (!isOpen) return null;
 
-        // This is the full markup for the modal AND its backdrop
-        const modalWithBackdrop = createElement(
-            Fragment,
-            null,
-            // The dark background element
-            createElement('div', {
-                className: 'modal-backdrop fade show',
-                style: { zIndex: 999990 } // A high z-index to be on top
-            }),
-            // The modal window itself
-            createElement('div',{ className: 'bsui'},
-            createElement('div', { className: 'modal fade show', style: { display: 'block', zIndex: 999999 }, role: 'dialog' },
-                createElement('div', { className: 'modal-dialog modal-xl' },
-                    createElement('div', { className: 'modal-content', style: { height: '85vh', display: 'flex', flexDirection: 'column' } },
-                        createElement('div', { className: 'modal-header' },
-                            createElement('h5', { className: 'modal-title' }, 'Select Dynamic Data'),
-                            createElement('button', { type: 'button', className: 'btn-close', onClick: onClose })
-                        ),
-                        createElement('div', { className: 'modal-body', style: { flex: '1 1 auto', overflow: 'hidden' } },
-                            createElement('div', { className: 'row h-100' },
-                                createElement('div', { className: 'col-md-3' },
-                                    createElement('div', { className: 'nav flex-column nav-pills' },
-                                        Object.keys(allData).map(catKey =>
-                                            createElement('button', {
-                                                key: catKey,
-                                                className: `nav-link text-start ${activeCategory === catKey ? 'active' : ''}`,
-                                                onClick: () => setActiveCategory(catKey)
-                                            }, allData[catKey].label)
-                                        )
-                                    )
-                                ),
-                                createElement('div', { className: 'col-md-9 d-flex flex-column h-100' },
-                                    createElement('input', {
-                                        type: 'text',
-                                        className: 'form-control mb-3 py-3',
-                                        placeholder: 'Search tags…',
-                                        value: searchTerm,
-                                        onChange: (e) => setSearchTerm(e.target.value)
-                                    }),
-                                    createElement('div', { className: 'flex-grow-1', style: { overflowY: 'auto' } },
-                                        createElement('div', { className: 'list-group' },
-                                            filteredTags.map(item =>
-                                                createElement('button', {
-                                                        key: item.tag,
-                                                        type: 'button',
-                                                        className: 'list-group-item list-group-item-action d-flex justify-content-between align-items-center',
-                                                        onClick: () => handleSelectAndClose(item.tag)
-                                                    },
-                                                    item.label,
-                                                    createElement('code', { style: { fontSize: '0.8em' } }, item.tag)
-                                                )
+        const insert = (tagString) => {
+            onClose();
+            onSelect(tagString);
+        };
+
+        let body;
+        if (!schema) {
+            body = el('div', { className: 'd-flex h-100 align-items-center justify-content-center' },
+                el('div', { className: 'spinner-border text-secondary', role: 'status' }, el('span', { className: 'visually-hidden' }, __('Loading…'))));
+        } else if (configuring) {
+            body = el(ConfigurePane, {
+                key: configuring.tag.name,
+                tag: configuring.tag,
+                schema,
+                initialValues: configuring.values,
+                onBack: () => setConfiguring(null),
+                onInsert: insert
+            });
+        } else {
+            body = el('div', { className: 'd-flex flex-column h-100' },
+                el('input', {
+                    type: 'search',
+                    className: 'form-control mb-3 py-2',
+                    placeholder: __('Search all tags…'),
+                    value: searchTerm,
+                    autoFocus: true,
+                    onChange: (e) => setSearchTerm(e.target.value)
+                }),
+                el('div', { className: 'flex-grow-1 overflow-auto' },
+                    el(TagList, {
+                        schema,
+                        activeGroup,
+                        searchTerm,
+                        onInsert: (tag) => insert(grammar ? grammar.build(tag.name, null, {}) : '{' + tag.name + '}'),
+                        onConfigure: (tag) => setConfiguring({ tag, values: null })
+                    })
+                )
+            );
+        }
+
+        const modalWithBackdrop = el(Fragment, null,
+            el('div', { className: 'modal-backdrop fade show', style: { zIndex: 999990 } }),
+            el('div', { className: 'bsui' },
+                el('div', {
+                    className: 'modal fade show', style: { display: 'block', zIndex: 999999 }, role: 'dialog', 'aria-modal': 'true',
+                    onMouseDown: (e) => { if (e.target === e.currentTarget) onClose(); }
+                },
+                    el('div', { className: 'modal-dialog modal-xl' },
+                        el('div', { className: 'modal-content', style: { height: '85vh' } },
+                            el('div', { className: 'modal-header' },
+                                el('h5', { className: 'modal-title' }, __('Select Dynamic Data')),
+                                el('button', { type: 'button', className: 'btn-close', 'aria-label': __('Close'), onClick: onClose })
+                            ),
+                            el('div', { className: 'modal-body overflow-hidden' },
+                                el('div', { className: 'row h-100' },
+                                    el('div', { className: 'col-md-3 overflow-auto h-100' },
+                                        el('div', { className: 'nav flex-column nav-pills' },
+                                            (schema ? schema.groups : []).map((group) =>
+                                                el('button', {
+                                                    key: group.key,
+                                                    type: 'button',
+                                                    className: 'nav-link text-start' + (activeGroup === group.key && !searchTerm.trim() ? ' active' : ''),
+                                                    onClick: () => { setActiveGroup(group.key); setSearchTerm(''); setConfiguring(null); }
+                                                }, group.label)
                                             )
                                         )
-                                    )
+                                    ),
+                                    el('div', { className: 'col-md-9 h-100' }, body)
                                 )
                             )
                         )
                     )
                 )
             )
-        ));
-
-        // Use the Portal to "teleport" our modal and backdrop to the main document body.
-        return createPortal(
-            modalWithBackdrop,
-            document.body
         );
+
+        return createPortal(modalWithBackdrop, document.body);
     }
 
     /**
      * ------------------------------------------------------------------------
-     * 3. The Picker Component (The Button)
+     * 6. The Picker Component (The Button)
      * ------------------------------------------------------------------------
      */
+    /**
+     * Props: onSelect( tagString ), style, and optionally getInitialTag, called on
+     * click to return the tag string at the field's caret so it opens for editing.
+     */
     function DynamicDataPicker(props) {
-        const [isModalOpen, useState] = wp.element.useState(false);
+        const [isModalOpen, setModalOpen] = useState(false);
+        const [initialTag, setInitialTag] = useState(null);
 
-        const handleSelect = (dataTag) => {
-            if (props.onSelect) {
-                props.onSelect(dataTag);
-            }
+        const open = () => {
+            setInitialTag(props.getInitialTag ? props.getInitialTag() || null : props.initialTag || null);
+            setModalOpen(true);
         };
 
-        // Combine the default style with any passed-in style props
-        const wrapperStyle = { display: 'inline-block',marginLeft: '-1px', ...props.style };
+        const wrapperStyle = Object.assign({ display: 'inline-block', marginLeft: '-1px' }, props.style);
 
-        return createElement(Fragment, null,
-            createElement('div', { style: wrapperStyle },
-                createElement('button', {
-                    onClick: () => useState(true),
+        return el(Fragment, null,
+            el('div', { style: wrapperStyle },
+                el('button', {
+                    onClick: open,
+                    // Keep focus, and with it the caret, in the field the tag goes into.
+                    onMouseDown: (e) => e.preventDefault(),
                     type: 'button',
                     className: 'components-button is-secondary is-compact',
-                    title: 'Insert Dynamic Data'
-                }, createElement('i', { className: 'fas fa-database' }))
+                    title: __('Insert Dynamic Data')
+                }, el('i', { className: 'fas fa-database' }))
             ),
-            // The modal now handles its own backdrop, so we don't need it here.
-            isModalOpen && createElement(DynamicDataModal, {
+            isModalOpen && el(DynamicDataModal, {
                 isOpen: isModalOpen,
-                onClose: () => useState(false),
-                onSelect: handleSelect,
+                onClose: () => setModalOpen(false),
+                onSelect: (tag) => props.onSelect && props.onSelect(tag),
+                initialTag
             })
         );
     }
 
-    // Expose the necessary components to the window object
     window.sdBlockTools = window.sdBlockTools || {};
     window.sdBlockTools.DynamicDataButton = DynamicDataPicker;
     window.sdBlockTools.DynamicDataModal = DynamicDataModal;

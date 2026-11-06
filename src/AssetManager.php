@@ -147,7 +147,8 @@ class AssetManager {
 		wp_register_script( 'iconpicker', $this->url . 'assets/libs/universal-icon-picker/js/universal-icon-picker.js', [], $this->version, true );
 		wp_add_inline_script( 'iconpicker', $this->inline_script_iconpicker(), 'before' );
 
-		wp_register_script( 'sd-dynamic-data-button', $this->url . 'assets/libs/universal-icon-picker/js/dynamic-data-picker-react.js', [], $this->version, true );
+		wp_register_script( 'sd-dynamic-data-grammar', $this->url . 'assets/libs/universal-icon-picker/js/dynamic-data-grammar.js', [], $this->version, true );
+		wp_register_script( 'sd-dynamic-data-button', $this->url . 'assets/libs/universal-icon-picker/js/dynamic-data-picker-react.js', [ 'wp-element', 'wp-api-fetch', 'wp-data', 'wp-i18n', 'sd-dynamic-data-grammar' ], $this->version, true );
 
 		$this->register_carousel();
 

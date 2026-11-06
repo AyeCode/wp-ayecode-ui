@@ -25,6 +25,12 @@ All notable changes to the AyeCode UI will be documented in this file.
 - Validated theme colors before writing them into generated CSS - FIXED
 - Package loader now returns instead of exiting when WordPress is absent, so it no longer kills composer CLI tooling in host repos - FIXED
 - Embla Carousel v9 slider component, aui()->carousel(), loaded only when a carousel is rendered - ADDED
+- Dynamic data picker loads its tags from the ayecode/v3/dynamic-data endpoint and falls back to a built-in list when it is missing - CHANGED
+- Dynamic data picker configure pane for tag args and modifiers (date formats, meta keys, taxonomies, word limit, link, fallback) with a live result - ADDED
+- Dynamic data picker can reopen an existing tag through the initialTag prop, and search now covers every group - ADDED
+- dynamic-data-grammar.js, the JS twin of the Super Duper tag parser, with tests against the shared fixture file - ADDED
+- Dynamic data picker shows a live preview of the tag rendered against the post being edited - ADDED
+- Dynamic data button takes a getInitialTag prop so a field can open the tag at its caret, and no longer steals focus from that field - ADDED
 
 ## [3.0.2-beta] - 2026-05-18
 - .text-justify class was removed in BS5.3, we added it back in - ADDED
