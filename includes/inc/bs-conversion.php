@@ -14,6 +14,13 @@
  * @return array|mixed|string|string[]
  */
 function aui_bs_convert_sd_output( $output, $instance = '', $args = '', $sd = '' ) {
+	// A Super Duper block that wraps other blocks runs this filter over its whole
+	// output, children included, so a child inside one converts twice or more. Skip
+	// the child: the outermost Super Duper ancestor converts the subtree once.
+	if ( aui_bs_has_sd_ancestor() ) {
+		return $output;
+	}
+
 	// Always convert to BS5 in v2.0+
 	$convert = array(
 		'"ml-'                                    => '"ms-',
@@ -82,3 +89,44 @@ function aui_bs_convert_sd_output( $output, $instance = '', $args = '', $sd = ''
 }
 
 add_filter( 'wp_super_duper_widget_output', 'aui_bs_convert_sd_output', 10, 4 );
+
+/**
+ * Whether a Super Duper block is rendering above the block being rendered now.
+ *
+ * @return bool
+ */
+function aui_bs_has_sd_ancestor() {
+	$stack = $GLOBALS['aui_bs_render_stack'] ?? [];
+	array_pop( $stack ); // The block being rendered now.
+
+	return in_array( true, $stack, true );
+}
+
+/**
+ * Track which blocks are rendering, so nested Super Duper output is converted once.
+ *
+ * WordPress applies render_block_data right before a block renders, top level and
+ * inner blocks alike, and render_block right after, so a push on one and a pop on
+ * the other is a stack of the blocks currently rendering. A block saved by Super
+ * Duper carries its shortcode in the sd_shortcode attribute.
+ */
+add_filter(
+	'render_block_data',
+	function ( $parsed_block ) {
+		$GLOBALS['aui_bs_render_stack'][] = ! empty( $parsed_block['attrs']['sd_shortcode'] );
+
+		return $parsed_block;
+	},
+	-PHP_INT_MAX
+);
+add_filter(
+	'render_block',
+	function ( $block_content ) {
+		if ( ! empty( $GLOBALS['aui_bs_render_stack'] ) ) {
+			array_pop( $GLOBALS['aui_bs_render_stack'] );
+		}
+
+		return $block_content;
+	},
+	PHP_INT_MAX
+);
