@@ -33,6 +33,18 @@ class SettingsOrchestrator {
 	public string $latest = '5.3.6';
 
 	/**
+	 * The theme colors the stylesheet compiles classes for.
+	 */
+	public const THEME_COLORS = [ 'primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark' ];
+
+	/**
+	 * Palette slugs the BlockStrap theme's own theme.json defines, once read.
+	 *
+	 * @var string[]|null
+	 */
+	private static ?array $theme_palette_slugs = null;
+
+	/**
 	 * Choices.js version shipped with this package.
 	 *
 	 * @var string
@@ -141,14 +153,17 @@ class SettingsOrchestrator {
 	 * @return void
 	 */
 	private function define_color_constants(): void {
-		define( 'AUI_PRIMARY_COLOR_ORIGINAL', '#1e73be' );
-		define( 'AUI_SECONDARY_COLOR_ORIGINAL', '#6c757d' );
-		define( 'AUI_INFO_COLOR_ORIGINAL', '#17a2b8' );
-		define( 'AUI_WARNING_COLOR_ORIGINAL', '#ffc107' );
-		define( 'AUI_DANGER_COLOR_ORIGINAL', '#dc3545' );
-		define( 'AUI_SUCCESS_COLOR_ORIGINAL', '#44c553' );
-		define( 'AUI_LIGHT_COLOR_ORIGINAL', '#f8f9fa' );
-		define( 'AUI_DARK_COLOR_ORIGINAL', '#343a40' );
+		// The eight theme colors must match the compiled assets/css/ayecode-ui.css and
+		// the BlockStrap theme.json palette: a palette color equal to its value here is
+		// left to the stylesheet on the front end, while the editor always maps it.
+		define( 'AUI_PRIMARY_COLOR_ORIGINAL', '#2775b0' );
+		define( 'AUI_SECONDARY_COLOR_ORIGINAL', '#6c727f' );
+		define( 'AUI_INFO_COLOR_ORIGINAL', '#3d7a81' );
+		define( 'AUI_WARNING_COLOR_ORIGINAL', '#fc9231' );
+		define( 'AUI_DANGER_COLOR_ORIGINAL', '#dc3838' );
+		define( 'AUI_SUCCESS_COLOR_ORIGINAL', '#33b36b' );
+		define( 'AUI_LIGHT_COLOR_ORIGINAL', '#fff' );
+		define( 'AUI_DARK_COLOR_ORIGINAL', '#1d2735' );
 		define( 'AUI_WHITE_COLOR_ORIGINAL', '#fff' );
 		define( 'AUI_PURPLE_COLOR_ORIGINAL', '#ad6edd' );
 		define( 'AUI_SALMON_COLOR_ORIGINAL', '#ff977a' );
@@ -242,6 +257,73 @@ class SettingsOrchestrator {
 			'orange'    => AUI_ORANGE_COLOR,
 			'black'     => AUI_BLACK_COLOR,
 		);
+	}
+
+	/**
+	 * Get the palette colors added on top of the theme's own palette.
+	 *
+	 * That is the colors the user added in Global Styles, and the colors a design kit
+	 * adds, which reach WordPress as theme palette colors because the kit's theme.json
+	 * is layered over the theme's. They are offered in the block color pickers and get
+	 * classes written for them; the theme's own extra colors, such as purple or gray,
+	 * are left to WordPress's has-*-color classes.
+	 *
+	 * @return array<string, array{name: string, color: string}> Colors keyed by slug.
+	 */
+	public static function get_added_palette_colors(): array {
+		$palette = wp_get_global_settings( [ 'color', 'palette' ] );
+		$base    = self::get_theme_palette_slugs();
+		$added   = [];
+
+		// Without the theme's own list there is no telling a kit color from a theme
+		// one, so only the user's colors count.
+		$origins = $base ? [ 'theme', 'custom' ] : [ 'custom' ];
+
+		foreach ( $origins as $origin ) {
+			foreach ( (array) ( $palette[ $origin ] ?? [] ) as $color ) {
+				if ( ! isset( $color['slug'], $color['color'] ) ) {
+					continue;
+				}
+
+				$slug = sanitize_key( $color['slug'] );
+
+				if ( in_array( $slug, self::THEME_COLORS, true ) || ( 'theme' === $origin && in_array( $slug, $base, true ) ) ) {
+					continue;
+				}
+
+				$added[ $slug ] = [
+					'name'  => sanitize_text_field( (string) ( $color['name'] ?? $slug ) ),
+					'color' => (string) $color['color'],
+				];
+			}
+		}
+
+		return $added;
+	}
+
+	/**
+	 * Get the palette slugs the active parent theme's theme.json defines.
+	 *
+	 * @return string[]
+	 */
+	private static function get_theme_palette_slugs(): array {
+		if ( null === self::$theme_palette_slugs ) {
+			$file = get_template_directory() . '/theme.json';
+			$json = is_readable( $file ) ? (array) wp_json_file_decode( $file, [ 'associative' => true ] ) : [];
+
+			self::$theme_palette_slugs = array_values(
+				array_filter(
+					array_map(
+						static function ( $color ) {
+							return isset( $color['slug'] ) ? sanitize_key( $color['slug'] ) : '';
+						},
+						(array) ( $json['settings']['color']['palette'] ?? [] )
+					)
+				)
+			);
+		}
+
+		return self::$theme_palette_slugs;
 	}
 
 	/**

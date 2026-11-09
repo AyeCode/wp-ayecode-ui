@@ -1,0 +1,48 @@
+// Runtime color shades
+//
+// The subtle, border and emphasis shades of the brand colors are mixed from the base
+// color in the browser instead of being fixed at compile time, so a palette change in
+// the editor, or a color written by the generated CSS, reaches every shade in light
+// and dark mode. Secondary, light and dark keep their hand picked gray scale shades.
+//
+// Imported last and outside any wrapper, so it follows the Bootstrap :root blocks
+// that the wrapped bundles print again at the end.
+
+$runtime-theme-colors: map-keys(map-remove($theme-colors, "secondary", "dark", "light"));
+
+:root,
+[data-bs-theme="light"] {
+  // How far a brand color is lightened when used as text; raised in dark mode, where
+  // the base color is too dark to read on the page background.
+  --#{$prefix}text-tint: 0%;
+
+  // Links take the info color. Set here, after the Bootstrap :root block that the
+  // wrapped bundles print again at the end, which would otherwise reset them to the
+  // compiled primary.
+  --#{$prefix}link-color: var(--#{$prefix}info);
+  --#{$prefix}link-color-rgb: var(--#{$prefix}info-rgb);
+  --#{$prefix}link-hover-color: var(--#{$prefix}info);
+  --#{$prefix}link-hover-color-rgb: var(--#{$prefix}info-rgb);
+
+  @each $color in $runtime-theme-colors {
+    --#{$prefix}#{$color}-text-emphasis: color-mix(in srgb, var(--#{$prefix}#{$color}), #{$black} 20%);
+    --#{$prefix}#{$color}-bg-subtle: color-mix(in srgb, var(--#{$prefix}#{$color}) 10%, #{$white});
+    --#{$prefix}#{$color}-border-subtle: color-mix(in srgb, var(--#{$prefix}#{$color}) 20%, #{$white});
+  }
+}
+
+@if $enable-dark-mode {
+  @include color-mode(dark) {
+    --#{$prefix}text-tint: 30%;
+    --#{$prefix}link-color: var(--#{$prefix}info);
+    --#{$prefix}link-color-rgb: var(--#{$prefix}info-rgb);
+    --#{$prefix}link-hover-color: var(--#{$prefix}info);
+    --#{$prefix}link-hover-color-rgb: var(--#{$prefix}info-rgb);
+
+    @each $color in $runtime-theme-colors {
+      --#{$prefix}#{$color}-text-emphasis: color-mix(in srgb, var(--#{$prefix}#{$color}), #{$white} 30%);
+      --#{$prefix}#{$color}-bg-subtle: color-mix(in srgb, var(--#{$prefix}#{$color}) 10%, #{$gray-900});
+      --#{$prefix}#{$color}-border-subtle: color-mix(in srgb, var(--#{$prefix}#{$color}) 20%, #{$gray-900});
+    }
+  }
+}

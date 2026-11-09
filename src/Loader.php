@@ -52,17 +52,34 @@ class Loader {
 		// WordPress still prints a late-enqueued stylesheet.
 		add_action( 'wp_footer', array( AssetManager::instance(), 'enqueue_if_detected' ), 7 );
 
-		// WordPress Customizer integration.
-		add_action( 'customize_register', array( Customizer::instance(), 'register_customizer_settings' ) );
-
-		if ( defined( 'BLOCKSTRAP_VERSION' ) ) {
-			add_filter( 'sd_aui_colors', array( Customizer::instance(), 'add_blockstrap_colors' ), 10, 3 );
-		}
+		// Hooks that depend on the active theme; BLOCKSTRAP_VERSION is defined by the
+		// theme's functions.php, which loads after plugins_loaded.
+		add_action( 'after_setup_theme', [ $this, 'register_theme_hooks' ], 20 );
 
 		// Admin notices and fix handler.
 		add_action( 'admin_notices', array( Admin::instance(), 'show_admin_style_notice' ) );
 		add_action( 'admin_init', array( Admin::instance(), 'maybe_fix_admin_settings' ) );
 		add_action( 'admin_init', array( Admin::instance(), 'maybe_enable_seen_blocks' ) );
 		add_action( 'admin_notices', array( Admin::instance(), 'show_seen_blocks_notice' ) );
+	}
+
+	/**
+	 * Register the hooks that depend on the active theme.
+	 *
+	 * With the BlockStrap theme the colors come from the theme.json palette, so the
+	 * custom palette colors are offered in the block color pickers. Any other theme
+	 * gets the Customizer section instead. Hooking customize_register is also what
+	 * makes WordPress show the Customize menu for a block theme, so BlockStrap must
+	 * not get it.
+	 *
+	 * @return void
+	 */
+	public function register_theme_hooks(): void {
+		if ( defined( 'BLOCKSTRAP_VERSION' ) ) {
+			add_filter( 'sd_get_aui_colors', [ Customizer::instance(), 'add_palette_colors' ], 10, 2 );
+			add_filter( 'sd_get_aui_colors_flat', [ Customizer::instance(), 'add_palette_colors_flat' ], 10, 2 );
+		} else {
+			add_action( 'customize_register', [ Customizer::instance(), 'register_customizer_settings' ] );
+		}
 	}
 }

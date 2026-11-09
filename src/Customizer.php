@@ -87,24 +87,57 @@ class Customizer {
 	}
 
 	/**
-	 * Add custom colors to the BlockStrap color selector.
+	 * Add the custom palette colors to the grouped Super Duper color options.
 	 *
-	 * @param array $theme_colors      Existing theme colors.
-	 * @param bool  $include_outlines  Whether to include outline variants.
-	 * @param bool  $include_branding  Whether to include branding colors.
-	 * @return array Modified theme colors.
+	 * @param array $options Color options, optgroup label => [ slug => label ].
+	 * @param array $types   Color types requested.
+	 * @return array Modified color options.
 	 */
-	public function add_blockstrap_colors( array $theme_colors, bool $include_outlines, bool $include_branding ): array {
-		$setting = wp_get_global_settings();
+	public function add_palette_colors( array $options, array $types ): array {
+		$custom = $this->get_custom_palette_colors( $types );
 
-		if ( ! empty( $setting['color']['palette']['custom'] ) ) {
-			foreach ( $setting['color']['palette']['custom'] as $color ) {
-				if ( isset( $color['slug'], $color['name'] ) ) {
-					$theme_colors[ $color['slug'] ] = esc_attr( $color['name'] );
-				}
+		if ( $custom ) {
+			$options[ __( 'Custom Colors', 'ayecode-connect' ) ] = $custom;
+		}
+
+		return $options;
+	}
+
+	/**
+	 * Add the custom palette colors to the flat Super Duper color options.
+	 *
+	 * @param array $options Color options, slug => label.
+	 * @param array $types   Color types requested.
+	 * @return array Modified color options.
+	 */
+	public function add_palette_colors_flat( array $options, array $types ): array {
+		return $options + $this->get_custom_palette_colors( $types );
+	}
+
+	/**
+	 * Get the colors added to the palette by the user or a design kit.
+	 *
+	 * They have the solid and outline classes (see CSS_Generator::custom_color_css()),
+	 * so they are offered alongside the core colors and the outlines, and not with
+	 * the subtle or emphasis variants.
+	 *
+	 * @param array $types Color types requested.
+	 * @return array<string, string> Color labels keyed by option value.
+	 */
+	private function get_custom_palette_colors( array $types ): array {
+		$colors = [];
+
+		foreach ( SettingsOrchestrator::get_added_palette_colors() as $slug => $color ) {
+			if ( in_array( 'core', $types, true ) ) {
+				$colors[ $slug ] = $color['name'];
+			}
+
+			if ( in_array( 'outline', $types, true ) ) {
+				/* translators: %s: color name */
+				$colors[ 'outline-' . $slug ] = sprintf( __( '%s outline', 'ayecode-connect' ), $color['name'] );
 			}
 		}
 
-		return $theme_colors;
+		return $colors;
 	}
 }

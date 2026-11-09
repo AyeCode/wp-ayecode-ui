@@ -20,14 +20,31 @@
 }
 
 
-// Override solid buttons
+// Brand buttons mix their states from the base color at runtime, so they follow a
+// palette change live. The text color stays the compiled, contrast checked one.
 /* stylelint-disable */
 @each $color, $value in map-remove($theme-colors, "secondary", "dark", "light") {
   .btn-#{$color} {
-    --#{$prefix}btn-hover-bg: #{adjust-color($value, $lightness: -10%)};
-    --#{$prefix}btn-active-bg: #{adjust-color($value, $lightness: -10%)};
-    --#{$prefix}btn-hover-border-color: #{adjust-color($value, $lightness: -10%)};
-    --#{$prefix}btn-active-border-color: #{adjust-color($value, $lightness: -10%)};
+    --#{$prefix}btn-bg: var(--#{$prefix}#{$color});
+    --#{$prefix}btn-border-color: var(--#{$prefix}#{$color});
+    --#{$prefix}btn-hover-bg: color-mix(in srgb, var(--#{$prefix}#{$color}), #{$black} 20%);
+    --#{$prefix}btn-active-bg: color-mix(in srgb, var(--#{$prefix}#{$color}), #{$black} 20%);
+    --#{$prefix}btn-hover-border-color: color-mix(in srgb, var(--#{$prefix}#{$color}), #{$black} 20%);
+    --#{$prefix}btn-active-border-color: color-mix(in srgb, var(--#{$prefix}#{$color}), #{$black} 20%);
+    --#{$prefix}btn-disabled-bg: var(--#{$prefix}#{$color});
+    --#{$prefix}btn-disabled-border-color: var(--#{$prefix}#{$color});
+  }
+
+  // As text the color takes the dark mode tint (see _color-runtime.scss).
+  .btn-outline-#{$color} {
+    --#{$prefix}btn-color: color-mix(in srgb, var(--#{$prefix}#{$color}), #{$white} var(--#{$prefix}text-tint, 0%));
+    --#{$prefix}btn-border-color: color-mix(in srgb, var(--#{$prefix}#{$color}), #{$white} var(--#{$prefix}text-tint, 0%));
+    --#{$prefix}btn-hover-bg: var(--#{$prefix}#{$color});
+    --#{$prefix}btn-hover-border-color: var(--#{$prefix}#{$color});
+    --#{$prefix}btn-active-bg: var(--#{$prefix}#{$color});
+    --#{$prefix}btn-active-border-color: var(--#{$prefix}#{$color});
+    --#{$prefix}btn-disabled-color: color-mix(in srgb, var(--#{$prefix}#{$color}), #{$white} var(--#{$prefix}text-tint, 0%));
+    --#{$prefix}btn-disabled-border-color: color-mix(in srgb, var(--#{$prefix}#{$color}), #{$white} var(--#{$prefix}text-tint, 0%));
   }
 }
 /* stylelint-enable */
@@ -62,6 +79,42 @@
   --#{$prefix}btn-active-color: #{$gray-900};
   --#{$prefix}btn-active-bg: #{$gray-200};
   --#{$prefix}btn-active-border-color: #{$gray-200};
+}
+
+// White and black are offered by the block color pickers but are not theme colors,
+// so Bootstrap builds no button for them.
+.btn-white {
+  @include button-variant(
+    $white,
+    $white,
+    $color: $gray-900,
+    $hover-background: $gray-200,
+    $hover-border: $gray-200,
+    $hover-color: $gray-900,
+    $active-background: $gray-200,
+    $active-border: $gray-200,
+    $active-color: $gray-900,
+    $disabled-color: $gray-900
+  );
+}
+
+.btn-black {
+  @include button-variant(
+    $black,
+    $black,
+    $color: $white,
+    $hover-background: $gray-900,
+    $hover-border: $gray-900,
+    $hover-color: $white,
+    $active-background: $gray-900,
+    $active-border: $gray-900,
+    $active-color: $white,
+    $disabled-color: $white
+  );
+}
+
+.btn-outline-white {
+  @include button-outline-variant($white, $color-hover: $gray-900, $active-color: $gray-900);
 }
 
 .btn-link {

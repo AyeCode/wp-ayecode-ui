@@ -1,7 +1,11 @@
 //$enable-dark-mode: false;
 // colors
-$primary: #3993d5;
+$primary: #2775b0; // 4.9:1 against white text, WCAG AA for button text
 $danger:  #DC3838; // accessibility
+
+// Button, badge and text-bg-* text switches to dark when white would fall below
+// WCAG AA (4.5:1). Bootstrap's default; this was lowered to 2.
+$min-contrast-ratio: 4.5;
 
 // Display headings
 $display-font-weight: 500;

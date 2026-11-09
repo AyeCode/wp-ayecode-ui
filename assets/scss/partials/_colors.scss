@@ -1,0 +1,35 @@
+// Brand color utilities mixed at runtime
+//
+// Bootstrap builds these from the --bs-{color}-rgb triplets, which only a compile or
+// the generated CSS can update. Mixing from the color itself lets them follow a
+// palette change live, and lets text take the dark mode tint (see _color-runtime.scss).
+
+@each $color in map-keys(map-remove($theme-colors, "secondary", "dark", "light")) {
+  .text-#{$color} {
+    color: color-mix(in srgb, color-mix(in srgb, var(--#{$prefix}#{$color}), #{$white} var(--#{$prefix}text-tint, 0%)) calc(var(--#{$prefix}text-opacity, 1) * 100%), transparent) !important;
+  }
+
+  .link-#{$color} {
+    color: color-mix(in srgb, color-mix(in srgb, var(--#{$prefix}#{$color}), #{$white} var(--#{$prefix}text-tint, 0%)) calc(var(--#{$prefix}link-opacity, 1) * 100%), transparent) !important;
+    text-decoration-color: color-mix(in srgb, color-mix(in srgb, var(--#{$prefix}#{$color}), #{$white} var(--#{$prefix}text-tint, 0%)) calc(var(--#{$prefix}link-underline-opacity, 1) * 100%), transparent) !important;
+  }
+
+  .bg-#{$color},
+  .text-bg-#{$color} {
+    background-color: color-mix(in srgb, var(--#{$prefix}#{$color}) calc(var(--#{$prefix}bg-opacity, 1) * 100%), transparent) !important;
+  }
+
+  .border-#{$color} {
+    border-color: color-mix(in srgb, var(--#{$prefix}#{$color}) calc(var(--#{$prefix}border-opacity, 1) * 100%), transparent) !important;
+  }
+}
+
+// Links read the color, not the RGB triplet, so a Global Styles link color (which
+// only sets --bs-link-color) applies, and they take the dark mode tint.
+a {
+  color: color-mix(in srgb, color-mix(in srgb, var(--#{$prefix}link-color), #{$white} var(--#{$prefix}text-tint, 0%)) calc(var(--#{$prefix}link-opacity, 1) * 100%), transparent);
+
+  &:hover {
+    color: color-mix(in srgb, color-mix(in srgb, var(--#{$prefix}link-hover-color), #{$white} var(--#{$prefix}text-tint, 0%)) calc(var(--#{$prefix}link-opacity, 1) * 100%), transparent);
+  }
+}

@@ -21,6 +21,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 class CSS_Generator {
 
 	/**
+	 * Theme colors whose classes the stylesheet builds from the color variable at
+	 * runtime (assets/scss/_color-runtime.scss and the brand loops in the partials),
+	 * so only the variable and a readable text color need writing out.
+	 */
+	private const RUNTIME_COLORS = [ 'primary', 'success', 'danger', 'warning', 'info' ];
+
+
+	/**
 	 * Singleton instance.
 	 *
 	 * @var CSS_Generator|null
@@ -52,21 +60,27 @@ class CSS_Generator {
 	 * @return string Minified custom CSS.
 	 */
 	public static function custom_css( $compatibility = true, bool $is_fse = false ): string {
-		$colors = [];
+		$colors        = [];
+		$custom_colors = [];
 
 		if ( defined( 'BLOCKSTRAP_VERSION' ) ) {
 			$setting = wp_get_global_settings();
 
 			if ( ! empty( $setting['color']['palette']['theme'] ) ) {
 				foreach ( $setting['color']['palette']['theme'] as $color ) {
-					$colors[ sanitize_key( $color['slug'] ) ] = self::sanitize_css_color( (string) $color['color'] );
+					$slug = sanitize_key( $color['slug'] );
+
+					if ( in_array( $slug, SettingsOrchestrator::THEME_COLORS, true ) ) {
+						$colors[ $slug ] = self::sanitize_css_color( (string) $color['color'] );
+					}
 				}
 			}
 
-			if ( ! empty( $setting['color']['palette']['custom'] ) ) {
-				foreach ( $setting['color']['palette']['custom'] as $color ) {
-					$colors[ sanitize_key( $color['slug'] ) ] = self::sanitize_css_color( (string) $color['color'] );
-				}
+			// Colors added by the user or a design kit are offered in the block color
+			// pickers, so they get the same classes as a theme color.
+			foreach ( SettingsOrchestrator::get_added_palette_colors() as $slug => $color ) {
+				$colors[ $slug ]        = self::sanitize_css_color( $color['color'] );
+				$custom_colors[ $slug ] = true;
 			}
 
 			$colors = array_filter( $colors );
@@ -105,11 +119,13 @@ class CSS_Generator {
 			$d_colors = SettingsOrchestrator::get_colors( true );
 
 			foreach ( $colors as $key => $color ) {
-				if ( ( empty( $d_colors[ $key ] ) || $d_colors[ $key ] != $color ) || $is_fse ) {
+				if ( $is_fse || empty( $d_colors[ $key ] ) || strtolower( $d_colors[ $key ] ) !== strtolower( $color ) ) {
 					$var   = $is_fse ? 'var(--wp--preset--color--' . sanitize_key( $key ) . ')' : $color;
 					$compat = $is_fse ? '.editor-styles-wrapper' : $compatibility;
 
-					$colors_css .= self::css_overwrite( $key, $var, $compat, $color );
+					$colors_css .= isset( $custom_colors[ $key ] )
+						? self::custom_color_css( $key, $var, $compat, $color )
+						: self::css_overwrite( $key, $var, $compat, $color );
 				}
 			}
 		}
@@ -163,10 +179,10 @@ class CSS_Generator {
 				$css .= '--bs-body-color: ' . esc_attr( $theme_settings['color']['text'] ) . ';';
 			}
 
-			if ( ! empty( $theme_settings['elements']['link']['color']['text'] ) ) {
+			if ( ! empty( $theme_settings['elements']['link']['color']['text'] ) && self::is_defined_preset_color( $theme_settings['elements']['link']['color']['text'] ) ) {
 				$css .= '--bs-link-color: ' . esc_attr( $theme_settings['elements']['link']['color']['text'] ) . ';';
 			}
-			if ( ! empty( $theme_settings['elements']['link'][':hover']['color']['text'] ) ) {
+			if ( ! empty( $theme_settings['elements']['link'][':hover']['color']['text'] ) && self::is_defined_preset_color( $theme_settings['elements']['link'][':hover']['color']['text'] ) ) {
 				$css .= '--bs-link-hover-color: ' . esc_attr( $theme_settings['elements']['link'][':hover']['color']['text'] ) . ';';
 			}
 
@@ -229,7 +245,34 @@ class CSS_Generator {
 	}
 
 	/**
+	 * Check that a color pointing at a palette preset names one that exists.
+	 *
+	 * Links read --bs-link-color directly, so a stale reference, such as a preset
+	 * dropped from the palette, would make every link inherit the text color.
+	 *
+	 * @param string $color Color value from Global Styles.
+	 * @return bool False only for a reference to a palette color that is not defined.
+	 */
+	private static function is_defined_preset_color( string $color ): bool {
+		if ( ! preg_match( '/^var(?::preset\|color\||\(--wp--preset--color--)([a-z0-9-]+)\)?$/', $color, $matches ) ) {
+			return true;
+		}
+
+		$palette = wp_get_global_settings( [ 'color', 'palette' ] );
+		$slugs   = [];
+
+		foreach ( (array) $palette as $origin ) {
+			$slugs = array_merge( $slugs, wp_list_pluck( (array) $origin, 'slug' ) );
+		}
+
+		return in_array( $matches[1], $slugs, true );
+	}
+
+	/**
 	 * Build the CSS to overwrite a Bootstrap color variable.
+	 *
+	 * The brand colors only need the variable, as the stylesheet mixes every shade
+	 * from it. Any other color still gets its classes written out here.
 	 *
 	 * @param string      $type         Color type (primary, secondary, etc.).
 	 * @param string      $color_code   Color code or CSS variable.
@@ -252,19 +295,21 @@ class CSS_Generator {
 		$is_var    = strpos( $color_code, 'var' ) !== false;
 		$is_custom = strpos( $type, 'custom-' ) !== false;
 
+		// Callers may pass only a hex color, with no separate value to derive from.
+		$hex = '' !== $hex ? $hex : $color_code;
 		$rgb = self::hex_to_rgb( $hex );
 
-		if ( $compatibility === true || $compatibility === 1 ) {
-			$compatibility = '.bsui';
-		} elseif ( ! $compatibility ) {
-			$compatibility = '';
-		} else {
-			$compatibility = esc_attr( $compatibility );
-		}
+		$compatibility = self::selector_scope( $compatibility );
+		$prefix        = $compatibility ? $compatibility . ' ' : '';
+		$type          = sanitize_html_class( $type );
 
-		$prefix = $compatibility ? $compatibility . ' ' : '';
-		$type   = sanitize_html_class( $type );
-		$output = '';
+		// Set on the root, where the stylesheet mixes the subtle and emphasis shades
+		// from it, and on every color mode scope, which repeats the compiled value.
+		$output = ':root,[data-bs-theme] {--bs-' . esc_attr( $type ) . ': ' . $color_code . '; --bs-' . esc_attr( $type ) . '-rgb: ' . $rgb . '; }';
+
+		if ( in_array( $type, self::RUNTIME_COLORS, true ) ) {
+			return $output . self::contrast_text_css( $type, $hex, $prefix );
+		}
 
 		$selectors = [
 			".btn-{$type}"                                              => [ 'b', 'o' ],
@@ -281,30 +326,7 @@ class CSS_Generator {
 			".text-{$type}"                                             => [ 'c' ],
 		];
 
-		if ( $type === 'primary' ) {
-			$selectors += [
-				'a'                            => [ 'c' ],
-				'.btn-link'                    => [ 'c' ],
-				'.dropdown-item.active'        => [ 'b' ],
-				'.nav-pills .nav-link.active'  => [ 'b' ],
-				'.nav-pills .show>.nav-link'   => [ 'b' ],
-				'.page-link'                   => [ 'c' ],
-				'.page-item.active .page-link' => [ 'b', 'o' ],
-				'.progress-bar'                => [ 'b' ],
-				'.list-group-item.active'      => [ 'b', 'o' ],
-			];
-		}
-
-		if ( $type === 'primary' ) {
-			$output .= 'html body {--bs-link-hover-color: rgba(var(--bs-' . esc_attr( $type ) . '-rgb), .75); --bs-link-color: var(--bs-' . esc_attr( $type ) . '); }';
-			$output .= $prefix . ' .breadcrumb{--bs-breadcrumb-item-active-color: ' . $color_code . ';  }';
-			$output .= $prefix . ' .navbar { --bs-nav-link-hover-color: ' . $color_code . '; --bs-navbar-hover-color: ' . $color_code . '; --bs-navbar-active-color: ' . $color_code . '; }';
-			$output .= $prefix . ' a{color: var(--bs-' . esc_attr( $type ) . ');}';
-			$output .= $prefix . ' .text-primary{color: var(--bs-' . esc_attr( $type ) . ') !important;}';
-			$output .= $prefix . ' .dropdown-menu{--bs-dropdown-link-hover-color: var(--bs-' . esc_attr( $type ) . '); --bs-dropdown-link-active-color: var(--bs-' . esc_attr( $type ) . ');}';
-		}
-
-		$output .= $prefix . ' .link-' . esc_attr( $type ) . ' {color: var(--bs-' . esc_attr( $type ) . '-rgb) !important;}';
+		$output .= $prefix . ' .link-' . esc_attr( $type ) . ' {color: var(--bs-' . esc_attr( $type ) . ') !important;}';
 		$output .= $prefix . ' .link-' . esc_attr( $type ) . ':hover {color: rgba(var(--bs-' . esc_attr( $type ) . '-rgb), .8) !important;}';
 
 		$output .= $prefix . ' .btn-' . esc_attr( $type ) . '{';
@@ -313,7 +335,7 @@ class CSS_Generator {
 		--bs-btn-border-color: ' . $color_code . ';
 		--bs-btn-hover-bg: rgba(var(--bs-' . esc_attr( $type ) . '-rgb), .9);
 		--bs-btn-hover-border-color: rgba(var(--bs-' . esc_attr( $type ) . '-rgb), .9);
-		--bs-btn-focus-shadow-rgb: --bs-' . esc_attr( $type ) . '-rgb;
+		--bs-btn-focus-shadow-rgb: var(--bs-' . esc_attr( $type ) . '-rgb);
 		--bs-btn-active-bg: rgba(var(--bs-' . esc_attr( $type ) . '-rgb), .9);
 		--bs-btn-active-border-color: rgba(var(--bs-' . esc_attr( $type ) . '-rgb), .9);
 		--bs-btn-active-shadow: unset;
@@ -328,7 +350,7 @@ class CSS_Generator {
 		--bs-btn-border-color: ' . $color_code . ';
 		--bs-btn-hover-bg: rgba(var(--bs-' . esc_attr( $type ) . '-rgb), .9);
 		--bs-btn-hover-border-color: rgba(var(--bs-' . esc_attr( $type ) . '-rgb), .9);
-		--bs-btn-focus-shadow-rgb: --bs-' . esc_attr( $type ) . '-rgb;
+		--bs-btn-focus-shadow-rgb: var(--bs-' . esc_attr( $type ) . '-rgb);
 		--bs-btn-active-bg: rgba(var(--bs-' . esc_attr( $type ) . '-rgb), .9);
 		--bs-btn-active-border-color: rgba(var(--bs-' . esc_attr( $type ) . '-rgb), .9);
 		--bs-btn-active-shadow: unset;
@@ -337,11 +359,12 @@ class CSS_Generator {
 		';
 		$output .= '}';
 
+		// The compiled text color was picked for the default; keep the text readable on
+		// the new color.
+		$output .= self::contrast_text_css( $type, $hex, $prefix );
+
 		$output .= $prefix . ' .btn-' . esc_attr( $type ) . ':hover{';
 		$output .= ' box-shadow: 0 0.25rem 0.25rem 0.125rem rgb(var(--bs-' . esc_attr( $type ) . '-rgb), .1), 0 0.375rem 0.75rem -0.125rem rgb(var(--bs-' . esc_attr( $type ) . '-rgb) , .4);}';
-
-		$output .= 'html body {--bs-' . esc_attr( $type ) . ': ' . $color_code . '; }';
-		$output .= 'html body {--bs-' . esc_attr( $type ) . '-rgb: ' . $rgb . '; }';
 
 		if ( $is_custom ) {
 			$color      = [];
@@ -395,6 +418,120 @@ class CSS_Generator {
 		$output .= $prefix . " .alert-{$type} {--bs-alert-bg: rgba(var(--bs-{$type}-rgb), .1 ) !important;--bs-alert-border-color: rgba(var(--bs-{$type}-rgb), .25 ) !important;--bs-alert-color: rgba(var(--bs-{$type}-rgb), 1 ) !important;} ";
 
 		return $output;
+	}
+
+	/**
+	 * Build the CSS for a color the user added to the palette.
+	 *
+	 * The same rules the stylesheet compiles for a brand color (see _color-runtime.scss,
+	 * partials/_colors.scss and the brand loop in components/_buttons.scss), written
+	 * against this color's variable, so its shades follow it live in the editor too.
+	 *
+	 * @param string      $type          Color slug.
+	 * @param string      $color_code    Color value or CSS variable.
+	 * @param bool|string $compatibility Compatibility mode.
+	 * @param string      $hex           Saved color value.
+	 * @return string Generated CSS.
+	 */
+	public static function custom_color_css( string $type, string $color_code, $compatibility, string $hex = '' ): string {
+		$color_code = self::sanitize_css_color( $color_code );
+
+		if ( '' === $color_code ) {
+			return '';
+		}
+
+		$hex    = '' !== $hex ? $hex : $color_code;
+		$scope  = self::selector_scope( $compatibility );
+		$p      = $scope ? $scope . ' ' : '';
+		$type   = sanitize_html_class( $type );
+		$var    = 'var(--bs-' . $type . ')';
+		$hover  = 'color-mix(in srgb,' . $var . ',#000 20%)';
+		$tinted = 'color-mix(in srgb,' . $var . ',#fff var(--bs-text-tint,0%))';
+		$text   = sanitize_hex_color( $hex ) ? self::contrast_text_color( $hex ) : '#fff';
+		$focus  = 'var(--bs-' . $type . '-rgb)';
+
+		return ':root,[data-bs-theme]{--bs-' . $type . ':' . $color_code . ';--bs-' . $type . '-rgb:' . self::hex_to_rgb( $hex ) . '}'
+			. $p . '.btn-' . $type . '{--bs-btn-color:' . $text . ';--bs-btn-bg:' . $var . ';--bs-btn-border-color:' . $var . ';--bs-btn-hover-color:' . $text . ';--bs-btn-hover-bg:' . $hover . ';--bs-btn-hover-border-color:' . $hover . ';--bs-btn-focus-shadow-rgb:' . $focus . ';--bs-btn-active-color:' . $text . ';--bs-btn-active-bg:' . $hover . ';--bs-btn-active-border-color:' . $hover . ';--bs-btn-disabled-color:' . $text . ';--bs-btn-disabled-bg:' . $var . ';--bs-btn-disabled-border-color:' . $var . '}'
+			. $p . '.btn-outline-' . $type . '{--bs-btn-color:' . $tinted . ';--bs-btn-border-color:' . $tinted . ';--bs-btn-hover-color:' . $text . ';--bs-btn-hover-bg:' . $var . ';--bs-btn-hover-border-color:' . $var . ';--bs-btn-focus-shadow-rgb:' . $focus . ';--bs-btn-active-color:' . $text . ';--bs-btn-active-bg:' . $var . ';--bs-btn-active-border-color:' . $var . ';--bs-btn-disabled-color:' . $tinted . ';--bs-btn-disabled-border-color:' . $tinted . '}'
+			. $p . '.text-' . $type . '{color:color-mix(in srgb,' . $tinted . ' calc(var(--bs-text-opacity,1)*100%),transparent)!important}'
+			. $p . '.link-' . $type . '{color:' . $tinted . '!important;text-decoration-color:' . $tinted . '!important}'
+			. $p . '.bg-' . $type . '{background-color:color-mix(in srgb,' . $var . ' calc(var(--bs-bg-opacity,1)*100%),transparent)!important;fill:' . $var . '}'
+			. $p . '.text-bg-' . $type . '{color:' . $text . '!important;background-color:color-mix(in srgb,' . $var . ' calc(var(--bs-bg-opacity,1)*100%),transparent)!important}'
+			. $p . '.border-' . $type . '{border-color:color-mix(in srgb,' . $var . ' calc(var(--bs-border-opacity,1)*100%),transparent)!important}';
+	}
+
+	/**
+	 * Resolve the compatibility setting to the selector generated rules are scoped to.
+	 *
+	 * @param bool|string|int $compatibility True or 1 for the .bsui wrapper, false for
+	 *                                       none, or a selector.
+	 * @return string Selector, or an empty string for none.
+	 */
+	private static function selector_scope( $compatibility ): string {
+		if ( true === $compatibility || 1 === $compatibility ) {
+			return '.bsui';
+		}
+
+		return $compatibility ? esc_attr( (string) $compatibility ) : '';
+	}
+
+	/**
+	 * Text color rules for a brand color that is not the compiled default.
+	 *
+	 * The stylesheet picks white or dark text for its own colors at compile time;
+	 * CSS cannot yet pick it for a color only known at runtime, so it is worked out
+	 * here from the saved value. The compiled defaults are left to the stylesheet.
+	 *
+	 * @param string $type   Color slug.
+	 * @param string $hex    Saved color value.
+	 * @param string $prefix Selector prefix, with a trailing space when set.
+	 * @return string Generated CSS.
+	 */
+	private static function contrast_text_css( string $type, string $hex, string $prefix ): string {
+		$hex      = (string) sanitize_hex_color( $hex );
+		$compiled = SettingsOrchestrator::get_colors( true );
+
+		if ( '' === $hex || ( isset( $compiled[ $type ] ) && strtolower( $compiled[ $type ] ) === strtolower( $hex ) ) ) {
+			return '';
+		}
+
+		$text = self::contrast_text_color( $hex );
+
+		return $prefix . '.btn-' . $type . '{--bs-btn-color:' . $text . ';--bs-btn-hover-color:' . $text . ';--bs-btn-active-color:' . $text . ';--bs-btn-disabled-color:' . $text . '}'
+			. $prefix . '.btn-outline-' . $type . '{--bs-btn-hover-color:' . $text . ';--bs-btn-active-color:' . $text . '}'
+			. $prefix . '.text-bg-' . $type . '{color:' . $text . ' !important}';
+	}
+
+	/**
+	 * Pick white or black text for a background color, the way Bootstrap's
+	 * color-contrast() does: white when it reaches WCAG AA (4.5:1), else black when
+	 * that does, else whichever contrasts more.
+	 *
+	 * @param string $hex Background color as a hex value.
+	 * @return string '#fff' or '#000'.
+	 */
+	public static function contrast_text_color( string $hex ): string {
+		$channels = array_map(
+			static function ( $value ) {
+				$value /= 255;
+				return $value <= 0.03928 ? $value / 12.92 : ( ( $value + 0.055 ) / 1.055 ) ** 2.4;
+			},
+			array_map( 'intval', explode( ',', self::hex_to_rgb( $hex ) ) )
+		);
+
+		$luminance = 0.2126 * $channels[0] + 0.7152 * $channels[1] + 0.0722 * $channels[2];
+		$on_white  = 1.05 / ( $luminance + 0.05 );
+		$on_black  = ( $luminance + 0.05 ) / 0.05;
+
+		if ( $on_white > 4.5 ) {
+			return '#fff';
+		}
+
+		if ( $on_black > 4.5 ) {
+			return '#000';
+		}
+
+		return $on_white >= $on_black ? '#fff' : '#000';
 	}
 
 	/**

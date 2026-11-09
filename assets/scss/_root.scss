@@ -3,11 +3,6 @@
 :root,
 {
 
-  // Link color
-  --#{$prefix}link-color: var(--#{$prefix}info);
-  --#{$prefix}link-color-rgb: var(--#{$prefix}info-rgb);
-  --#{$prefix}link-hover-color: var(--#{$prefix}info);
-  --#{$prefix}link-hover-color-rgb: var(--#{$prefix}info-rgb);
   --#{$prefix}component-hover-color: #{$component-hover-color};
 
   // Common component colors
@@ -34,12 +29,6 @@
 
 @if $enable-dark-mode {
   @include color-mode(dark, true) {
-
-    // Link color
-    --#{$prefix}link-color: var(--#{$prefix}info);
-    --#{$prefix}link-color-rgb: var(--#{$prefix}info-rgb);
-    --#{$prefix}link-hover-color: var(--#{$prefix}info);
-    --#{$prefix}link-hover-color-rgb: var(--#{$prefix}info-rgb);
 
     // Common component colors
     --#{$prefix}component-color: #{$component-color-dark};
