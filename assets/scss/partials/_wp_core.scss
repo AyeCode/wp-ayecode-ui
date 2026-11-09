@@ -216,8 +216,18 @@ input[type=checkbox], input[type=radio] {
     &:checked::before {
       content: none;
     }
+
+    // Bootstrap 5.3 draws the tick and the radio dot from a variable set on
+    // .form-check-input (0,2,0). wp-admin's forms.css sets the shorthand
+    // `background` on input[type=checkbox]:checked (0,2,1), which wins and
+    // resets background-image to none, so the box renders without a mark.
+    // Restate the image at a specificity above the core rule.
+    &:checked {
+      background-image: var(--bs-form-check-bg-image);
+    }
   }
 }
+
 
 // choices JS
 .choices__input{
