@@ -3,6 +3,7 @@
 All notable changes to the AyeCode UI will be documented in this file.
 
 ## [3.0.3-beta] - 2026-TBD
+- Performance section on the settings page, shown only when the BlockStrap theme and BlockStrap Blocks are active, with two front end switches, both off by default. Front end widgets: skip WordPress's 18 built-in widgets on visitor pages of the block theme, about 120 KB a page. Front end core blocks: register only the ticked core blocks, defaulting to the 53 the theme, plugin, kits and GeoDirectory use, about 560 KB a page; a block met on the front end that is not ticked renders its saved HTML, is recorded, and the settings page and an admin notice offer a one click enable. Admin, REST, AJAX, WP-CLI and Customizer previews always register everything - ADDED
 - Overlay classes are back: img-overlay, img-gradient-overlay and content-overlay, with the tint on a --bs-img-overlay-rgb custom property, and new mask-fade-x, mask-fade-start and mask-fade-end classes that fade an element's inline edges through a mask, direction aware, with the width on --bs-mask-fade - ADDED
 - Carousel arrows arg takes bottom, a centred row below the slides with the dots between the two buttons - ADDED
 - Carousel inside a carousel slide, such as an image slider in a listing card, takes its own swipes: the outer carousel ignores a drag that starts in a nested viewport - FIXED

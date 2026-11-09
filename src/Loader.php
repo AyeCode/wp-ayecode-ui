@@ -30,6 +30,9 @@ class Loader {
 		// Core initialization — reads settings, defines constants, adds body classes.
 		add_action( 'init', array( SettingsOrchestrator::instance(), 'init' ) );
 
+		// Front end performance switches for the BlockStrap setup; hooks before init.
+		Performance::instance()->register_hooks();
+
 		// Register settings with WordPress.
 		add_action( 'admin_init', array( SettingsOrchestrator::instance(), 'register_settings' ) );
 
@@ -59,5 +62,7 @@ class Loader {
 		// Admin notices and fix handler.
 		add_action( 'admin_notices', array( Admin::instance(), 'show_admin_style_notice' ) );
 		add_action( 'admin_init', array( Admin::instance(), 'maybe_fix_admin_settings' ) );
+		add_action( 'admin_init', array( Admin::instance(), 'maybe_enable_seen_blocks' ) );
+		add_action( 'admin_notices', array( Admin::instance(), 'show_seen_blocks_notice' ) );
 	}
 }

@@ -162,14 +162,18 @@ class Settings {
 		$defaults = apply_filters(
 			'ayecode-ui-default-settings',
 			array(
-				'css'            => 'compatibility',
-				'js'             => $js_default,
-				'html_font_size' => '16',
-				'css_backend'    => 'compatibility',
-				'js_backend'     => $js_default,
-				'disable_admin'  => '',
-				'bs_ver'         => '5dm',
-				'load_mode'      => 'auto',
+				'css'                     => 'compatibility',
+				'js'                      => $js_default,
+				'html_font_size'          => '16',
+				'css_backend'             => 'compatibility',
+				'js_backend'              => $js_default,
+				'disable_admin'           => '',
+				'bs_ver'                  => '5dm',
+				'load_mode'               => 'auto',
+				// Front end performance switches (BlockStrap setup only), see Performance.
+				'frontend_widgets'        => 'off',
+				'frontend_blocks'         => 'off',
+				'frontend_blocks_enabled' => Performance::DEFAULT_BLOCKS,
 			),
 			$db_settings
 		);

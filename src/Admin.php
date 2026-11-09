@@ -114,7 +114,8 @@ class Admin extends \AyeCode\SettingsFramework\Settings_Framework {
 		$version          = AYECODE_UI_VERSION;
 
 		return array(
-			'sections' => array(
+			// array_filter: the Performance section is empty on sites where it does not apply.
+			'sections' => array_values( array_filter( array(
 				array(
 					'id'          => 'bootstrap',
 					'name'        => __( 'Bootstrap Version', 'ayecode-connect' ),
@@ -159,6 +160,8 @@ class Admin extends \AyeCode\SettingsFramework\Settings_Framework {
 						),
 					),
 				),
+
+				$this->performance_section( $current_settings ),
 
 				array(
 					'id'     => 'frontend',
@@ -283,7 +286,7 @@ class Admin extends \AyeCode\SettingsFramework\Settings_Framework {
 						),
 					),
 				),
-			),
+			) ) ),
 		);
 	}
 
@@ -302,6 +305,128 @@ class Admin extends \AyeCode\SettingsFramework\Settings_Framework {
 			'css_backend'    => 'compatibility',
 			'js_backend'     => 'core-popper',
 			'disable_admin'  => '',
+		);
+	}
+
+	/**
+	 * The Performance section: two front end switches for the BlockStrap setup.
+	 *
+	 * Empty on any other setup, so the section does not appear there.
+	 *
+	 * @param array $current_settings Saved settings.
+	 * @return array Section config, or an empty array.
+	 */
+	private function performance_section( array $current_settings ): array {
+		if ( ! Performance::is_available() ) {
+			return array();
+		}
+
+		$seen   = Performance::seen_blocks();
+		$fields = array(
+			array(
+				'id'      => 'frontend_widgets',
+				'type'    => 'select',
+				'label'   => __( 'Front end widgets', 'ayecode-connect' ),
+				'desc'    => __( 'Skip loading WordPress\'s 18 built-in widgets on the front end. A block theme renders no widget area, so they are built on every page for nothing (about 120 KB). Leave off if this site uses a widget area or the Legacy Widget block. The admin, the Customizer and the REST API always load them.', 'ayecode-connect' ),
+				'options' => array(
+					'off' => __( 'Off (WordPress default)', 'ayecode-connect' ),
+					'on'  => __( 'On - skip the built-in widgets', 'ayecode-connect' ),
+				),
+				'default' => 'off',
+			),
+			array(
+				'id'      => 'frontend_blocks',
+				'type'    => 'select',
+				'label'   => __( 'Front end core blocks', 'ayecode-connect' ),
+				'desc'    => __( 'Register only the core blocks ticked below on the front end. WordPress registers all 116 on every page, with a stylesheet handle and theme.json data each, while a BlockStrap page uses a few dozen (about 560 KB a page). A block that is not ticked still saves in the editor; on the page it renders its saved HTML without its block styles, and a dynamic block such as Latest Posts renders nothing. Blocks met on the front end that are not ticked are listed below. The editor and the REST API always register every block.', 'ayecode-connect' ),
+				'options' => array(
+					'off' => __( 'Off (WordPress default)', 'ayecode-connect' ),
+					'on'  => __( 'On - only the ticked blocks', 'ayecode-connect' ),
+				),
+				'default' => 'off',
+			),
+			array(
+				'id'      => 'frontend_blocks_enabled',
+				'type'    => 'checkbox_group',
+				'label'   => __( 'Core blocks to register', 'ayecode-connect' ),
+				'desc'    => __( 'The ticked blocks are the ones the BlockStrap theme, the BlockStrap Blocks plugin, the design kits and GeoDirectory use. The skip link is always registered: it is a core feature, not content.', 'ayecode-connect' ),
+				'options' => Performance::core_block_choices(),
+				'default' => Performance::DEFAULT_BLOCKS,
+			),
+		);
+
+		if ( ! empty( $seen ) ) {
+			$enable_url = wp_nonce_url( admin_url( 'options-general.php?page=' . $this->page_slug . '&aui-enable-seen-blocks=1' ), 'aui-enable-seen-blocks', 'nonce' );
+			$fields[]   = array(
+				'type'        => 'alert',
+				'label'       => __( 'Blocks seen on the front end that are not registered', 'ayecode-connect' ),
+				'description' => sprintf(
+					/* translators: 1: comma separated block names, 2: URL that enables them. */
+					__( '%1$s. <a href="%2$s">Enable these blocks</a>.', 'ayecode-connect' ),
+					esc_html( implode( ', ', $seen ) ),
+					esc_url( $enable_url )
+				),
+				'alert_type'  => 'warning',
+			);
+		}
+
+		return array(
+			'id'     => 'performance',
+			'name'   => __( 'Performance', 'ayecode-connect' ),
+			'icon'   => 'fa-solid fa-gauge-high',
+			'fields' => $fields,
+		);
+	}
+
+	/**
+	 * Handle the "enable these blocks" link on the settings page.
+	 *
+	 * @return void
+	 */
+	public function maybe_enable_seen_blocks(): void {
+		if ( ! isset( $_GET['aui-enable-seen-blocks'], $_GET['nonce'] ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['nonce'] ) ), 'aui-enable-seen-blocks' ) ) {
+			return;
+		}
+
+		Performance::enable_seen_blocks();
+
+		wp_safe_redirect( admin_url( 'options-general.php?page=' . $this->page_slug ) );
+		exit;
+	}
+
+	/**
+	 * Tell the admin when the front end met core blocks that are not registered.
+	 *
+	 * @return void
+	 */
+	public function show_seen_blocks_notice(): void {
+		if ( ! Performance::is_available() || ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$seen = Performance::seen_blocks();
+		if ( empty( $seen ) ) {
+			return;
+		}
+
+		$settings_url = admin_url( 'options-general.php?page=' . $this->page_slug );
+		$enable_url   = wp_nonce_url( $settings_url . '&aui-enable-seen-blocks=1', 'aui-enable-seen-blocks', 'nonce' );
+
+		printf(
+			'<div class="notice notice-warning"><p>%s <a href="%s">%s</a> | <a href="%s">%s</a></p></div>',
+			sprintf(
+				/* translators: %s: comma separated block names. */
+				esc_html__( 'AyeCode UI: these core blocks rendered on the front end without being registered, so they show without their block styles: %s.', 'ayecode-connect' ),
+				esc_html( implode( ', ', $seen ) )
+			),
+			esc_url( $enable_url ),
+			esc_html__( 'Enable them', 'ayecode-connect' ),
+			esc_url( $settings_url ),
+			esc_html__( 'Settings', 'ayecode-connect' )
 		);
 	}
 
