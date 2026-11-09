@@ -142,10 +142,17 @@ class AssetManager {
 		wp_register_script( 'flatpickr', $this->url . 'assets/js/flatpickr.min.js', [], $this->version, true );
 
 		wp_register_script( 'iconpicker-react', $this->url . 'assets/libs/universal-icon-picker/js/universal-icon-picker-react.js', [], $this->version, true );
-		wp_add_inline_script( 'iconpicker-react', $this->inline_script_iconpicker(), 'before' );
-
 		wp_register_script( 'iconpicker', $this->url . 'assets/libs/universal-icon-picker/js/universal-icon-picker.js', [], $this->version, true );
-		wp_add_inline_script( 'iconpicker', $this->inline_script_iconpicker(), 'before' );
+
+		// The picker configuration asks every icon library for its settings, which scans
+		// the custom icons folder. In wp-admin the editor needs it on the page; on the
+		// front end it is attached only when a form has enqueued the picker, right
+		// before the footer scripts print.
+		if ( is_admin() ) {
+			$this->add_iconpicker_config();
+		} else {
+			add_action( 'wp_print_footer_scripts', [ $this, 'add_iconpicker_config' ], 1 );
+		}
 
 		wp_register_script( 'sd-dynamic-data-grammar', $this->url . 'assets/libs/universal-icon-picker/js/dynamic-data-grammar.js', [], $this->version, true );
 		wp_register_script( 'sd-dynamic-data-button', $this->url . 'assets/libs/universal-icon-picker/js/dynamic-data-picker-react.js', [ 'wp-element', 'wp-api-fetch', 'wp-data', 'wp-i18n', 'sd-dynamic-data-grammar' ], $this->version, true );
@@ -345,8 +352,18 @@ class AssetManager {
 		if ( $settings[ $js_setting ] === 'core-popper' ) {
 			is_admin() ? wp_enqueue_script( 'bootstrap-js-bundle', '', null, null, true ) : wp_enqueue_script( 'bootstrap-js-bundle' );
 
+			// Defer the bundle on the front end so it leaves the critical path. WordPress only
+			// honours the strategy when nothing is attached after the script, so the inline
+			// code goes before it; it is all DOMContentLoaded and load listeners, and deferred
+			// scripts run before DOMContentLoaded, so the order does not matter to it. Any
+			// third party that attaches after the bundle, or depends on it with a blocking
+			// script, makes WordPress fall back to a blocking tag on its own.
+			if ( ! is_admin() ) {
+				wp_script_add_data( 'bootstrap-js-bundle', 'strategy', 'defer' );
+			}
+
 			$script = $this->inline_script();
-			wp_add_inline_script( 'bootstrap-js-bundle', $script );
+			wp_add_inline_script( 'bootstrap-js-bundle', $script, 'before' );
 		} elseif ( $settings[ $js_setting ] === 'popper' ) {
 			wp_enqueue_script( 'bootstrap-js-popper' );
 			$load_inline = true;
@@ -581,6 +598,30 @@ class AssetManager {
 			/* translators: 1: first slide number, 2: last slide number, 3: total slides. */
 			'lives'         => __( 'Showing slides %1$s to %2$s of %3$s', 'ayecode-connect' ),
 		);
+	}
+
+	/**
+	 * Attach the picker configuration to the picker scripts that will print.
+	 *
+	 * In wp-admin both scripts get it as they are registered. On the front end this
+	 * runs before the footer scripts print and only serves the handles enqueued.
+	 *
+	 * @return void
+	 */
+	public function add_iconpicker_config(): void {
+		$config = null;
+
+		foreach ( [ 'iconpicker-react', 'iconpicker' ] as $handle ) {
+			if ( ! is_admin() && ! wp_script_is( $handle, 'enqueued' ) ) {
+				continue;
+			}
+
+			if ( null === $config ) {
+				$config = $this->inline_script_iconpicker();
+			}
+
+			wp_add_inline_script( $handle, $config, 'before' );
+		}
 	}
 
 	/**
