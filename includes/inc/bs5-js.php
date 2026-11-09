@@ -60,7 +60,7 @@
 				class="nav-link greedy-nav-link dropdown-toggle"
 				role="button"
 				aria-expanded="false">
-		<i class="fas fa-ellipsis-h"></i>
+		<?php echo ayecode_get_icon( 'fas fa-ellipsis-h' ); // Through the helper so it renders in SVG mode. ?>
 		<span class="greedy-count badge bg-dark rounded-pill"></span>
 		</button>
 		<ul class="greedy-links dropdown-menu dropdown-menu-end${extraDD}"></ul>
@@ -327,7 +327,7 @@
 			for (var i in elements) {
 				var $el = elements[i];
 				if (typeof $el === 'object') {
-					$el.innerHTML = '<i class="far fa-clock"></i> ' + timer($el.getAttribute('title') || $el.getAttribute('datetime'));
+					$el.innerHTML = <?php echo wp_json_encode( ayecode_get_icon( 'far fa-clock' ) . ' ' ); ?> + timer($el.getAttribute('title') || $el.getAttribute('datetime'));
 				}
 			}
 		}
@@ -416,7 +416,7 @@
 	 */
 	async function aui_render_icon_from_class(iconClass, callback) {
 		if (!iconClass || !iconClass.trim()) {
-			callback('<i class="fas fa-icons"></i>');
+			callback(<?php echo wp_json_encode( ayecode_get_icon( 'fas fa-icons' ) ); ?>);
 			return;
 		}
 
@@ -538,7 +538,7 @@
 						addon.innerHTML = iconHtml;
 					});
 				} else {
-					addon.innerHTML = '<i class="fas fa-icons"></i>'; // Fallback icon
+					addon.innerHTML = <?php echo wp_json_encode( ayecode_get_icon( 'fas fa-icons' ) ); ?>; // Fallback icon
 				}
 
 				// Instantiate our new AyeCodeIconPicker on the addon
