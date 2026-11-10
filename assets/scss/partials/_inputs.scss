@@ -15,3 +15,26 @@
     padding-left: 2.1rem;
   }
 }
+
+// Switch sizes, from aui()->input( [ 'switch' => 'sm' ] ) and the like: the switch
+// height and width, and the line height that centres the label beside it.
+$custom-switch-sizes: (
+  sm: (height: 1rem, width: 1.75rem, line-height: 1rem),
+  md: (height: 1.3rem, width: 2.35rem, line-height: 1.8rem),
+  lg: (height: 1.5rem, width: 2.75rem, line-height: 1.8rem),
+  xl: (height: 2rem, width: 3.75rem, line-height: 2.4rem),
+);
+
+@each $size, $switch in $custom-switch-sizes {
+  .form-switch.custom-switch-#{$size} {
+    min-height: map-get($switch, height);
+    padding-left: map-get($switch, width) + .625rem;
+    line-height: map-get($switch, line-height);
+
+    .form-check-input {
+      width: map-get($switch, width);
+      height: map-get($switch, height);
+      margin-left: -(map-get($switch, width) + .625rem);
+    }
+  }
+}

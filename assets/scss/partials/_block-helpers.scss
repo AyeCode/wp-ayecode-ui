@@ -1,0 +1,35 @@
+// Classes the block settings write that have no Bootstrap utility.
+
+// Scrollbars > IOS Style (StyleFields::scrollbars): a thin scrollbar with a faint track.
+// Chrome and Firefox take the standard properties (Chrome then ignores the
+// -webkit- rules); Safari only knows the -webkit- ones.
+.scrollbars-ios {
+  --#{$prefix}scrollbar-thumb: color-mix(in srgb, var(--#{$prefix}body-color) 30%, transparent);
+  --#{$prefix}scrollbar-track: color-mix(in srgb, var(--#{$prefix}body-color) 6%, transparent);
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--#{$prefix}scrollbar-thumb) var(--#{$prefix}scrollbar-track);
+
+  &::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--#{$prefix}scrollbar-track);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--#{$prefix}scrollbar-thumb);
+    border-radius: 2px;
+  }
+}
+
+// Background image > Fixed: the block sets background-attachment: fixed inline. iOS
+// Safari sizes a fixed cover image to the whole page, so there it scrolls instead.
+// -webkit-touch-callout is only supported by iOS Safari.
+@supports (-webkit-touch-callout: none) {
+  .bg-image-fixed {
+    background-attachment: scroll !important;
+  }
+}
