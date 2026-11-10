@@ -359,7 +359,9 @@
 		}
 
 		function play() {
-			if ( motor() && ! user_stopped ) {
+			// With every slide in view Embla has one snap and nothing to move to. The plugins skip
+			// their setup on one snap but still throw from play(), so it is not called.
+			if ( motor() && ! user_stopped && api.snapList().length > 1 ) {
 				motor().play();
 			}
 		}
@@ -448,12 +450,26 @@
 		emit( root, 'init', { carousel: api, index: api.selectedSnap() } );
 	}
 
+	/**
+	 * Start one carousel, keeping a failure to that carousel: several start from one observer
+	 * callback, and a throw in the first would leave the rest unstarted.
+	 */
+	function start_carousel( root ) {
+		try {
+			create( root );
+		} catch ( e ) {
+			if ( window.console ) {
+				window.console.error( 'aui-carousel: could not start a carousel', root, e );
+			}
+		}
+	}
+
 	var lazy = 'IntersectionObserver' in window
 		? new IntersectionObserver( function ( entries ) {
 			entries.forEach( function ( entry ) {
 				if ( entry.isIntersecting ) {
 					lazy.unobserve( entry.target );
-					create( entry.target );
+					start_carousel( entry.target );
 				}
 			} );
 		}, { rootMargin: '200px' } )
@@ -481,7 +497,7 @@
 			if ( lazy ) {
 				lazy.observe( node );
 			} else {
-				create( node );
+				start_carousel( node );
 			}
 		} );
 	}

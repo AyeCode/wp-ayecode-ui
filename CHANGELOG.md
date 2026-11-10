@@ -3,6 +3,8 @@
 All notable changes to the AyeCode UI will be documented in this file.
 
 ## [3.0.3-beta] - 2026-TBD
+- Carousel with autoplay or auto scroll whose slides all fit in view threw on start (the Embla plugins skip their setup on a single snap but still throw from play), and as the carousels start from one observer callback the throw left every carousel after it on the page dead until the observer fired again; the motor is not started with one snap, and a carousel that fails to start no longer stops the others - FIXED
+- Developer note on the color system in docs/dev/COLORS.md: where colors come from, what the stylesheet mixes and what PHP writes, dark mode, added palette colors and design kits - ADDED
 - In the compatibility and FSE stylesheets links took the compiled primary color instead of the info color, as the Bootstrap :root block those bundles print again at the end reset the link variables; the info mapping now sits in the runtime color partial, which loads after it - FIXED
 - A custom secondary, light or dark color changed the button background but kept the compiled text color, so a dark custom secondary from the Customizer gave gray text on green at about 1.9:1; the button and text-bg text is picked by contrast as for the brand colors - FIXED
 - Colors a design kit adds to the palette reach WordPress as theme colors, so they got no classes and were missing from the block color pickers; any palette color the BlockStrap theme does not define itself is now treated like a user added color, and added colors are also offered as outline options - FIXED
