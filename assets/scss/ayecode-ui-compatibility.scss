@@ -41,8 +41,6 @@
 @import "1-frameworks/bootstrap/tooltip";
 @import "1-frameworks/bootstrap/popover";
 
-// select2 can't be inside wrapper
-@import '1-frameworks/select2/core';
 
 // Runtime color shades, last so they follow every Bootstrap :root block above
 @import "color-runtime";

@@ -18,11 +18,11 @@
 @import "components/toasts";
 @import "components/tooltip";
 @import "components/popover";
-@import "components/carousel";
+//@import "components/carousel"; // Swiper skin, not used: the slider is Embla (aui-carousel)
 @import "components/overlay";
-@import "components/lightbox";
-@import "components/select-box";
-@import "components/scrollbar";
-@import "components/date-picker";
+//@import "components/lightbox"; // GLightbox skin, not used: the lightbox is a Bootstrap modal with Embla
+//@import "components/select-box"; // Choices skin, compiled into choices.css instead
+//@import "components/scrollbar"; // SimpleBar skin, not used
+//@import "components/date-picker"; // flatpickr skin, compiled into flatpickr.css instead
 @import "components/map";
 @import "components/circular-progress";

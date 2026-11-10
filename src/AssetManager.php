@@ -135,10 +135,12 @@ class AssetManager {
 	 * @return void
 	 */
 	public function register_assets(): void {
-		wp_register_style( 'choices', $this->url . 'assets/css/choices.css', [], $this->choices_version );
+		// Both stylesheets carry the vendor styles plus the theme skin, so they are
+		// versioned with this package rather than with the vendor library.
+		wp_register_style( 'choices', $this->url . 'assets/css/choices.css', [], $this->version );
 		wp_register_script( 'choices', $this->url . 'assets/js/choices.min.js', [], $this->choices_version, true );
 
-		wp_register_style( 'flatpickr', $this->url . 'assets/css/flatpickr.min.css', [], $this->version );
+		wp_register_style( 'flatpickr', $this->url . 'assets/css/flatpickr.css', [], $this->version );
 		wp_register_script( 'flatpickr', $this->url . 'assets/js/flatpickr.min.js', [], $this->version, true );
 
 		wp_register_script( 'iconpicker-react', $this->url . 'assets/libs/universal-icon-picker/js/universal-icon-picker-react.js', [], $this->version, true );
@@ -270,12 +272,13 @@ class AssetManager {
 			return;
 		}
 
+		$compatibility = $settings[ $css_setting ] === 'core' ? false : true;
+		wp_enqueue_style( 'ayecode-ui' );
+
+		// After the main stylesheet, so the choices skin prints after Bootstrap's form styles.
 		if ( $this->force_load_select2() ) {
 			wp_enqueue_style( 'choices' );
 		}
-
-		$compatibility = $settings[ $css_setting ] === 'core' ? false : true;
-		wp_enqueue_style( 'ayecode-ui' );
 
 		if ( is_admin() && ( ! empty( $_REQUEST['postType'] ) || SettingsOrchestrator::is_block_editor() ) && ( defined( 'BLOCKSTRAP_VERSION' ) || defined( 'AUI_FSE' ) ) ) {
 			wp_enqueue_style( 'ayecode-ui-fse' );

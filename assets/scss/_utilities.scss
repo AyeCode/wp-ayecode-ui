@@ -175,6 +175,42 @@ $utilities: map-merge(
 );
 
 
+// Spacing steps 6 to 12
+//
+// Bootstrap's spacing stops at 5. The block margin and padding pickers go to 12, and
+// they only ever write single-side classes at three sizes: mobile, tablet and desktop
+// (mt-8, mt-md-8, mt-lg-8). So steps 6 to 12 are added for those classes only, at
+// base, md and lg, instead of extending $spacers, which would add them to every
+// spacing, gap and gutter class at every breakpoint. `breakpoints` is read by our
+// copy of the utilities API (1-frameworks/_utilities-api.scss).
+
+$spacers-extra: (
+  6: $spacer * 4,
+  7: $spacer * 6,
+  8: $spacer * 8,
+  9: $spacer * 10,
+  10: $spacer * 12,
+  11: $spacer * 14,
+  12: $spacer * 16,
+) !default;
+
+$spacers-extra-breakpoints: (xs, md, lg) !default;
+
+$utilities: map-merge(
+  $utilities,
+  (
+    "margin-top-extra": (responsive: true, breakpoints: $spacers-extra-breakpoints, property: margin-top, class: mt, values: $spacers-extra),
+    "margin-end-extra": (responsive: true, breakpoints: $spacers-extra-breakpoints, property: margin-right, class: me, values: $spacers-extra),
+    "margin-bottom-extra": (responsive: true, breakpoints: $spacers-extra-breakpoints, property: margin-bottom, class: mb, values: $spacers-extra),
+    "margin-start-extra": (responsive: true, breakpoints: $spacers-extra-breakpoints, property: margin-left, class: ms, values: $spacers-extra),
+    "padding-top-extra": (responsive: true, breakpoints: $spacers-extra-breakpoints, property: padding-top, class: pt, values: $spacers-extra),
+    "padding-end-extra": (responsive: true, breakpoints: $spacers-extra-breakpoints, property: padding-right, class: pe, values: $spacers-extra),
+    "padding-bottom-extra": (responsive: true, breakpoints: $spacers-extra-breakpoints, property: padding-bottom, class: pb, values: $spacers-extra),
+    "padding-start-extra": (responsive: true, breakpoints: $spacers-extra-breakpoints, property: padding-left, class: ps, values: $spacers-extra),
+  )
+);
+
+
 // Disable :focus / :focus-visible
 
 .focus-none {

@@ -3,6 +3,38 @@
   border-radius: $round-radius !important;
 }
 
+// Subtle buttons, the button form of Bootstrap's subtle colors (bg-*-subtle,
+// text-*-emphasis, border-*-subtle). Those variables already switch with the color
+// mode, so one rule covers light and dark. Hover and active darken toward the
+// emphasis color. Each color only names its three source variables; the button
+// variables are mapped from them once, in one shared rule.
+$subtle-buttons: ();
+
+@each $color in map-keys($theme-colors) {
+  $subtle-buttons: append($subtle-buttons, ".btn-#{$color}-subtle", comma);
+
+  .btn-#{$color}-subtle {
+    --#{$prefix}btn-subtle-color: var(--#{$prefix}#{$color}-text-emphasis);
+    --#{$prefix}btn-subtle-bg: var(--#{$prefix}#{$color}-bg-subtle);
+    --#{$prefix}btn-subtle-border: var(--#{$prefix}#{$color}-border-subtle);
+  }
+}
+
+#{$subtle-buttons} {
+  --#{$prefix}btn-color: var(--#{$prefix}btn-subtle-color);
+  --#{$prefix}btn-bg: var(--#{$prefix}btn-subtle-bg);
+  --#{$prefix}btn-border-color: var(--#{$prefix}btn-subtle-border);
+  --#{$prefix}btn-hover-color: var(--#{$prefix}btn-subtle-color);
+  --#{$prefix}btn-hover-bg: color-mix(in srgb, var(--#{$prefix}btn-subtle-bg), var(--#{$prefix}btn-subtle-color) 12%);
+  --#{$prefix}btn-hover-border-color: var(--#{$prefix}btn-subtle-border);
+  --#{$prefix}btn-active-color: var(--#{$prefix}btn-subtle-color);
+  --#{$prefix}btn-active-bg: color-mix(in srgb, var(--#{$prefix}btn-subtle-bg), var(--#{$prefix}btn-subtle-color) 20%);
+  --#{$prefix}btn-active-border-color: var(--#{$prefix}btn-subtle-border);
+  --#{$prefix}btn-disabled-color: var(--#{$prefix}btn-subtle-color);
+  --#{$prefix}btn-disabled-bg: var(--#{$prefix}btn-subtle-bg);
+  --#{$prefix}btn-disabled-border-color: var(--#{$prefix}btn-subtle-border);
+}
+
 // icon line height
 .btn{
   i{

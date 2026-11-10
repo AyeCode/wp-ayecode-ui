@@ -1,0 +1,13 @@
+// Configuration only, no CSS output: the theme and Bootstrap variables, maps and
+// mixins a vendor skin needs when it is compiled into its own stylesheet (choices.css,
+// flatpickr.css) instead of the main bundle, so it loads only with its script.
+
+@import "user-variables";
+@import "variables";
+@import "variables-dark";
+
+@import "1-frameworks/bootstrap/functions";
+@import "1-frameworks/bootstrap/variables";
+@import "1-frameworks/bootstrap/variables-dark";
+@import "1-frameworks/bootstrap/maps";
+@import "1-frameworks/bootstrap/mixins";

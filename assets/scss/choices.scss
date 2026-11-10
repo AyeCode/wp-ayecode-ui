@@ -419,3 +419,8 @@ $choices-heading-border: #f7f7f7;
 }
 
 /* =====  End of Choices  ====== */
+
+// Theme skin, here rather than in the main bundle so it loads only with the
+// choices script (the 'choices' style handle).
+@import "skin-config";
+@import "components/select-box";

@@ -1,0 +1,9 @@
+// flatpickr date picker: the vendor styles plus the theme skin, loaded only with the
+// flatpickr script (the 'flatpickr' style handle).
+
+// Vendor (flatpickr.min.css)
+@import "1-frameworks/flatpickr/flatpickr";
+
+// Theme skin
+@import "skin-config";
+@import "components/date-picker";

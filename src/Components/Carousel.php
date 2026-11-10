@@ -165,9 +165,10 @@ class Carousel {
 			$arrows = '';
 		}
 
-		// Edge arrows sit a spacer step in from the slide edges: a Bootstrap spacer 0 to 12, or n1 to n12
-		// to push them out past the edges, over the page. Two is the default.
-		$arrow_offset = preg_match( '/^n?(1[0-2]|[0-9])$/', (string) $args['arrow_offset'] ) ? (string) $args['arrow_offset'] : '2';
+		// Edge arrows sit a spacer step in from the slide edges: a spacer step 0 to 12, or n1 to n5 to
+		// push them out past the edges, over the page (there are no negative margin classes past 5, so
+		// an older n6 to n12 falls back to the default). Two is the default.
+		$arrow_offset = preg_match( '/^(1[0-2]|[0-9]|n[1-5])$/', (string) $args['arrow_offset'] ) ? (string) $args['arrow_offset'] : '2';
 
 		$aria_label = $args['aria_label'] ? $args['aria_label'] : __( 'Carousel', 'ayecode-connect' );
 
@@ -351,7 +352,7 @@ class Carousel {
 	 *
 	 * @param string $direction 'prev' or 'next'.
 	 * @param string $placement 'edge', 'hover', 'end' or 'bottom'.
-	 * @param string $offset    Spacer step between an edge arrow and the slide edge, n1 to n12 for outside.
+	 * @param string $offset    Spacer step between an edge arrow and the slide edge, n1 to n5 for outside.
 	 * @return string
 	 */
 	private static function arrow( string $direction, string $placement = 'edge', string $offset = '2' ): string {

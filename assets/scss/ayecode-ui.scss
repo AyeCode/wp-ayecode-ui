@@ -22,11 +22,5 @@
 // WP core (not loaded in index as needs to be outside wrapper)
 @import "partials/wp_core";
 
-// select2 can't be inside wrapper
-//@import '1-frameworks/select2/core';
-
-// choices
-//@import '1-frameworks/choices/choices';
-
 // Runtime color shades, last so they follow every Bootstrap :root block above
 @import "color-runtime";
