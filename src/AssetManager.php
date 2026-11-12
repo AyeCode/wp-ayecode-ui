@@ -770,51 +770,6 @@ class AssetManager {
 	}
 
 	/**
-	 * Get choices/select2 parameters for localization.
-	 *
-	 * @return array Select2 parameters.
-	 */
-	public static function select2_params(): array {
-		$params = [
-			'i18n_select_state_text'    => esc_attr__( 'Select an option&hellip;', 'ayecode-connect' ),
-			'i18n_no_matches'           => _x( 'No matches found', 'enhanced select', 'ayecode-connect' ),
-			'i18n_ajax_error'           => _x( 'Loading failed', 'enhanced select', 'ayecode-connect' ),
-			'i18n_input_too_short_1'    => _x( 'Please enter 1 or more characters', 'enhanced select', 'ayecode-connect' ),
-			'i18n_input_too_short_n'    => _x( 'Please enter %qty% or more characters', 'enhanced select', 'ayecode-connect' ),
-			'i18n_input_too_long_1'     => _x( 'Please delete 1 character', 'enhanced select', 'ayecode-connect' ),
-			'i18n_input_too_long_n'     => _x( 'Please delete %qty% characters', 'enhanced select', 'ayecode-connect' ),
-			'i18n_selection_too_long_1' => _x( 'You can only select 1 item', 'enhanced select', 'ayecode-connect' ),
-			'i18n_selection_too_long_n' => _x( 'You can only select %qty% items', 'enhanced select', 'ayecode-connect' ),
-			'i18n_load_more'            => _x( 'Loading more results&hellip;', 'enhanced select', 'ayecode-connect' ),
-			'i18n_searching'            => _x( 'Searching&hellip;', 'enhanced select', 'ayecode-connect' ),
-		];
-
-		return apply_filters( 'ayecode_ui_select2_params', $params );
-	}
-
-	/**
-	 * Generate choices/select2 locale object.
-	 *
-	 * @return string JSON-encoded select2 locale.
-	 */
-	public static function select2_locale(): string {
-		$params = self::select2_params();
-
-		if ( is_string( $params ) ) {
-			$params = html_entity_decode( $params, ENT_QUOTES, 'UTF-8' );
-		} else {
-			foreach ( (array) $params as $key => $value ) {
-				if ( ! is_scalar( $value ) ) {
-					continue;
-				}
-				$params[ $key ] = html_entity_decode( (string) $value, ENT_QUOTES, 'UTF-8' );
-			}
-		}
-
-		return wp_json_encode( $params );
-	}
-
-	/**
 	 * Generate timeago locale object.
 	 *
 	 * @return string JSON-encoded timeago locale.

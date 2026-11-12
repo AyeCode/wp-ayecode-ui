@@ -3,6 +3,10 @@
 All notable changes to the AyeCode UI will be documented in this file.
 
 ## [3.0.3-beta] - 2026-TBD
+- Iconbox translucent style (iconbox-translucent, a faint wash of the icon color that turns solid on hover) and the icon-box hover invert, both from the icon's own color in light and dark mode; replaces btn-translucent-* - ADDED
+- SVG icons in an iconbox sit at the glyph size inside the box instead of filling it - FIXED
+- text-shadow utility, for light text over an image - ADDED
+- The unused Select2 locale script and AssetManager::select2_params() and select2_locale() - REMOVED
 - Block settings that wrote classes with no styling work again: Scrollbars > IOS Style (scrollbars-ios, a thin scrollbar in light and dark mode), Background image > Fixed on iOS Safari (bg-image-fixed scrolls the image there, which iOS cannot fix), and the switch sizes from aui()->input( [ 'switch' => 'sm' ] ) (custom-switch-sm, md, lg and xl) - FIXED
 - opacity-10, 15, 35, 65, 70, 80 and 90, offered by the block opacity setting but not compiled - FIXED
 - Unused vendor styles dropped from the stylesheets: the Swiper, GLightbox, SimpleBar and noUiSlider skins (the slider and lightbox use Embla, ranges use the native form-range), the old Font Awesome icon picker and, from the compatibility and FSE bundles, the Select2 theme; also the Select2 and icon picker scripts and the stale framework CSS copies. About 9 KB less on the front end and 45 KB less in the compatibility and FSE bundles - REMOVED

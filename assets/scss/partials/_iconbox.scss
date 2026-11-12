@@ -1,47 +1,59 @@
 // Icons
+// Each size sets the box and the glyph size. A font icon is centred by line-height;
+// an SVG icon is the box itself, so padding shrinks its drawing to the glyph size.
+$iconbox-sizes: (
+  extrasmall: (size: 32px, font-size: .9rem),
+  small: (size: 40px, font-size: 1rem),
+  smallmedium: (size: 48px, font-size: 1.4rem),
+  medium: (size: 60px, font-size: 1.8rem),
+  large: (size: 80px, font-size: 2.2rem),
+);
+
 .iconbox {
   border:1px solid;
   text-align:center;
   display:inline-block;
 
-  &.iconextrasmall {
-    width:32px;
-    min-width: 32px;
-    height:32px;
-    line-height:32px;
-    font-size:0.9rem;
+  @each $name, $iconbox in $iconbox-sizes {
+    &.icon#{$name} {
+      width: map-get($iconbox, size);
+      min-width: map-get($iconbox, size);
+      height: map-get($iconbox, size);
+      line-height: map-get($iconbox, size);
+      font-size: map-get($iconbox, font-size);
+    }
   }
+}
 
-  &.iconsmall {
-    width:40px;
-    min-width: 40px;
-    height:40px;
-    line-height:40px;
-    font-size:1rem;
+svg.iconbox {
+  padding: calc((var(--#{$prefix}iconbox-size, 40px) - 1em) / 2);
+
+  @each $name, $iconbox in $iconbox-sizes {
+    &.icon#{$name} {
+      --#{$prefix}iconbox-size: #{map-get($iconbox, size)};
+    }
   }
+}
 
-  &.iconsmallmedium {
-    width:48px;
-    min-width: 48px;
-    height:48px;
-    line-height:48px;
-    font-size:1.4rem;
-  }
+// Translucent: a faint wash of the icon color, solid on hover. In an .icon-box the
+// .icon-box-media icon turns solid when the whole box is hovered instead (the BS Icon
+// Box block's hover invert and translucent styles). Both work from currentColor, so
+// palette and custom colors behave the same. The glyph is whitened with fill for SVG
+// icons and text-fill-color for font icons, which leaves color, and so the
+// background, alone.
+.iconbox-translucent {
+  background-color: color-mix(in srgb, currentColor 10%, transparent);
+}
 
-  &.iconmedium {
-    width:60px;
-    min-width: 60px;
-    height:60px;
-    line-height:60px;
-    font-size:1.8rem;
-  }
+.iconbox-translucent:hover,
+.icon-box:hover .icon-box-media,
+.icon-box.active .icon-box-media,
+.icon-box.show .icon-box-media {
+  background-color: currentColor;
+  -webkit-text-fill-color: rgb(var(--#{$prefix}white-rgb));
 
-  &.iconlarge {
-    width:80px;
-    min-width: 80px;
-    height:80px;
-    line-height:80px;
-    font-size:2.2rem;
+  path {
+    fill: rgb(var(--#{$prefix}white-rgb));
   }
 }
 

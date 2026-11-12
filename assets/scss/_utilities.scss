@@ -267,6 +267,12 @@ $utilities: map-merge(
 }
 
 
+// Text shadow, for light text laid over an image
+.text-shadow {
+  text-shadow: 0 .0625rem rgba($black, .5) !important;
+}
+
+
 // Disable transform on element
 
 .transform-none {

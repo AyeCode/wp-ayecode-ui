@@ -132,52 +132,6 @@
 	}
 
 
-
-	function aui_select2_locale() {
-		var aui_select2_params = <?php echo self::select2_locale(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>;
-
-		return {
-			theme: "bootstrap-5",
-			width: jQuery( this ).data( 'width' ) ? jQuery( this ).data( 'width' ) : jQuery( this ).hasClass( 'w-100' ) ? '100%' : 'style',
-			placeholder: jQuery( this ).data( 'placeholder' ),
-			'language': {
-				errorLoading: function() {
-					// Workaround for https://github.com/select2/select2/issues/4355 instead of i18n_ajax_error.
-					return aui_select2_params.i18n_searching;
-				},
-				inputTooLong: function(args) {
-					var overChars = args.input.length - args.maximum;
-					if (1 === overChars) {
-						return aui_select2_params.i18n_input_too_long_1;
-					}
-					return aui_select2_params.i18n_input_too_long_n.replace('%item%', overChars);
-				},
-				inputTooShort: function(args) {
-					var remainingChars = args.minimum - args.input.length;
-					if (1 === remainingChars) {
-						return aui_select2_params.i18n_input_too_short_1;
-					}
-					return aui_select2_params.i18n_input_too_short_n.replace('%item%', remainingChars);
-				},
-				loadingMore: function() {
-					return aui_select2_params.i18n_load_more;
-				},
-				maximumSelected: function(args) {
-					if (args.maximum === 1) {
-						return aui_select2_params.i18n_selection_too_long_1;
-					}
-					return aui_select2_params.i18n_selection_too_long_n.replace('%item%', args.maximum);
-				},
-				noResults: function() {
-					return aui_select2_params.i18n_no_matches;
-				},
-				searching: function() {
-					return aui_select2_params.i18n_searching;
-				}
-			}
-		};
-	}
-
 	/**
 	 * Builds a configuration object for a single Choices.js instance.
 	 * @param {HTMLElement} select - The <select> element to configure.
