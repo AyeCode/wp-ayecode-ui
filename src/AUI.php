@@ -13,6 +13,7 @@ use AyeCode\UI\Components\Alert;
 use AyeCode\UI\Components\Button;
 use AyeCode\UI\Components\Carousel;
 use AyeCode\UI\Components\Dropdown;
+use AyeCode\UI\Components\IconText;
 use AyeCode\UI\Components\Input;
 use AyeCode\UI\Components\Pagination;
 
@@ -173,6 +174,24 @@ class AUI {
 	 */
 	public function button( array $args = array(), bool $echo = false ): string {
 		$output = Button::get( $args );
+
+		if ( $echo ) {
+			echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			return '';
+		}
+
+		return $output;
+	}
+
+	/**
+	 * Render an icon beside text.
+	 *
+	 * @param array $args Component arguments, see IconText::get().
+	 * @param bool  $echo Whether to echo instead of return.
+	 * @return string Rendered HTML.
+	 */
+	public function icon_text( array $args = array(), bool $echo = false ): string {
+		$output = IconText::get( $args );
 
 		if ( $echo ) {
 			echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

@@ -3,6 +3,7 @@
 All notable changes to the AyeCode UI will be documented in this file.
 
 ## [3.0.3-beta] - 2026-TBD
+- aui()->icon_text(): prints an icon beside text with one gap class on the icon, an optional size and color, and no wrapper, so every block spaces and aligns its icons the same way - ADDED
 - SVG icons honor the Font Awesome sizing classes (`fa-fw`, `fa-2xs` to `fa-2xl`, `fa-1x` to `fa-10x`), which had no styles behind them in SVG mode, and sit on Font Awesome's -0.125em vertical alignment instead of `middle`, which left them low beside capitals and digits - FIXED
 - Entrance animations (aui-reveal with fade, fade up, fade down, fade from start or end and zoom in, plus aui-reveal-delay-*): a block waits in its start state and plays in once as it scrolls into view, in CSS with a small IntersectionObserver script; it only waits hidden when scripting is on, never in the block editor or for reduced motion, and blocks added by ajax are picked up by aui_init() - ADDED
 - Backdrop blur classes (backdrop-blur-sm, backdrop-blur-md, backdrop-blur-lg) on a layer behind the content, so an offcanvas menu inside a blurred navbar still opens over the page, and no blur while a Transparent until scroll navbar is at the top - ADDED
