@@ -45,6 +45,10 @@ class Button {
 			'style'                 => '',
 			'extra_attributes'      => array(),
 			'icon_extra_attributes' => array(),
+			'icon_position'         => 'start',
+			'icon_gap'              => '',
+			'icon_size'             => '',
+			'icon_color'            => '',
 		);
 
 		$args   = wp_parse_args( $args, $defaults );
@@ -103,7 +107,19 @@ class Button {
 				$output .= "<span class='hover-content-original'>";
 			}
 			if ( ! empty( $args['content'] ) || ! empty( $args['icon'] ) ) {
-				$output .= Helper::icon( $args['icon'], $args['content'], $args['icon_extra_attributes'] ) . $args['content'];
+				// The icon and its text go through the one icon component. A button's gap is 2
+				// unless the caller sets one.
+				$output .= IconText::get(
+					array(
+						'icon'            => Helper::esc_classes( $args['icon'] ),
+						'content'         => $args['content'],
+						'position'        => $args['icon_position'],
+						'gap'             => '' === (string) $args['icon_gap'] ? '2' : $args['icon_gap'],
+						'size'            => $args['icon_size'],
+						'color'           => $args['icon_color'],
+						'icon_attributes' => is_array( $args['icon_extra_attributes'] ) ? $args['icon_extra_attributes'] : array(),
+					)
+				);
 			}
 			if ( $hover_content ) {
 				$output .= '</span>';
