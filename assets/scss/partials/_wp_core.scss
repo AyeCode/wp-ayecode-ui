@@ -57,6 +57,18 @@ html[data-scroll='0'],html:not([data-scroll]){
   }
 }
 
+// No backdrop blur while the background is hidden, so the page does not blur behind
+// an invisible navbar. Same conditions as the two blocks above.
+html[data-scroll='0'],html:not([data-scroll]){
+  body:not(.block-editor-iframe__body) .bg-transparent-until-scroll:not(.nav-menu-open),
+  body.block-editor-iframe__body .wp-block-template-part:not(.has-child-selected) .bg-transparent-until-scroll:not(.nav-menu-open){
+    &::before {
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+}
+
 // fix for fully transparent nav menu open on mobile
 .navbar.bg-transparent.nav-menu-open.navbar-dark{
   background: #343a40 !important;

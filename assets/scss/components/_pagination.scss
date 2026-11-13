@@ -29,12 +29,6 @@
     outline: $pagination-focus-outline;
     box-shadow: var(--#{$prefix}pagination-focus-box-shadow);
   }
-
-  // Fix icon vertical aligment
-  [class*=" #{$icon-prefix}"],
-  [class^="#{$icon-prefix}"] {
-    margin-top: .125rem;
-  }
 }
 
 

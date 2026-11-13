@@ -1,0 +1,37 @@
+// Border radius from a breakpoint up
+//
+// Only md and lg, the Tablet and Desktop sizes the block settings offer (rounded-md-pill,
+// rounded-lg-3...). There is no bare rounded-md / rounded-lg here: rounded-lg is still
+// the Bootstrap 4 size class below.
+
+$aui-rounded-values: map-remove(map-get(map-get($utilities, "rounded"), "values"), null);
+
+@each $breakpoint in (md, lg) {
+  @include media-breakpoint-up($breakpoint) {
+    @each $key, $value in $aui-rounded-values {
+      .rounded-#{$breakpoint}-#{$key} {
+        border-radius: $value !important;
+      }
+    }
+  }
+}
+
+// Bootstrap 4 radius sizes, still saved in older blocks and kit markup
+.rounded-sm {
+  border-radius: var(--#{$prefix}border-radius-sm) !important;
+}
+
+.rounded-lg {
+  border-radius: var(--#{$prefix}border-radius-lg) !important;
+}
+
+// Bootstrap 4 side names, still offered by the Border radius type setting
+.rounded-right {
+  border-top-right-radius: var(--#{$prefix}border-radius) !important;
+  border-bottom-right-radius: var(--#{$prefix}border-radius) !important;
+}
+
+.rounded-left {
+  border-top-left-radius: var(--#{$prefix}border-radius) !important;
+  border-bottom-left-radius: var(--#{$prefix}border-radius) !important;
+}

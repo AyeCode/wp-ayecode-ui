@@ -3,6 +3,14 @@
 All notable changes to the AyeCode UI will be documented in this file.
 
 ## [3.0.3-beta] - 2026-TBD
+- Entrance animations (aui-reveal with fade, fade up, fade down, fade from start or end and zoom in, plus aui-reveal-delay-*): a block waits in its start state and plays in once as it scrolls into view, in CSS with a small IntersectionObserver script; it only waits hidden when scripting is on, never in the block editor or for reduced motion, and blocks added by ajax are picked up by aui_init() - ADDED
+- Backdrop blur classes (backdrop-blur-sm, backdrop-blur-md, backdrop-blur-lg) on a layer behind the content, so an offcanvas menu inside a blurred navbar still opens over the page, and no blur while a Transparent until scroll navbar is at the top - ADDED
+- bg-opacity in 10% steps (adds 20, 30, 40, 60, 70, 80 and 90) - ADDED
+- bg-opacity classes had no effect on the subtle background colors (bg-*-subtle) - FIXED
+- Breakpoint border radius classes are only built for md and lg, the sizes the block settings use, so rounded-sm and rounded-lg are no longer read as breakpoint classes - CHANGED
+- rounded-sm, rounded-lg, rounded-right and rounded-left from Bootstrap 4, still saved in older blocks and offered by the border radius type setting, had no radius or the wrong one - FIXED
+- Leftover Finder icon font rules for fi-* classes, which nothing outputs - REMOVED
+- Password show/hide button sits inside the field (password-toggle) and uses an SVG icon with a shared script, as the old jQuery toggle looked for an <i> tag that the Font Awesome SVG mode replaces, so the eye did not show there - FIXED
 - Iconbox translucent style (iconbox-translucent, a faint wash of the icon color that turns solid on hover) and the icon-box hover invert, both from the icon's own color in light and dark mode; replaces btn-translucent-* - ADDED
 - SVG icons in an iconbox sit at the glyph size inside the box instead of filling it - FIXED
 - text-shadow utility, for light text over an image - ADDED

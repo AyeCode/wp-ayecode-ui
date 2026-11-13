@@ -16,6 +16,12 @@
   }
 }
 
+// Password show/hide with a floating label: the button sits in the .form-floating wrap,
+// which also holds any help text, so it takes the input's height, not the wrap's.
+.form-floating.password-toggle .password-toggle-button {
+  height: $form-floating-height;
+}
+
 // Switch sizes, from aui()->input( [ 'switch' => 'sm' ] ) and the like: the switch
 // height and width, and the line height that centres the label beside it.
 $custom-switch-sizes: (

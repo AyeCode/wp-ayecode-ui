@@ -124,31 +124,6 @@ legend {
 }
 
 
-// Base font icons styles
-
-[class*=" #{$icon-prefix}"],
-[class^="#{$icon-prefix}"] {
-  display: inline-flex;
-
-  &:not(.animate-target) {
-    a &,
-    button & {
-      transition: opacity .2s ease-in-out;
-    }
-    a:hover &,
-    a:focus-visible &,
-    a.active &,
-    a.show &,
-    button:hover &,
-    button:focus-visible &,
-    button.active &,
-    button.show & {
-      opacity: 1 !important;
-    }
-  }
-}
-
-
 // Code
 
 pre,

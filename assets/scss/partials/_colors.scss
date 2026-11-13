@@ -24,6 +24,20 @@
   }
 }
 
+// Subtle backgrounds have no RGB triplet, so Bootstrap's bg-opacity classes do nothing
+// on them. Mixing with transparent lets them take the opacity like the core colors.
+// The reset has no specificity so a bg-opacity class on the same element always wins,
+// while a child still does not inherit its parent's opacity.
+@each $color, $value in $utilities-bg-subtle {
+  :where(.bg-#{$color}) {
+    --#{$prefix}bg-opacity: 1;
+  }
+
+  .bg-#{$color} {
+    background-color: color-mix(in srgb, #{$value} calc(var(--#{$prefix}bg-opacity, 1) * 100%), transparent) !important;
+  }
+}
+
 // Links read the color, not the RGB triplet, so a Global Styles link color (which
 // only sets --bs-link-color) applies, and they take the dark mode tint.
 a {

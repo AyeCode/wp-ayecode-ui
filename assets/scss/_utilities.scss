@@ -19,7 +19,6 @@ $utilities: map-merge(
 
     // Border radius
     "rounded": (
-            responsive: true,
       property: border-radius,
       class: rounded,
       values: (
@@ -146,6 +145,26 @@ $utilities: map-merge(
         80: .8,
         90: .9,
         100: 1,
+      )
+    ),
+
+    // Background opacity, in the steps the block background settings offer
+    "bg-opacity": (
+      css-var: true,
+      class: bg-opacity,
+      values: (
+        10: .1,
+        20: .2,
+        25: .25,
+        30: .3,
+        40: .4,
+        50: .5,
+        60: .6,
+        70: .7,
+        75: .75,
+        80: .8,
+        90: .9,
+        100: 1
       )
     ),
 

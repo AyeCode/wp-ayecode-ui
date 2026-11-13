@@ -105,6 +105,17 @@ class Input {
 				$args['class'] .= ' form-control-sm';
 			}
 
+			// A password gets a show/hide button inside the field, unless something else is on its right.
+			$password_toggle = $type === 'password' && $args['password_toggle'] && ! $args['input_group_right'];
+			// Floating labels keep the button in the .form-floating wrap, as the label must follow the input there.
+			$toggle_in_wrap = $password_toggle && $args['label_type'] === 'floating' && ! $args['no_wrap'];
+			// Beside an input group addon the .input-group is the toggle wrap, as an extra div would break its flex sizing.
+			// The input is then no longer the group's last child, so its end corners are rounded back.
+			$toggle_in_group = $password_toggle && $args['input_group_left'] && ! $args['input_group_left_inside'];
+			if ( $toggle_in_group ) {
+				$args['class'] .= ' rounded-end';
+			}
+
 			$clear_function = 'jQuery(this).parent().parent().find(\'input\').val(\'\');';
 
 			if ( $type === 'file' ) {
@@ -195,6 +206,13 @@ class Input {
 
 			$output .= ' >';
 
+			if ( $password_toggle ) {
+				$output .= self::password_toggle_button();
+				if ( ! $toggle_in_wrap && ! $toggle_in_group ) {
+					$output = '<div class="password-toggle">' . $output . '</div>';
+				}
+			}
+
 			if ( ! empty( $args['help_text'] ) ) {
 				$help_text = Helper::help_text( $args['help_text'] );
 			}
@@ -251,14 +269,6 @@ class Input {
 					$input_col = Helper::get_column_class( $args['label_col'], 'input' );
 					$output    = $label . '<div class="' . $input_col . '">' . $output . '</div>';
 				}
-			} elseif ( $type === 'password' && $args['password_toggle'] && ! $args['input_group_right'] ) {
-				$args['input_group_right'] = '<span class="input-group-text c-pointer px-3"
-onclick="var $el = jQuery(this).find(\'i\');$el.toggleClass(\'fa-eye fa-eye-slash\');
-var $eli = jQuery(this).parent().parent().find(\'input\');
-if($el.hasClass(\'fa-eye\'))
-{$eli.attr(\'type\',\'text\');}
-else{$eli.attr(\'type\',\'password\');}"
-><i class="far fa-fw fa-eye-slash"></i></span>';
 			}
 
 			if ( $args['input_group_left'] || $args['input_group_right'] ) {
@@ -270,7 +280,7 @@ else{$eli.attr(\'type\',\'password\');}"
 					$output = self::wrap(
 						array(
 							'content'                 => $output,
-							'class'                   => $args['input_group_left_inside'] ? 'input-group-inside position-relative' . $w100 . $group_size : 'input-group' . $group_size,
+							'class'                   => $args['input_group_left_inside'] ? 'input-group-inside position-relative' . $w100 . $group_size : 'input-group' . $group_size . ( $toggle_in_group ? ' password-toggle' : '' ),
 							'input_group_left'        => $args['input_group_left'],
 							'input_group_left_inside' => $args['input_group_left_inside'],
 						)
@@ -310,6 +320,7 @@ else{$eli.attr(\'type\',\'password\');}"
 				$form_group_class = $args['label_type'] === 'floating' && $type !== 'checkbox' ? 'form-floating' : $fg_class;
 				$wrap_class       = $args['label_type'] === 'horizontal' ? $form_group_class . ' row' : $form_group_class;
 				$wrap_class       = ! empty( $args['wrap_class'] ) ? $wrap_class . ' ' . $args['wrap_class'] : $wrap_class;
+				$wrap_class      .= $toggle_in_wrap ? ' password-toggle' : '';
 				$output           = self::wrap(
 					array(
 						'content'         => $output,
@@ -323,6 +334,19 @@ else{$eli.attr(\'type\',\'password\');}"
 		}
 
 		return $output;
+	}
+
+	/**
+	 * The show/hide button for a password input, placed after the input inside a
+	 * .password-toggle wrap. The AUI script switches the input type and the icon on click.
+	 *
+	 * @return string
+	 */
+	private static function password_toggle_button(): string {
+		return '<button type="button" class="password-toggle-button bg-transparent border-0" aria-label="' . esc_attr__( 'Show password', 'ayecode-connect' ) . '" aria-pressed="false">'
+			. '<span class="password-toggle-show">' . Helper::icon( 'far fa-eye' ) . '</span>'
+			. '<span class="password-toggle-hide d-none">' . Helper::icon( 'far fa-eye-slash' ) . '</span>'
+			. '</button>';
 	}
 
 	/**

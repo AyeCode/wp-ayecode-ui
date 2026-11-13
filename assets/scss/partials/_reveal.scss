@@ -1,0 +1,50 @@
+// Entrance animations (Super Duper's Entrance animation setting): .aui-reveal plus one
+// of the effects below, and an optional .aui-reveal-delay-*. The block waits in its start
+// state until the AUI script adds .aui-revealed as it first scrolls into view, which
+// transitions it in; the script then removes both classes so the block's own transitions
+// (hover effects) apply again.
+// It only waits hidden when scripting is on and the visitor has not asked for reduced
+// motion, and never in the block editor, so the content always shows when the animation
+// cannot play.
+
+.aui-reveal-fade-up {
+  --#{$prefix}reveal-from: translateY(2rem);
+}
+.aui-reveal-fade-down {
+  --#{$prefix}reveal-from: translateY(-2rem);
+}
+.aui-reveal-fade-start {
+  --#{$prefix}reveal-from: translateX(-2rem);
+
+  [dir="rtl"] & {
+    --#{$prefix}reveal-from: translateX(2rem);
+  }
+}
+.aui-reveal-fade-end {
+  --#{$prefix}reveal-from: translateX(2rem);
+
+  [dir="rtl"] & {
+    --#{$prefix}reveal-from: translateX(-2rem);
+  }
+}
+.aui-reveal-zoom-in {
+  --#{$prefix}reveal-from: scale(.9);
+}
+
+@each $delay in (100, 200, 300, 500, 750, 1000) {
+  .aui-reveal-delay-#{$delay} {
+    --#{$prefix}reveal-delay: #{$delay}ms;
+  }
+}
+
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  .aui-reveal:not(.block-editor-iframe__body *, .editor-styles-wrapper *) {
+    transition: opacity .6s ease-out, transform .6s ease-out;
+    transition-delay: var(--#{$prefix}reveal-delay, 0s);
+
+    &:not(.aui-revealed) {
+      opacity: 0;
+      transform: var(--#{$prefix}reveal-from, none);
+    }
+  }
+}

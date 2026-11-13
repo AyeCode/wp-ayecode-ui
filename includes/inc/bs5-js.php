@@ -1236,12 +1236,64 @@
 
 
 	/**
+	 * Entrance animations (.aui-reveal): add .aui-revealed when a block first scrolls into
+	 * view, which the CSS transitions in, then drop both classes so the block's own
+	 * transitions apply again. One observer for the page, and observing a block twice is a
+	 * no-op, so this is safe to call again after ajax content is added.
+	 */
+	var aui_reveal_observer = null;
+	function aui_init_reveal() {
+		const els = document.querySelectorAll('.aui-reveal:not(.aui-revealed)');
+		if (!els.length) {
+			return;
+		}
+
+		const reveal = (el) => {
+			el.addEventListener('transitionend', function done(e) {
+				if (e.target === el) {
+					el.classList.remove('aui-reveal', 'aui-revealed');
+					el.removeEventListener('transitionend', done);
+				}
+			});
+			el.classList.add('aui-revealed');
+		};
+
+		if (!('IntersectionObserver' in window)) {
+			els.forEach(reveal);
+			return;
+		}
+
+		// Plays a little after the block's edge comes into view, so the movement is seen.
+		aui_reveal_observer = aui_reveal_observer || new IntersectionObserver((entries, observer) => {
+			entries.forEach((entry) => {
+				if (entry.isIntersecting) {
+					observer.unobserve(entry.target);
+					reveal(entry.target);
+				}
+			});
+		}, { rootMargin: '0px 0px -10% 0px' });
+
+		els.forEach((el) => aui_reveal_observer.observe(el));
+	}
+
+	// Entrance animations start as soon as the page is parsed, not on load, so blocks on
+	// the first screen are not held hidden while images load.
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', aui_init_reveal);
+	} else {
+		aui_init_reveal();
+	}
+
+	/**
 	 * Initiate all AUI JS.
 	 */
 	function aui_init(){
 
 		// init counters
 		aui_init_counters();
+
+		// entrance animations, for blocks added since the page loaded
+		aui_init_reveal();
 
 		// nav menu submenus
 		// init_nav_sub_menus();
@@ -1280,6 +1332,23 @@
 	// run on window loaded
 	window.addEventListener('load', function() {
 		aui_init();
+	});
+
+	/**
+	 * Password show/hide buttons from aui()->input(): one listener on the document, so
+	 * fields added later (modals, ajax forms) work too.
+	 */
+	document.addEventListener('click', function(e) {
+		const btn = e.target.closest ? e.target.closest('.password-toggle-button') : null;
+		const input = btn ? btn.parentElement.querySelector('input') : null;
+		if (!input) {
+			return;
+		}
+		const show = input.type === 'password';
+		input.type = show ? 'text' : 'password';
+		btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+		btn.querySelector('.password-toggle-show')?.classList.toggle('d-none', show);
+		btn.querySelector('.password-toggle-hide')?.classList.toggle('d-none', !show);
 	});
 
 

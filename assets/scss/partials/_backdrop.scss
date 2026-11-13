@@ -1,0 +1,42 @@
+// Backdrop blur
+//
+// Blurs whatever shows through a translucent background, e.g. a sticky navbar with a
+// bg-opacity class. The filter sits on a ::before layer behind the content rather than
+// on the element itself: backdrop-filter on the element would make it the containing
+// block for fixed descendants, so an offcanvas menu inside a navbar would open inside
+// the navbar instead of over the page.
+
+$aui-backdrop-blurs: (
+  sm: 4px,
+  md: 8px,
+  lg: 16px
+);
+
+@each $size, $blur in $aui-backdrop-blurs {
+  .backdrop-blur-#{$size} {
+    --#{$prefix}backdrop-blur: #{$blur};
+  }
+}
+
+// No specificity, so position utilities like sticky-top and fixed-top still apply.
+:where(.backdrop-blur-sm, .backdrop-blur-md, .backdrop-blur-lg) {
+  position: relative;
+}
+
+.backdrop-blur-sm,
+.backdrop-blur-md,
+.backdrop-blur-lg {
+  isolation: isolate;
+
+  &::before {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    content: "";
+    border-radius: inherit;
+    -webkit-backdrop-filter: blur(var(--#{$prefix}backdrop-blur));
+    backdrop-filter: blur(var(--#{$prefix}backdrop-blur));
+    transition: -webkit-backdrop-filter .2s ease, backdrop-filter .2s ease;
+  }
+}
