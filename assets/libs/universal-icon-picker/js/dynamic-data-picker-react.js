@@ -190,6 +190,9 @@
                 }
                 return el('div', { className: 'mb-3' }, label,
                     el('select', { id, className: 'form-select', value: value || '', onChange: (e) => onChange(e.target.value) },
+                        // Without an empty option the browser shows the first option while the tag
+                        // has no value, and an optional arg could never be cleared again.
+                        (!value || !field.required) && !options.some((o) => o.value === '') ? el('option', { value: '' }, field.placeholder || __('Select…')) : null,
                         // Keep a saved value selectable even if the source no longer lists it.
                         value && !options.some((o) => o.value === value) ? el('option', { value }, value) : null,
                         options.map((o) => el('option', { key: o.value, value: o.value }, o.label))
@@ -387,14 +390,30 @@
     }
 
     /**
+     * The schema with only the tags that give one of the wanted kinds of value.
+     * A tag that does not say what it gives (the offline fallback list) is kept.
+     */
+    function withReturns(schema, returns) {
+        const kinds = [].concat(returns || []);
+        if (!kinds.length) {
+            return schema;
+        }
+        const tags = schema.tags.filter((t) => !t.returns || kinds.includes(t.returns));
+        const used = new Set(tags.map((t) => t.group));
+        return Object.assign({}, schema, { tags, groups: schema.groups.filter((g) => used.has(g.key)) });
+    }
+
+    /**
      * ------------------------------------------------------------------------
      * 5. The Modal Component
      * ------------------------------------------------------------------------
      *
      * Props: isOpen, onClose, onSelect( tagString ), and optionally initialTag,
-     * an existing tag string to open straight in the configure pane.
+     * an existing tag string to open straight in the configure pane, and returns,
+     * a kind of value (or an array of them: text, html, url, number) to limit the
+     * tags to, for a field that can only take that kind.
      */
-    function DynamicDataModal({ isOpen, onClose, onSelect, initialTag }) {
+    function DynamicDataModal({ isOpen, onClose, onSelect, initialTag, returns }) {
         const [schema, setSchema] = useState(null);
         const [activeGroup, setActiveGroup] = useState('');
         const [searchTerm, setSearchTerm] = useState('');
@@ -404,8 +423,9 @@
             if (!isOpen) return;
             let live = true;
 
-            loadSchema().then((loaded) => {
+            loadSchema().then((full) => {
                 if (!live) return;
+                const loaded = withReturns(full, returns);
                 setSchema(loaded);
 
                 const parsed = initialTag && grammar ? grammar.parse(initialTag) : null;
@@ -515,7 +535,8 @@
      */
     /**
      * Props: onSelect( tagString ), style, and optionally getInitialTag, called on
-     * click to return the tag string at the field's caret so it opens for editing.
+     * click to return the tag string at the field's caret so it opens for editing,
+     * and returns, passed on to the modal.
      */
     function DynamicDataPicker(props) {
         const [isModalOpen, setModalOpen] = useState(false);
@@ -526,7 +547,8 @@
             setModalOpen(true);
         };
 
-        const wrapperStyle = Object.assign({ display: 'inline-block', marginLeft: '-1px' }, props.style);
+        // Stretch to the height of the input the button sits beside, whatever size core gives it.
+        const wrapperStyle = Object.assign({ display: 'flex', alignSelf: 'stretch', marginLeft: '-1px' }, props.style);
 
         return el(Fragment, null,
             el('div', { style: wrapperStyle },
@@ -536,6 +558,7 @@
                     onMouseDown: (e) => e.preventDefault(),
                     type: 'button',
                     className: 'components-button is-secondary is-compact',
+                    style: { height: 'auto', minHeight: '32px' },
                     title: __('Insert Dynamic Data')
                 }, el('i', { className: 'fas fa-database' }))
             ),
@@ -543,7 +566,8 @@
                 isOpen: isModalOpen,
                 onClose: () => setModalOpen(false),
                 onSelect: (tag) => props.onSelect && props.onSelect(tag),
-                initialTag
+                initialTag,
+                returns: props.returns
             })
         );
     }

@@ -3,6 +3,7 @@
 All notable changes to the AyeCode UI will be documented in this file.
 
 ## [3.0.3-beta] - 2026-TBD
+- SVG icons honor the Font Awesome sizing classes (`fa-fw`, `fa-2xs` to `fa-2xl`, `fa-1x` to `fa-10x`), which had no styles behind them in SVG mode, and sit on Font Awesome's -0.125em vertical alignment instead of `middle`, which left them low beside capitals and digits - FIXED
 - Entrance animations (aui-reveal with fade, fade up, fade down, fade from start or end and zoom in, plus aui-reveal-delay-*): a block waits in its start state and plays in once as it scrolls into view, in CSS with a small IntersectionObserver script; it only waits hidden when scripting is on, never in the block editor or for reduced motion, and blocks added by ajax are picked up by aui_init() - ADDED
 - Backdrop blur classes (backdrop-blur-sm, backdrop-blur-md, backdrop-blur-lg) on a layer behind the content, so an offcanvas menu inside a blurred navbar still opens over the page, and no blur while a Transparent until scroll navbar is at the top - ADDED
 - bg-opacity in 10% steps (adds 20, 30, 40, 60, 70, 80 and 90) - ADDED
@@ -11,6 +12,10 @@ All notable changes to the AyeCode UI will be documented in this file.
 - rounded-sm, rounded-lg, rounded-right and rounded-left from Bootstrap 4, still saved in older blocks and offered by the border radius type setting, had no radius or the wrong one - FIXED
 - Leftover Finder icon font rules for fi-* classes, which nothing outputs - REMOVED
 - Password show/hide button sits inside the field (password-toggle) and uses an SVG icon with a shared script, as the old jQuery toggle looked for an <i> tag that the Font Awesome SVG mode replaces, so the eye did not show there - FIXED
+- bg-media-wrap, the wrapper class for a block background output as an image layer by Super Duper - ADDED
+- Dynamic data picker takes a `returns` prop to list only tags that give that kind of value, such as number - ADDED
+- Dynamic data picker selects with no value showed their first option as if it were chosen; they now show an empty option, labelled from the placeholder - FIXED
+- Block editor icon picker and dynamic data buttons match the height of the input they sit beside - FIXED
 - Iconbox translucent style (iconbox-translucent, a faint wash of the icon color that turns solid on hover) and the icon-box hover invert, both from the icon's own color in light and dark mode; replaces btn-translucent-* - ADDED
 - SVG icons in an iconbox sit at the glyph size inside the box instead of filling it - FIXED
 - text-shadow utility, for light text over an image - ADDED

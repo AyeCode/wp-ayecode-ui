@@ -33,3 +33,18 @@
     background-attachment: scroll !important;
   }
 }
+
+// Background image as an image layer (Super Duper's BackgroundMedia): the image is
+// the wrapper's first child, absolutely positioned with a negative z-index. The
+// wrapper is made the containing block and a stacking context, which puts the image
+// under the wrapper's content but over whatever is behind the block.
+// A stacking context also keeps an open menu under a later block that has one, so
+// the wrapper is raised while a menu inside it is open.
+.bg-media-wrap {
+  position: relative;
+  z-index: 0;
+
+  &:has(.dropdown-menu.show, .choices.is-open) {
+    z-index: 1;
+  }
+}

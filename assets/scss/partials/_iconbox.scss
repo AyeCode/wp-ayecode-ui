@@ -63,7 +63,30 @@ svg.iconbox {
   height: 1em;
   width: auto;
   //display: inline-block; // causes issue with icon hover swap like in GD search bar
-  vertical-align: middle;
+  // Font Awesome's own value for inline SVGs. "middle" centers on the lowercase
+  // letters, which leaves the icon low beside capitals and digits.
+  vertical-align: -0.125em;
   flex-shrink: 0;
   max-width: unset;
 }
+
+// Font Awesome's helper classes have no stylesheet behind them when icons are
+// SVGs, so the ones that size an icon are defined here with its own values.
+// The height is 1em, so the font size is what scales the icon.
+
+// Fixed width: the SVG centers its shape in the box, as the icon font does.
+.aui-icon.fa-fw{
+  width: 1.25em;
+}
+
+.aui-icon.fa-2xs{ font-size: 0.625em; vertical-align: 0.1em; }
+.aui-icon.fa-xs{ font-size: 0.75em; vertical-align: 0; }
+.aui-icon.fa-sm{ font-size: 0.875em; vertical-align: -0.0714285705em; }
+.aui-icon.fa-lg{ font-size: 1.25em; vertical-align: -0.2em; }
+.aui-icon.fa-xl{ font-size: 1.5em; vertical-align: -0.25em; }
+.aui-icon.fa-2xl{ font-size: 2em; vertical-align: -0.3125em; }
+
+@each $size in 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 {
+  .aui-icon.fa-#{$size}x{ font-size: #{$size}em; }
+}
+

@@ -759,12 +759,14 @@
         };
 
         return createElement(Fragment, null,
-            createElement('div', { style: { display: 'inline-block', marginLeft: '-1px' } },
+            // Stretch to the height of the input the button sits beside, whatever size core gives it.
+            createElement('div', { style: { display: 'flex', alignSelf: 'stretch', marginLeft: '-1px' } },
                 createElement('button', {
                     id: `icon-picker-button-${props.uniqueId}`,
                     onClick: () => setIsModalOpen(true),
                     type: 'button',
-                    className: 'components-button is-secondary is-compact'
+                    className: 'components-button is-secondary is-compact',
+                    style: { height: 'auto', minHeight: '32px' }
                 }, buttonContent || createElement('i', { className: 'fas fa-icons' }))
             ),
 
