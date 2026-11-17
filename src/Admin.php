@@ -255,6 +255,16 @@ class Admin extends \AyeCode\SettingsFramework\Settings_Framework {
 					'icon'   => 'fa-solid fa-wrench',
 					'fields' => array(
 						array(
+							'type'        => 'alert',
+							'label'       => __( 'Test page', 'ayecode-connect' ),
+							'description' => sprintf(
+								/* translators: %s: test page URL */
+								__( 'Every Bootstrap component and AyeCode UI extra on one page, inside your theme, to check how they look in light and dark mode. Only administrators can open it. <a href="%s" target="_blank">Open the test page</a>', 'ayecode-connect' ),
+								esc_url( add_query_arg( Preview::QUERY_VAR, '1', home_url( '/' ) ) )
+							),
+							'alert_type'  => 'info',
+						),
+						array(
 							'id'              => 'reset_settings',
 							'type'            => 'action_button',
 							'label'           => __( 'Reset Settings', 'ayecode-connect' ),

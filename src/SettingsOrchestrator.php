@@ -370,28 +370,6 @@ class SettingsOrchestrator {
 	}
 
 	/**
-	 * Output developer component examples when the `?preview-aui` query arg is present.
-	 *
-	 * Requires `manage_options` capability. Terminates execution after output.
-	 *
-	 * @return void
-	 */
-	public function maybe_show_examples(): void {
-		if ( ! isset( $_GET['preview-aui'] ) || ! current_user_can( 'manage_options' ) ) {
-			return;
-		}
-
-		echo '<!DOCTYPE html><html><head><title>AyeCode UI Examples</title>';
-		wp_head();
-		echo '</head><body class="aui-examples">';
-		echo '<h1>AyeCode UI v3 — Bootstrap 5.3+ Examples</h1>';
-		echo '<p>Add component examples here.</p>';
-		wp_footer();
-		echo '</body></html>';
-		exit;
-	}
-
-	/**
 	 * Delegate select2/choices.js enqueueing to AssetManager.
 	 *
 	 * @return void

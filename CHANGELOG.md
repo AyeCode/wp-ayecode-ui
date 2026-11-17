@@ -3,6 +3,9 @@
 All notable changes to the AyeCode UI will be documented in this file.
 
 ## [3.0.3-beta] - 2026-TBD
+- Test page at /?preview-aui for administrators: every Bootstrap component and AyeCode UI extra inside the active theme, with light, dark and CSS mode switches and the ayecode_ui_preview_sections filter for plugins to add their own, linked from Settings > AyeCode UI > Tools - ADDED
+- aui() input, textarea and select with an input group addon on both sides nested one group inside another, which put the addons above and below the field - FIXED
+- Checked switches showed a tick and no circle, since the wp-admin checkbox tick fix also applied to switches - FIXED
 - Buttons and badges print their icon through aui()->icon_text() and take icon_position, icon_gap, icon_size and icon_color; the gap stays 2 unless one is passed - CHANGED
 - aui()->icon_text(): prints an icon beside text with one gap class on the icon, an optional size and color, and no wrapper, so every block spaces and aligns its icons the same way - ADDED
 - SVG icons honor the Font Awesome sizing classes (`fa-fw`, `fa-2xs` to `fa-2xl`, `fa-1x` to `fa-10x`), which had no styles behind them in SVG mode, and sit on Font Awesome's -0.125em vertical alignment instead of `middle`, which left them low beside capitals and digits - FIXED

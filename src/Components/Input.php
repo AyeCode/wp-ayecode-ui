@@ -276,26 +276,7 @@ class Input {
 				$group_size = $size === 'lg' ? ' input-group-lg' : '';
 				$group_size = ! $group_size && $size === 'sm' ? ' input-group-sm' : $group_size;
 
-				if ( $args['input_group_left'] ) {
-					$output = self::wrap(
-						array(
-							'content'                 => $output,
-							'class'                   => $args['input_group_left_inside'] ? 'input-group-inside position-relative' . $w100 . $group_size : 'input-group' . $group_size . ( $toggle_in_group ? ' password-toggle' : '' ),
-							'input_group_left'        => $args['input_group_left'],
-							'input_group_left_inside' => $args['input_group_left_inside'],
-						)
-					);
-				}
-				if ( $args['input_group_right'] ) {
-					$output = self::wrap(
-						array(
-							'content'                  => $output,
-							'class'                    => $args['input_group_right_inside'] ? 'input-group-inside position-relative' . $w100 . $group_size : 'input-group' . $group_size,
-							'input_group_right'        => $args['input_group_right'],
-							'input_group_right_inside' => $args['input_group_right_inside'],
-						)
-					);
-				}
+				$output = self::input_group( $output, $args, $w100, $group_size, $toggle_in_group ? ' password-toggle' : '' );
 			}
 
 			if ( ! $label_after ) {
@@ -600,26 +581,7 @@ class Input {
 
 			if ( $args['input_group_left'] || $args['input_group_right'] ) {
 				$w100 = strpos( $args['class'], 'w-100' ) !== false ? ' w-100' : '';
-				if ( $args['input_group_left'] ) {
-					$output = self::wrap(
-						array(
-							'content'                 => $output,
-							'class'                   => $args['input_group_left_inside'] ? 'input-group-inside position-relative' . $w100 : 'input-group',
-							'input_group_left'        => $args['input_group_left'],
-							'input_group_left_inside' => $args['input_group_left_inside'],
-						)
-					);
-				}
-				if ( $args['input_group_right'] ) {
-					$output = self::wrap(
-						array(
-							'content'                  => $output,
-							'class'                    => $args['input_group_right_inside'] ? 'input-group-inside position-relative' . $w100 : 'input-group',
-							'input_group_right'        => $args['input_group_right'],
-							'input_group_right_inside' => $args['input_group_right_inside'],
-						)
-					);
-				}
+				$output = self::input_group( $output, $args, $w100 );
 			}
 		}
 
@@ -860,26 +822,7 @@ class Input {
 
 		if ( $args['input_group_left'] || $args['input_group_right'] ) {
 			$w100 = strpos( $args['class'], 'w-100' ) !== false ? ' w-100' : '';
-			if ( $args['input_group_left'] ) {
-				$output = self::wrap(
-					array(
-						'content'                 => $output,
-						'class'                   => $args['input_group_left_inside'] ? 'input-group-inside position-relative' . $w100 : 'input-group',
-						'input_group_left'        => $args['input_group_left'],
-						'input_group_left_inside' => $args['input_group_left_inside'],
-					)
-				);
-			}
-			if ( $args['input_group_right'] ) {
-				$output = self::wrap(
-					array(
-						'content'                  => $output,
-						'class'                    => $args['input_group_right_inside'] ? 'input-group-inside position-relative' . $w100 : 'input-group',
-						'input_group_right'        => $args['input_group_right'],
-						'input_group_right_inside' => $args['input_group_right_inside'],
-					)
-				);
-			}
+			$output = self::input_group( $output, $args, $w100 );
 		}
 
 		if ( ! $label_after ) {
@@ -1102,6 +1045,63 @@ class Input {
 				array(
 					'content' => $output,
 					'class'   => $wrap_class,
+				)
+			);
+		}
+
+		return $output;
+	}
+
+	/**
+	 * Wrap a field in its input group addons.
+	 *
+	 * Addons on both sides with the same placement share one group; nesting one
+	 * .input-group inside another breaks the layout.
+	 *
+	 * @param string $output     The field markup.
+	 * @param array  $args       The field arguments.
+	 * @param string $w100       ' w-100' when the field is full width, else ''.
+	 * @param string $group_size Input group size class with a leading space, or ''.
+	 * @param string $left_extra Extra classes for a left (or shared) outside group, with a leading space.
+	 * @return string
+	 */
+	private static function input_group( string $output, array $args, string $w100 = '', string $group_size = '', string $left_extra = '' ): string {
+		$left        = $args['input_group_left'];
+		$right       = $args['input_group_right'];
+		$left_class  = $args['input_group_left_inside'] ? 'input-group-inside position-relative' . $w100 . $group_size : 'input-group' . $group_size . $left_extra;
+		$right_class = $args['input_group_right_inside'] ? 'input-group-inside position-relative' . $w100 . $group_size : 'input-group' . $group_size;
+
+		if ( $left && $right && (bool) $args['input_group_left_inside'] === (bool) $args['input_group_right_inside'] ) {
+			return self::wrap(
+				array(
+					'content'                  => $output,
+					'class'                    => $left_class,
+					'input_group_left'         => $left,
+					'input_group_left_inside'  => $args['input_group_left_inside'],
+					'input_group_right'        => $right,
+					'input_group_right_inside' => $args['input_group_right_inside'],
+				)
+			);
+		}
+
+		if ( $left ) {
+			$output = self::wrap(
+				array(
+					'content'                 => $output,
+					'class'                   => $left_class,
+					'input_group_left'        => $left,
+					'input_group_left_inside' => $args['input_group_left_inside'],
+				)
+			);
+		}
+
+		if ( $right ) {
+			$output = self::wrap(
+				array(
+					'content'                  => $output,
+					'class'                    => $right_class,
+					'input_group_right'        => $right,
+					'input_group_right_inside' => $args['input_group_right_inside'],
 				)
 			);
 		}

@@ -237,6 +237,12 @@ input[type=checkbox], input[type=radio] {
     &:checked {
       background-image: var(--bs-form-check-bg-image);
     }
+
+    // A switch is a checkbox too, so the rule above would draw the tick in
+    // place of its circle; give it back the switch image.
+    .form-switch &:checked {
+      background-image: var(--bs-form-switch-bg);
+    }
   }
 }
 

@@ -17,6 +17,7 @@ The AyeCode UI PHP API renders Bootstrap 5.3 components from server-side PHP. Al
 - [`wrap()`](#wrap) — generic wrapper element
 - [`carousel()`](CAROUSEL.md) - Embla slider, documented separately
 - [Helper utilities](#helper-utilities) — attribute builders and sanitizers
+- [Test page](TEST_PAGE.md) - every component on one page, for regression checks
 
 ---
 

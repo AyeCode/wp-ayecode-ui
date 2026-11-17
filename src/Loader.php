@@ -27,6 +27,10 @@ class Loader {
 	 * Register all package hooks.
 	 */
 	public function __construct() {
+		// Test page (/?preview-aui): its settings override must be in place before
+		// anything reads the settings, as they are cached on the first read.
+		add_filter( 'ayecode-ui-settings', [ Preview::instance(), 'filter_settings' ], 20 );
+
 		// Core initialization — reads settings, defines constants, adds body classes.
 		add_action( 'init', array( SettingsOrchestrator::instance(), 'init' ) );
 
@@ -36,8 +40,13 @@ class Loader {
 		// Register settings with WordPress.
 		add_action( 'admin_init', array( SettingsOrchestrator::instance(), 'register_settings' ) );
 
-		// Developer preview endpoint.
-		add_action( 'template_redirect', array( SettingsOrchestrator::instance(), 'maybe_show_examples' ) );
+		// Test page, admins only.
+		add_action( 'template_redirect', [ Preview::instance(), 'send_headers' ] );
+		add_filter( 'template_include', [ Preview::instance(), 'template' ], 99 );
+		add_filter( 'wp_robots', [ Preview::instance(), 'robots' ] );
+		add_filter( 'pre_get_document_title', [ Preview::instance(), 'document_title' ] );
+		add_filter( 'body_class', [ Preview::instance(), 'body_class' ] );
+		add_action( 'wp_enqueue_scripts', [ Preview::instance(), 'enqueue' ], 20 );
 
 		// Register all assets early so they can be conditionally enqueued.
 		add_action( 'wp_enqueue_scripts', array( AssetManager::instance(), 'register_assets' ), 1 );
