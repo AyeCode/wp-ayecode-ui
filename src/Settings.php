@@ -23,6 +23,31 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Settings {
 
 	/**
+	 * Looks a toast can take: a neutral surface, the opposite color mode to the page,
+	 * a solid color fill or a colored border.
+	 *
+	 * @var string[]
+	 */
+	public const TOAST_STYLES = [ 'default', 'inverted', 'solid', 'outline' ];
+
+	/**
+	 * Screen positions a toast can open at, as vertical-horizontal.
+	 *
+	 * @var string[]
+	 */
+	public const TOAST_POSITIONS = [
+		'top-start',
+		'top-center',
+		'top-end',
+		'middle-start',
+		'middle-center',
+		'middle-end',
+		'bottom-start',
+		'bottom-center',
+		'bottom-end',
+	];
+
+	/**
 	 * Singleton instance.
 	 *
 	 * @var Settings|null
@@ -104,6 +129,14 @@ class Settings {
 					$clean[ $key ] = absint( $value );
 					break;
 
+				case 'toast_style':
+					$clean[ $key ] = in_array( $value, self::TOAST_STYLES, true ) ? $value : 'default';
+					break;
+
+				case 'toast_position':
+					$clean[ $key ] = in_array( $value, self::TOAST_POSITIONS, true ) ? $value : 'bottom-end';
+					break;
+
 				case 'disable_admin':
 					$clean[ $key ] = is_scalar( $value ) ? Helper::sanitize_textarea_field( (string) $value ) : '';
 					break;
@@ -170,6 +203,9 @@ class Settings {
 				'disable_admin'           => '',
 				'bs_ver'                  => '5dm',
 				'load_mode'               => 'auto',
+				// Front end look and placement of aui_toast() notifications.
+				'toast_style'             => 'default',
+				'toast_position'          => 'bottom-end',
 				// Front end performance switches (BlockStrap setup only), see Performance.
 				'frontend_widgets'        => 'off',
 				'frontend_blocks'         => 'off',

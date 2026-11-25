@@ -260,6 +260,13 @@ class Preview {
 			});
 			' . ( $start ? 'set(' . wp_json_encode( $start ) . ');' : '' ) . '
 			document.querySelectorAll("[data-aui-preview-indeterminate]").forEach(function(el){el.indeterminate=true;});
+			document.querySelectorAll("[data-aui-preview-toast]").forEach(function(b){
+				b.addEventListener("click",function(){
+					var a=JSON.parse(b.getAttribute("data-aui-preview-toast")),style=document.querySelector("[data-aui-preview-toast-style]"),pos=document.querySelector("[data-aui-preview-toast-position]");
+					aui_toast_defaults.style=style.value;
+					aui_toast(a.id||"",a.type,a.title,a.small||"",a.body||"",null,!!a.close,{placement:pos.value});
+				});
+			});
 			var main=document.getElementById("aui-preview"),bar=main&&main.querySelector(".aui-preview-toolbar");
 			function offset(){
 				var h=0;

@@ -117,5 +117,37 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="<?php esc_attr_e( 'Close', 'ayecode-connect' ); ?>"></button>
 			</div>
 		</div>
+
+		<h3 class="h5 mt-4"><?php esc_html_e( 'aui_toast()', 'ayecode-connect' ); ?></h3>
+		<p class="text-body-secondary small"><?php esc_html_e( 'Style and position here override the site settings for this page only.', 'ayecode-connect' ); ?></p>
+		<div class="d-flex flex-wrap gap-2 mb-2">
+			<select class="form-select form-select-sm w-auto" data-aui-preview-toast-style aria-label="<?php esc_attr_e( 'Toast style', 'ayecode-connect' ); ?>">
+				<?php foreach ( \AyeCode\UI\Settings::TOAST_STYLES as $aui_preview_style ) : ?>
+					<option value="<?php echo esc_attr( $aui_preview_style ); ?>" <?php selected( $aui_preview_style, \AyeCode\UI\Settings::instance()->get( 'toast_style', 'default' ) ); ?>><?php echo esc_html( $aui_preview_style ); ?></option>
+				<?php endforeach; ?>
+			</select>
+			<select class="form-select form-select-sm w-auto" data-aui-preview-toast-position aria-label="<?php esc_attr_e( 'Toast position', 'ayecode-connect' ); ?>">
+				<?php foreach ( \AyeCode\UI\Settings::TOAST_POSITIONS as $aui_preview_position ) : ?>
+					<option value="<?php echo esc_attr( $aui_preview_position ); ?>" <?php selected( $aui_preview_position, \AyeCode\UI\Settings::instance()->get( 'toast_position', 'bottom-end' ) ); ?>><?php echo esc_html( $aui_preview_position ); ?></option>
+				<?php endforeach; ?>
+			</select>
+		</div>
+		<div class="d-flex flex-wrap gap-2">
+			<?php
+			$aui_preview_toasts = [
+				[ 'btn-success', __( 'Success', 'ayecode-connect' ), [ 'type' => 'success', 'title' => __( 'Settings saved', 'ayecode-connect' ) ] ],
+				[ 'btn-info', __( 'Info', 'ayecode-connect' ), [ 'type' => 'info', 'title' => __( 'A new version is available', 'ayecode-connect' ), 'close' => true ] ],
+				[ 'btn-warning', __( 'Warning', 'ayecode-connect' ), [ 'type' => 'warning', 'title' => __( 'Your session is about to expire', 'ayecode-connect' ), 'close' => true ] ],
+				[ 'btn-danger', __( 'Error', 'ayecode-connect' ), [ 'type' => 'error', 'title' => __( 'The listing could not be saved', 'ayecode-connect' ) ] ],
+				[ 'btn-outline-secondary', __( 'Title and body', 'ayecode-connect' ), [ 'type' => 'success', 'title' => __( 'Added to favorites', 'ayecode-connect' ), 'small' => __( 'Just now', 'ayecode-connect' ), 'body' => __( 'You can find it under your saved places at any time.', 'ayecode-connect' ), 'close' => true ] ],
+				[ 'btn-outline-secondary', __( 'No type', 'ayecode-connect' ), [ 'type' => '', 'title' => __( 'Copied to clipboard', 'ayecode-connect' ) ] ],
+				[ 'btn-outline-secondary', __( 'Same id', 'ayecode-connect' ), [ 'id' => 'aui-preview-toast', 'type' => 'info', 'title' => __( 'Shown again, this one is replaced where it sits', 'ayecode-connect' ), 'close' => true ] ],
+			];
+
+			foreach ( $aui_preview_toasts as $aui_preview_toast ) :
+				?>
+				<button type="button" class="btn btn-sm <?php echo esc_attr( $aui_preview_toast[0] ); ?>" data-aui-preview-toast="<?php echo esc_attr( wp_json_encode( $aui_preview_toast[2] ) ); ?>"><?php echo esc_html( $aui_preview_toast[1] ); ?></button>
+			<?php endforeach; ?>
+		</div>
 	</div>
 </div>

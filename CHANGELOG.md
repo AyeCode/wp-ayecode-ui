@@ -3,6 +3,20 @@
 All notable changes to the AyeCode UI will be documented in this file.
 
 ## [3.0.3-beta] - 2026-TBD
+- Success and warning buttons, outline buttons on hover and badges have white text again, where they had switched to black - CHANGED
+- Toasts redesigned: a neutral, slightly see-through surface with the icon in a tinted square, a soft shadow and a short rise into place, in place of the tinted alert look - CHANGED
+- A toast with a title and a body shows the body as muted text under the title - CHANGED
+- Notification Style setting (default, inverted, solid or outline) and Notification Position setting (nine positions) for front end toasts - ADDED
+- Toasts that hide by themselves show a line along the bottom that drains as the time runs out - ADDED
+- `aui_toast()` takes an optional eighth argument, `{ placement: 'top-center' }`, to open one toast away from the site position - ADDED
+- A toast shown with no time is timed by its type and length: errors stay until closed, warnings 8 seconds, others 4 to 10 seconds - CHANGED
+- A toast time of `0` keeps the toast until it is closed, where it was treated as 3 seconds - FIXED
+- A toast shown again under the same id is swapped where it sits instead of blinking out and back in - CHANGED
+- Toasts fill the top or bottom of the screen on phones, and top positions sit below the admin bar - ADDED
+- Hidden toasts are removed from the page instead of piling up - FIXED
+- Success and info toasts are announced politely to screen readers, only errors and warnings interrupt - FIXED
+- Toast close button label is translatable and the button is a normal size - FIXED
+- Toast translucency faded the text as well as the background, and only applied when the first toast on the page had a type - FIXED
 - `modal-dialog-bottom` class: a modal dialog placed at the bottom of the screen on phones rises into place from below - ADDED
 - Map popup follows the color mode: the wrapper and tip take their colors from the theme instead of staying white in dark mode - FIXED
 - Map popup text with no color of its own was white on a white popup - FIXED

@@ -61,6 +61,13 @@ Controlled by the `AUI_ASSETS_MODE` constant or the `aui_assets_mode` option:
 
 Source files are in `assets/scss/`. The compiled output is `assets/css/ayecode-ui.css`. There is no automated build step checked into this repo — compile manually with your preferred Sass tool targeting `assets/scss/ayecode-ui.scss`.
 
+**Which SCSS files may be edited:**
+
+- `assets/scss/1-frameworks/` (Bootstrap) and `assets/scss/components/` (the skin) are upstream code. Never edit them.
+- Changes go in `assets/scss/partials/`, which load after the skin and override it. Add a new partial and import it in `partials/_index.scss` when no existing one fits.
+- The top-level files in `assets/scss/` (`_variables.scss`, `_root.scss`, `_reboot.scss`, `_utilities.scss` and the rest) are ours and can be edited.
+- Anything else, including any edit inside `1-frameworks/` or `components/`, needs the developer's approval first. Once approved, record it in `assets/scss/bootstrap-changes.txt` with the file, the change and the reason.
+
 ### Constants Defined by the Package Loader
 
 - `AYECODE_UI_VERSION` — current loaded version string

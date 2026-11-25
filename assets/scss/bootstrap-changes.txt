@@ -1,7 +1,35 @@
-No changes required in v5 mains files.
+Changes to files that are not our own
+=====================================
 
-// NOTE: Make changes in partials.
+1-frameworks/ (Bootstrap) and components/ (the skin) are upstream code and are not edited.
+Make changes in partials/, which load after the skin and override it.
+The top-level files in this folder (_variables.scss, _root.scss, _utilities.scss ...) are ours.
+
+Any change inside 1-frameworks/ or components/ needs approval first and is listed below
+with the file, the change and the reason.
 
 
-framework
-_root.scss - remove "[data-bs-theme="light"] " otherwise these may never be set
+1-frameworks/
+-------------
+No changes.
+
+
+components/
+-----------
+Changed before this log was kept (found from git history, 52d3806 onwards):
+- components/_buttons.scss - brand button colors mixed at runtime so they follow a palette change (17a5581, e24be79)
+- components/_forms.scss - range slider (noUiSlider) rules removed, vendor script not used (18caa2d)
+- components/_overlay.scss - image overlay, content overlay and edge fade classes added (b14b5d4)
+- components/_pagination.scss - Finder icon alignment rule removed (e24be79)
+
+Imports switched off in _components.scss (the files are untouched):
+- components/_carousel.scss - Swiper skin, not used: the slider is Embla (aui-carousel)
+- components/_lightbox.scss - GLightbox skin, not used: the lightbox is a Bootstrap modal with Embla
+- components/_select-box.scss - Choices skin, compiled into choices.css instead
+- components/_scrollbar.scss - SimpleBar skin, not used
+- components/_date-picker.scss - flatpickr skin, compiled into flatpickr.css instead
+
+
+Our own top-level files, noted for upgrades
+-------------------------------------------
+- _root.scss - removed "[data-bs-theme="light"] " from the selector, otherwise these may never be set

@@ -3,9 +3,10 @@
 $primary: #2775b0; // 4.9:1 against white text, WCAG AA for button text
 $danger:  #DC3838; // accessibility
 
-// Button, badge and text-bg-* text switches to dark when white would fall below
-// WCAG AA (4.5:1). Bootstrap's default; this was lowered to 2.
-$min-contrast-ratio: 4.5;
+// Button, badge and text-bg-* text switches to dark when white falls below this ratio.
+// 2 is the skin's value: it keeps white text on success (2.7:1) and warning (2.3:1).
+// Bootstrap's default is 4.5 (WCAG AA).
+$min-contrast-ratio: 2;
 
 // Display headings
 $display-font-weight: 500;

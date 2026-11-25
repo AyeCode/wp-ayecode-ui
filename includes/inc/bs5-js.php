@@ -1038,132 +1038,256 @@
 
 	/**
 	 * Show a toast.
+	 *
+	 * @param {string}  $id          Element id. A toast shown again under the same id replaces the one on screen instead of stacking.
+	 * @param {string}  $type        success, error, danger, info, warning or empty for no icon.
+	 * @param {string}  $title       Title, or the whole message when there is no body. HTML allowed.
+	 * @param {string}  $title_small Small muted text beside the title, e.g. a time.
+	 * @param {string}  $body        Body text. HTML allowed.
+	 * @param {number}  $time        Milliseconds on screen. 0 keeps it until closed. Left out, it is worked out from the type and the length of the text.
+	 * @param {boolean} $can_close   Show a close button. Always shown when the toast does not hide by itself.
+	 * @param {Object}  $args        Optional. placement: one of the aui_toast_defaults.placements keys, to open this toast somewhere other than the site position.
 	 */
-		// global flag
+	// global flag
 	var $aui_doing_toast = false;
+	// watches the page color mode once an inverted toast has been shown
+	var $aui_toast_mode_watch = null;
 
-	function aui_toast($id, $type, $title, $title_small, $body, $time, $can_close) {
+	<?php
+	$aui_toast_icons = [
+		'success' => 'fas fa-check-circle',
+		'danger'  => 'far fa-times-circle',
+		'info'    => 'fas fa-info-circle',
+		'warning' => 'fas fa-exclamation-triangle',
+	];
+
+	foreach ( $aui_toast_icons as $aui_toast_type => $aui_toast_icon ) {
+		$aui_toast_icons[ $aui_toast_type ] = trim( preg_replace( '/\s*\R\s*|^\s*<\?xml.*?\?>\s*/s', ' ', ayecode_get_icon( $aui_toast_icon ) ) );
+	}
+
+	// The style and position settings are for the front end, wp-admin keeps the default look so save notices stay where they are expected.
+	$aui_toast_defaults = [
+		'style'      => is_admin() ? 'default' : \AyeCode\UI\Settings::instance()->get( 'toast_style', 'default' ),
+		'placement'  => is_admin() ? 'bottom-end' : \AyeCode\UI\Settings::instance()->get( 'toast_position', 'bottom-end' ),
+		'placements' => [
+			'top-start'     => 'top-0 start-0',
+			'top-center'    => 'top-0 start-50 translate-middle-x',
+			'top-end'       => 'top-0 end-0',
+			'middle-start'  => 'top-50 start-0 translate-middle-y',
+			'middle-center' => 'top-50 start-50 translate-middle',
+			'middle-end'    => 'top-50 end-0 translate-middle-y',
+			'bottom-start'  => 'bottom-0 start-0',
+			'bottom-center' => 'bottom-0 start-50 translate-middle-x',
+			'bottom-end'    => 'bottom-0 end-0',
+		],
+		'icons'      => $aui_toast_icons,
+		'close'      => __( 'Close', 'ayecode-connect' ),
+	];
+	?>
+	var aui_toast_defaults = <?php echo wp_json_encode( $aui_toast_defaults ); ?>;
+
+	function aui_toast($id, $type, $title, $title_small, $body, $time, $can_close, $args) {
 		if ($aui_doing_toast) {
 			setTimeout(function() {
-				aui_toast($id, $type, $title, $title_small, $body, $time, $can_close);
+				aui_toast($id, $type, $title, $title_small, $body, $time, $can_close, $args);
 			}, 500);
 			return;
 		}
 		$aui_doing_toast = true;
 
-		// defaults
-		if ($can_close == null) { $can_close = false; }
-		if (!$time) { $time = 3000; }
+		var d = aui_toast_defaults;
+		var color = 'error' === $type ? 'danger' : $type;
+		if (!d.icons[color]) { color = ''; }
+		var urgent = 'danger' === color || 'warning' === color;
 
-		// if already exists, remove it before creating the new one
-		if ($id && document.getElementById($id)) {
-			var existing = document.getElementById($id);
-			existing.remove();
+		// No time given: errors wait to be closed, warnings get longer, the rest get reading time for their length.
+		if ($time == null || $time === '') {
+			if ('danger' === color) {
+				$time = 0;
+			} else if ('warning' === color) {
+				$time = 8000;
+			} else {
+				var probe = document.createElement('div');
+				probe.innerHTML = ($title || '') + ' ' + ($body || '');
+				$time = Math.min(10000, 4000 + Math.max(0, probe.textContent.length - 40) * 50);
+			}
 		}
+		$time = parseInt($time, 10) || 0;
 
-		// unique id
-		var uniqid = $id || String(Date.now());
+		// A toast that stays must be closable.
+		if ($time <= 0) { $can_close = true; }
 
-		// styling vars
-		var op = '', tClass = '', thClass = '', icon = '';
-		switch ($type) {
-			case 'success':
-				op = 'opacity:.92;';
-				tClass = 'alert alert-success bg-success-subtle text-success-emphasis border-success-subtle w-auto p-3 fs-6 mb-3';
-				thClass = 'bg-transparent border-0 text-reset';
-				icon = <?php echo wp_json_encode( '<div class="fs-5 m-0 p-0">' . trim( preg_replace( '/\s*\R\s*|^\s*<\?xml.*?\?>\s*/s', ' ', ayecode_get_icon( 'fas fa-check-circle me-2' ) ) ) . '</div>' ); ?>;
-				break;
-			case 'error':
-			case 'danger':
-				op = 'opacity:.92;';
-				tClass = 'alert alert-danger bg-danger-subtle text-danger-emphasis border-danger-subtle w-auto p-3 fs-6 mb-3';
-				thClass = 'bg-transparent border-0 text-reset';
-				icon = <?php echo wp_json_encode( '<div class="fs-5 m-0 p-0">' . trim( preg_replace( '/\s*\R\s*|^\s*<\?xml.*?\?>\s*/s', ' ', ayecode_get_icon( 'far fa-times-circle me-2' ) ) ) . '</div>' ); ?>;
-				break;
-			case 'info':
-				op = 'opacity:.92;';
-				tClass = 'alert alert-info bg-info-subtle text-info-emphasis border-info-subtle w-auto p-3 fs-6 mb-3';
-				thClass = 'bg-transparent border-0 text-reset';
-				icon = <?php echo wp_json_encode( '<div class="fs-5 m-0 p-0">' . trim( preg_replace( '/\s*\R\s*|^\s*<\?xml.*?\?>\s*/s', ' ', ayecode_get_icon( 'fas fa-info-circle me-2' ) ) ) . '</div>' ); ?>;
-				break;
-			case 'warning':
-				op = 'opacity:.92;';
-				tClass = 'alert alert-warning bg-warning-subtle text-warning-emphasis border-warning-subtle w-auto p-3 fs-6 mb-3';
-				thClass = 'bg-transparent border-0 text-reset';
-				icon = <?php echo wp_json_encode( '<div class="fs-5 m-0 p-0">' . trim( preg_replace( '/\s*\R\s*|^\s*<\?xml.*?\?>\s*/s', ' ', ayecode_get_icon( 'fas fa-exclamation-triangle me-2' ) ) ) . '</div>' ); ?>;
-				break;
-		}
+		var placement = $args && d.placements[$args.placement] ? $args.placement : (d.placements[d.placement] ? d.placement : 'bottom-end');
+		var solid = 'solid' === d.style && color;
+		var from_top = 0 === placement.indexOf('top');
 
-		// ensure container exists
-		if (!document.getElementById('aui-toasts')) {
-			var outer = document.createElement('div');
+		// ensure the wrapper and the container for this placement exist
+		var outer = document.getElementById('aui-toasts');
+		if (!outer) {
+			outer = document.createElement('div');
 			outer.id = 'aui-toasts';
 			outer.classList.add('bsui');
-			var inner = document.createElement('div');
-			inner.className = 'position-fixed aui-toast-bottom-right pr-3 pe-3 mb-1';
-			inner.setAttribute('style', 'z-index:500000;right:0;bottom:0;' + op);
-			outer.appendChild(inner);
 			document.body.appendChild(outer);
 		}
-		var container = document.querySelector('.aui-toast-bottom-right');
-
-		// build toast element
-		var toastEl = document.createElement('div');
-		toastEl.id = uniqid;
-		toastEl.className = 'toast fade hide shadow hover-shadow ' + tClass;
-		toastEl.setAttribute('role', 'alert');
-		toastEl.setAttribute('aria-live', 'assertive');
-		toastEl.setAttribute('aria-atomic', 'true');
-
-		// header
-		if ($type || $title || $title_small) {
-			var header = document.createElement('div');
-			// The header's bottom margin is the gap to the body, so with no body it goes.
-			header.className = 'toast-header ' + thClass + ($body ? '' : ' mb-0');
-
-			if (icon) {
-				header.insertAdjacentHTML('beforeend', icon);
-			}
-
-			if ($title) {
-				var strong = document.createElement('strong');
-				strong.className = 'me-auto';
-				strong.innerHTML = $title;
-				header.appendChild(strong);
-			}
-
-			if ($title_small) {
-				var small = document.createElement('small');
-				small.textContent = $title_small;
-				header.appendChild(small);
-			}
-
-			if ($can_close) {
-				var btn = document.createElement('button');
-				btn.type = 'button';
-				btn.className = 'ms-3 mb-1 p-0 btn-close mt-n4 me-n1';
-				btn.setAttribute('data-bs-dismiss', 'toast');
-				btn.setAttribute('aria-label', 'Close');
-				header.appendChild(btn);
-			}
-
-			toastEl.appendChild(header);
+		var container = outer.querySelector('[data-aui-placement="' + placement + '"]');
+		if (!container) {
+			container = document.createElement('div');
+			// aui-toast-bottom-right is the original container class, kept for code that positions it.
+			container.className = 'toast-container aui-toasts position-fixed p-3 ' + d.placements[placement] + ('bottom-end' === placement ? ' aui-toast-bottom-right' : '');
+			container.setAttribute('data-aui-placement', placement);
+			container.style.zIndex = 500000;
+			outer.appendChild(container);
 		}
 
-		// The rest of the function continues as before to create and show the new element
-		if ($body) {
+		// build toast element
+		// Solid and outline need a type to take their color from, without one they fall back to the default look.
+		var outline = 'outline' === d.style && color, inverted = 'inverted' === d.style;
+		// The default and inverted looks: the icon in a tinted square beside the text.
+		var media = !solid && !outline;
+		var uniqid = $id || 'aui-toast-' + Date.now();
+		var toastEl = document.createElement('div');
+		toastEl.id = uniqid;
+		toastEl.className = 'toast fade bg-opacity-90 position-relative overflow-hidden ' + (solid ? 'text-bg-' + color + ' border-0' : 'bg-body' + (outline ? ' border-2 border-' + color : ' rounded-4 p-3'));
+		if (inverted && media) {
+			// The opposite color mode to the page, so the toast and everything in it flips together.
+			var page_dark = function() { return 'dark' === document.documentElement.getAttribute('data-bs-theme'); };
+			toastEl.setAttribute('data-bs-theme', page_dark() ? 'light' : 'dark');
+			toastEl.setAttribute('data-aui-inverted', '');
+			toastEl.className += ' text-body';
+
+			// A toast still on screen when the page changes color mode flips with it.
+			if (!$aui_toast_mode_watch && window.MutationObserver) {
+				$aui_toast_mode_watch = new MutationObserver(function() {
+					document.querySelectorAll('#aui-toasts [data-aui-inverted]').forEach(function(el) {
+						el.setAttribute('data-bs-theme', page_dark() ? 'light' : 'dark');
+					});
+				});
+				$aui_toast_mode_watch.observe(document.documentElement, { attributes: true, attributeFilter: ['data-bs-theme'] });
+			}
+		}
+		toastEl.setAttribute('role', urgent ? 'alert' : 'status');
+		toastEl.setAttribute('aria-live', urgent ? 'assertive' : 'polite');
+		toastEl.setAttribute('aria-atomic', 'true');
+
+		var both = $title && $body;
+		var row = document.createElement('div');
+		if (media) {
+			row.className = 'd-flex ' + (both ? 'align-items-start' : 'align-items-center');
+		} else {
+			row.className = both ? 'toast-header mb-1' + (solid ? ' text-reset' : '') : 'd-flex align-items-start';
+		}
+
+		if (color) {
+			var iconEl = document.createElement('span');
+			if (media) {
+				iconEl.className = 'flex-shrink-0 d-flex align-items-center justify-content-center rounded-3 p-2 me-3 fs-5 lh-1 bg-' + color + '-subtle text-' + color;
+			} else {
+				iconEl.className = 'flex-shrink-0 fs-5 lh-1 me-2' + (solid ? '' : ' text-' + color);
+			}
+			iconEl.setAttribute('aria-hidden', 'true');
+			iconEl.innerHTML = d.icons[color];
+			row.appendChild(iconEl);
+		}
+
+		// With a title and a body the title heads the toast, otherwise whichever is set is the whole message on one row.
+		var textEl = document.createElement(both && !media ? 'span' : 'div');
+		if (media) {
+			textEl.className = 'flex-grow-1';
+			var lead = document.createElement('div');
+			lead.className = 'fw-semibold';
+			lead.innerHTML = $title || $body || '';
+			textEl.appendChild(lead);
+			if (both) {
+				var sub = document.createElement('div');
+				sub.className = 'toast-body text-body-secondary';
+				sub.innerHTML = $body;
+				textEl.appendChild(sub);
+			}
+		} else {
+			textEl.className = both ? 'fw-semibold me-auto' : 'toast-body flex-grow-1';
+			textEl.innerHTML = $title || $body || '';
+		}
+		row.appendChild(textEl);
+
+		if ($title_small) {
+			var small = document.createElement('small');
+			small.className = 'flex-shrink-0 ms-2 ' + (solid ? 'opacity-75' : 'text-body-secondary');
+			small.textContent = $title_small;
+			row.appendChild(small);
+		}
+
+		var btn = null;
+		if ($can_close) {
+			btn = document.createElement('button');
+			btn.type = 'button';
+			btn.className = 'btn-close flex-shrink-0 ms-2';
+			btn.setAttribute('data-bs-dismiss', 'toast');
+			btn.setAttribute('aria-label', d.close);
+			row.appendChild(btn);
+		}
+
+		toastEl.appendChild(row);
+
+		if (both && !media) {
 			var bodyEl = document.createElement('div');
 			bodyEl.className = 'toast-body';
 			bodyEl.innerHTML = $body;
 			toastEl.appendChild(bodyEl);
 		}
 
-		container.appendChild(toastEl);
+		// A line along the bottom that drains while the toast counts down. Bootstrap restarts
+		// the full delay when the pointer or focus leaves, so the line restarts with it.
+		if ($time > 0 && toastEl.animate) {
+			var bar = document.createElement('div');
+			// No width class: w-100 is !important, which an animation cannot override.
+			bar.style.width = '100%';
+			bar.className = 'position-absolute bottom-0 start-0 pt-1 opacity-50 ' + (solid ? 'bg-white' : 'bg-' + (color && !outline ? color : 'secondary')); // neutral on outline, where a colored line would merge with the border
+			bar.setAttribute('aria-hidden', 'true');
+			toastEl.appendChild(bar);
+			var drain = null;
+			toastEl.addEventListener('shown.bs.toast', function() {
+				drain = bar.animate([{ width: '100%' }, { width: '0%' }], { duration: $time, easing: 'linear', fill: 'forwards' });
+			});
+			['mouseover', 'focusin'].forEach(function(ev) {
+				toastEl.addEventListener(ev, function() { if (drain) { drain.pause(); } });
+			});
+			['mouseout', 'focusout'].forEach(function(ev) {
+				toastEl.addEventListener(ev, function() { if (drain) { drain.currentTime = 0; drain.play(); } });
+			});
+		}
+
+		// The same id still on screen is swapped where it sits, so a repeat does not blink out and back in.
+		var existing = $id ? document.getElementById($id) : null;
+		var swap = existing && existing.parentNode === container && existing.classList.contains('show');
+		if (swap) {
+			existing.replaceWith(toastEl);
+		} else if (from_top) {
+			container.prepend(toastEl);
+		} else {
+			container.appendChild(toastEl);
+		}
+		if (existing) {
+			var old = bootstrap.Toast.getInstance(existing);
+			if (old) { old.dispose(); }
+			existing.remove();
+		}
+
+		// On a solid toast the close button follows the text color rather than the page color mode.
+		if (btn && solid) {
+			var rgb = getComputedStyle(toastEl).color.match(/[\d.]+/g) || [0, 0, 0];
+			btn.setAttribute('data-bs-theme', (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000 > 140 ? 'dark' : 'light');
+		}
 
 		var toast = bootstrap.Toast.getOrCreateInstance(toastEl, {
-			animation: true,
+			animation: !swap,
 			autohide: ($time > 0),
 			delay: $time
+		});
+
+		// Once hidden a toast is finished with, so it does not pile up in the page.
+		toastEl.addEventListener('hidden.bs.toast', function() {
+			toast.dispose();
+			toastEl.remove();
 		});
 
 		toast.show();

@@ -1,0 +1,61 @@
+// Toasts
+//
+// Overrides for the toasts aui_toast() builds. The skin rules are in components/_toasts.scss.
+
+// The skin's gap, border and shadow suit a toast sitting in the page. Stacked over content
+// they need to sit closer together and stand off the page more.
+// The skin also shrinks the close button to .625em, which is hard to hit.
+.aui-toasts .toast {
+  --#{$prefix}toast-spacing: #{$spacer * .75};
+  --#{$prefix}toast-border-color: var(--#{$prefix}border-color);
+  --#{$prefix}toast-box-shadow: var(--#{$prefix}box-shadow-lg);
+
+  // Blurs the page behind the see-through background. The filter is on the toast itself and
+  // not a backdrop-blur-* class: that class blurs from a layer inside the element, which
+  // sees nothing behind it while the toast fades in and does not follow the border's corners.
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+
+  .btn-close {
+    --#{$prefix}btn-close-size: .75em;
+  }
+}
+
+.aui-toasts {
+  // Below the admin bar when there is one. WordPress only sets the variable while the bar shows.
+  &.top-0 {
+    top: var(--wp-admin--admin-bar--height, 0) !important; // stylelint-disable-line declaration-no-important
+  }
+
+  // A toast rises into place and sinks back out, or drops in from above in the top positions.
+  @media (prefers-reduced-motion: no-preference) {
+    .toast {
+      transition: opacity .2s ease, transform .2s ease;
+
+      &.showing {
+        transform: translateY(.75rem);
+      }
+    }
+
+    &.top-0 .toast.showing {
+      transform: translateY(-.75rem);
+    }
+  }
+
+  // Phones: every position becomes a full width strip, at the top for the top positions and the bottom for the rest.
+  @include media-breakpoint-down(sm) {
+    right: 0 !important; // stylelint-disable-line declaration-no-important
+    left: 0 !important; // stylelint-disable-line declaration-no-important
+    width: 100%;
+    transform: none !important; // stylelint-disable-line declaration-no-important
+
+    &.top-50 {
+      top: auto !important; // stylelint-disable-line declaration-no-important
+      bottom: 0 !important; // stylelint-disable-line declaration-no-important
+    }
+
+    .toast {
+      width: 100%;
+    }
+  }
+}
