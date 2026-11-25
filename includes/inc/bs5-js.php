@@ -1041,17 +1041,15 @@
 	 *
 	 * @param {string}  $id          Element id. A toast shown again under the same id replaces the one on screen instead of stacking.
 	 * @param {string}  $type        success, error, danger, info, warning or empty for no icon.
-	 * @param {string}  $title       Title, or the whole message when there is no body. HTML allowed.
+	 * @param {string}  $title       Title, or the whole message when there is no body. Simple HTML allowed, see aui_toast_safe_html().
 	 * @param {string}  $title_small Small muted text beside the title, e.g. a time.
-	 * @param {string}  $body        Body text. HTML allowed.
+	 * @param {string}  $body        Body text. Simple HTML allowed, see aui_toast_safe_html().
 	 * @param {number}  $time        Milliseconds on screen. 0 keeps it until closed. Left out, it is worked out from the type and the length of the text.
 	 * @param {boolean} $can_close   Show a close button. Always shown when the toast does not hide by itself.
 	 * @param {Object}  $args        Optional. placement: one of the aui_toast_defaults.placements keys, to open this toast somewhere other than the site position.
 	 */
 	// global flag
 	var $aui_doing_toast = false;
-	// watches the page color mode once an inverted toast has been shown
-	var $aui_toast_mode_watch = null;
 
 	<?php
 	$aui_toast_icons = [
@@ -1086,6 +1084,58 @@
 	?>
 	var aui_toast_defaults = <?php echo wp_json_encode( $aui_toast_defaults ); ?>;
 
+	/**
+	 * Reduce toast text to simple markup: links, emphasis, line breaks, lists and plain wrappers.
+	 * Other elements are unwrapped to their text, anything that can run or load is dropped,
+	 * and only class, href, title, target, rel, role, data-* and aria-* attributes are kept.
+	 *
+	 * @param {string} html
+	 * @return {string}
+	 */
+	function aui_toast_safe_html(html) {
+		if (html == null || html === '') { return ''; }
+		var tags = ['A', 'B', 'STRONG', 'I', 'EM', 'U', 'S', 'SMALL', 'MARK', 'CODE', 'BR', 'SPAN', 'P', 'DIV', 'UL', 'OL', 'LI'];
+		var drop = ['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'TEMPLATE', 'NOSCRIPT', 'SVG', 'MATH', 'FORM', 'LINK', 'META', 'BASE'];
+		var attrs = ['class', 'href', 'title', 'target', 'rel', 'role'];
+		var schemes = ['http:', 'https:', 'mailto:', 'tel:'];
+		var doc = new DOMParser().parseFromString(String(html), 'text/html');
+		var clean = function(node) {
+			Array.prototype.slice.call(node.childNodes).forEach(function(child) {
+				if (3 === child.nodeType) { return; }
+				var name = 1 === child.nodeType ? child.nodeName.toUpperCase() : '';
+				if (!name || drop.indexOf(name) > -1) {
+					node.removeChild(child);
+					return;
+				}
+				clean(child);
+				if (tags.indexOf(name) < 0) {
+					while (child.firstChild) { node.insertBefore(child.firstChild, child); }
+					node.removeChild(child);
+					return;
+				}
+				Array.prototype.slice.call(child.attributes).forEach(function(attr) {
+					var key = attr.name.toLowerCase();
+					if (attrs.indexOf(key) < 0 && 0 !== key.indexOf('data-') && 0 !== key.indexOf('aria-')) {
+						child.removeAttribute(attr.name);
+					}
+				});
+				if (child.hasAttribute('href')) {
+					// Browsers ignore whitespace and control characters inside a scheme, so judge the link without them.
+					var href = child.getAttribute('href').split('').filter(function(c) { return c.charCodeAt(0) > 32; }).join('');
+					var colon = href.indexOf(':'), stop = href.search(new RegExp('[/?#]'));
+					if (colon > -1 && (stop < 0 || colon < stop) && schemes.indexOf(href.slice(0, colon + 1).toLowerCase()) < 0) {
+						child.removeAttribute('href');
+					}
+				}
+				if ('_blank' === child.getAttribute('target')) {
+					child.setAttribute('rel', 'noopener noreferrer');
+				}
+			});
+		};
+		clean(doc.body);
+		return doc.body.innerHTML;
+	}
+
 	function aui_toast($id, $type, $title, $title_small, $body, $time, $can_close, $args) {
 		if ($aui_doing_toast) {
 			setTimeout(function() {
@@ -1094,6 +1144,9 @@
 			return;
 		}
 		$aui_doing_toast = true;
+
+		$title = aui_toast_safe_html($title);
+		$body = aui_toast_safe_html($body);
 
 		var d = aui_toast_defaults;
 		var color = 'error' === $type ? 'danger' : $type;
@@ -1108,7 +1161,7 @@
 				$time = 8000;
 			} else {
 				var probe = document.createElement('div');
-				probe.innerHTML = ($title || '') + ' ' + ($body || '');
+				probe.innerHTML = $title + ' ' + $body;
 				$time = Math.min(10000, 4000 + Math.max(0, probe.textContent.length - 40) * 50);
 			}
 		}
@@ -1149,21 +1202,9 @@
 		toastEl.id = uniqid;
 		toastEl.className = 'toast fade bg-opacity-90 position-relative overflow-hidden ' + (solid ? 'text-bg-' + color + ' border-0' : 'bg-body' + (outline ? ' border-2 border-' + color : ' rounded-4 p-3'));
 		if (inverted && media) {
-			// The opposite color mode to the page, so the toast and everything in it flips together.
-			var page_dark = function() { return 'dark' === document.documentElement.getAttribute('data-bs-theme'); };
-			toastEl.setAttribute('data-bs-theme', page_dark() ? 'light' : 'dark');
-			toastEl.setAttribute('data-aui-inverted', '');
+			// The opposite color mode to the page as it is when the toast opens, so the toast and everything in it flips together.
+			toastEl.setAttribute('data-bs-theme', 'dark' === document.documentElement.getAttribute('data-bs-theme') ? 'light' : 'dark');
 			toastEl.className += ' text-body';
-
-			// A toast still on screen when the page changes color mode flips with it.
-			if (!$aui_toast_mode_watch && window.MutationObserver) {
-				$aui_toast_mode_watch = new MutationObserver(function() {
-					document.querySelectorAll('#aui-toasts [data-aui-inverted]').forEach(function(el) {
-						el.setAttribute('data-bs-theme', page_dark() ? 'light' : 'dark');
-					});
-				});
-				$aui_toast_mode_watch.observe(document.documentElement, { attributes: true, attributeFilter: ['data-bs-theme'] });
-			}
 		}
 		toastEl.setAttribute('role', urgent ? 'alert' : 'status');
 		toastEl.setAttribute('aria-live', urgent ? 'assertive' : 'polite');

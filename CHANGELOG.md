@@ -3,6 +3,8 @@
 All notable changes to the AyeCode UI will be documented in this file.
 
 ## [3.0.3-beta] - 2026-TBD
+- Toast title and body are limited to simple HTML: links, emphasis, line breaks, lists and plain wrappers, with scripts, styles, event handlers and unsafe link targets removed - CHANGED
+- Select fields in wp-admin keep the theme text color on hover and focus, where wp-admin forced dark text that was unreadable in dark mode - FIXED
 - Success and warning buttons, outline buttons on hover and badges have white text again, where they had switched to black - CHANGED
 - Toasts redesigned: a neutral, slightly see-through surface with the icon in a tinted square, a soft shadow and a short rise into place, in place of the tinted alert look - CHANGED
 - A toast with a title and a body shows the body as muted text under the title - CHANGED

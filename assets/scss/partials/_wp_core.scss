@@ -246,6 +246,19 @@ input[type=checkbox], input[type=radio] {
   }
 }
 
+// wp-admin selects
+// forms.css sets one fixed dark color on .wp-core-ui select and on its :hover
+// and :focus states (0,2,1), which beats .form-select (0,2,0) and leaves dark
+// text on a dark control, and in its option list, in dark mode.
+.wp-core-ui select.form-select {
+  &,
+  &:hover,
+  &:focus {
+    color: var(--bs-body-color);
+  }
+}
+
+
 
 // choices JS
 .choices__input{

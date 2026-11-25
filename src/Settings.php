@@ -59,7 +59,7 @@ class Settings {
 	 *
 	 * @var array
 	 */
-	private array $settings = array();
+	private array $settings = [];
 
 	/**
 	 * Get singleton instance.
@@ -89,11 +89,11 @@ class Settings {
 		register_setting(
 			'ayecode-ui-settings',
 			'ayecode-ui-settings',
-			array(
+			[
 				'type'              => 'array',
-				'sanitize_callback' => array( $this, 'sanitize_settings' ),
-				'default'           => array(),
-			)
+				'sanitize_callback' => [ $this, 'sanitize_settings' ],
+				'default'           => [],
+			]
 		);
 	}
 
@@ -109,10 +109,10 @@ class Settings {
 	 */
 	public function sanitize_settings( $settings ): array {
 		if ( ! is_array( $settings ) ) {
-			return array();
+			return [];
 		}
 
-		$clean = array();
+		$clean = [];
 
 		foreach ( $settings as $key => $value ) {
 			$key = sanitize_key( $key );
@@ -161,7 +161,7 @@ class Settings {
 	 */
 	private function sanitize_unknown( $value ) {
 		if ( is_array( $value ) ) {
-			$clean = array();
+			$clean = [];
 
 			foreach ( $value as $key => $item ) {
 				$clean[ sanitize_key( $key ) ] = $this->sanitize_unknown( $item );
@@ -183,7 +183,7 @@ class Settings {
 			return $this->settings;
 		}
 
-		$db_settings = get_option( 'ayecode-ui-settings', array() );
+		$db_settings = get_option( 'ayecode-ui-settings', [] );
 		$js_default  = 'core-popper';
 
 		/**
@@ -194,7 +194,7 @@ class Settings {
 		 */
 		$defaults = apply_filters(
 			'ayecode-ui-default-settings',
-			array(
+			[
 				'css'                     => 'compatibility',
 				'js'                      => $js_default,
 				'html_font_size'          => '16',
@@ -210,7 +210,7 @@ class Settings {
 				'frontend_widgets'        => 'off',
 				'frontend_blocks'         => 'off',
 				'frontend_blocks_enabled' => Performance::DEFAULT_BLOCKS,
-			),
+			],
 			$db_settings
 		);
 
