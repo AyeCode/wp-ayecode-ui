@@ -1085,48 +1085,55 @@
 	var aui_toast_defaults = <?php echo wp_json_encode( $aui_toast_defaults ); ?>;
 
 	/**
-	 * Reduce toast text to simple markup: links, emphasis, line breaks, lists and plain wrappers.
-	 * Other elements are unwrapped to their text, anything that can run or load is dropped,
-	 * and only class, href, title, target, rel, role, data-* and aria-* attributes are kept.
+	 * Reduce toast text to the markup Bootstrap allows in tooltips and popovers.
+	 *
+	 * The tags and attributes come from bootstrap.Tooltip.Default.allowList, so one list rules all three
+	 * and extending it there extends it here. On top of it toasts keep data-* attributes, which action
+	 * buttons use. Other elements are unwrapped to their text and anything that can run is dropped.
 	 *
 	 * @param {string} html
 	 * @return {string}
 	 */
 	function aui_toast_safe_html(html) {
 		if (html == null || html === '') { return ''; }
-		var tags = ['A', 'B', 'STRONG', 'I', 'EM', 'U', 'S', 'SMALL', 'MARK', 'CODE', 'BR', 'SPAN', 'P', 'DIV', 'UL', 'OL', 'LI'];
+		var list = (window.bootstrap && bootstrap.Tooltip && bootstrap.Tooltip.Default.allowList) || {};
 		var drop = ['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'TEMPLATE', 'NOSCRIPT', 'SVG', 'MATH', 'FORM', 'LINK', 'META', 'BASE'];
-		var attrs = ['class', 'href', 'title', 'target', 'rel', 'role'];
+		var links = ['href', 'src', 'srcset', 'cite', 'background', 'longdesc', 'poster', 'xlink:href'];
 		var schemes = ['http:', 'https:', 'mailto:', 'tel:'];
+		var allowed = function(rules, key) {
+			return 0 === key.indexOf('data-') || rules.some(function(rule) {
+				return rule instanceof RegExp ? rule.test(key) : rule === key;
+			});
+		};
 		var doc = new DOMParser().parseFromString(String(html), 'text/html');
 		var clean = function(node) {
 			Array.prototype.slice.call(node.childNodes).forEach(function(child) {
 				if (3 === child.nodeType) { return; }
-				var name = 1 === child.nodeType ? child.nodeName.toUpperCase() : '';
-				if (!name || drop.indexOf(name) > -1) {
+				var name = 1 === child.nodeType ? child.nodeName.toLowerCase() : '';
+				if (!name || drop.indexOf(name.toUpperCase()) > -1) {
 					node.removeChild(child);
 					return;
 				}
 				clean(child);
-				if (tags.indexOf(name) < 0) {
+				if (!Object.prototype.hasOwnProperty.call(list, name) || '*' === name) {
 					while (child.firstChild) { node.insertBefore(child.firstChild, child); }
 					node.removeChild(child);
 					return;
 				}
+				var rules = [].concat(list['*'] || [], list[name] || []);
 				Array.prototype.slice.call(child.attributes).forEach(function(attr) {
 					var key = attr.name.toLowerCase();
-					if (attrs.indexOf(key) < 0 && 0 !== key.indexOf('data-') && 0 !== key.indexOf('aria-')) {
+					if (!allowed(rules, key)) {
 						child.removeAttribute(attr.name);
+					} else if (links.indexOf(key) > -1) {
+						// Browsers ignore whitespace and control characters inside a scheme, so judge the link without them.
+						var url = attr.value.split('').filter(function(c) { return c.charCodeAt(0) > 32; }).join('');
+						var colon = url.indexOf(':'), stop = url.search(new RegExp('[/?#]'));
+						if (colon > -1 && (stop < 0 || colon < stop) && schemes.indexOf(url.slice(0, colon + 1).toLowerCase()) < 0) {
+							child.removeAttribute(attr.name);
+						}
 					}
 				});
-				if (child.hasAttribute('href')) {
-					// Browsers ignore whitespace and control characters inside a scheme, so judge the link without them.
-					var href = child.getAttribute('href').split('').filter(function(c) { return c.charCodeAt(0) > 32; }).join('');
-					var colon = href.indexOf(':'), stop = href.search(new RegExp('[/?#]'));
-					if (colon > -1 && (stop < 0 || colon < stop) && schemes.indexOf(href.slice(0, colon + 1).toLowerCase()) < 0) {
-						child.removeAttribute('href');
-					}
-				}
 				if ('_blank' === child.getAttribute('target')) {
 					child.setAttribute('rel', 'noopener noreferrer');
 				}
