@@ -165,7 +165,7 @@ class AssetManager {
 		wp_add_inline_script( 'aui-custom-file-input', $this->inline_script_file_browser() );
 
 		$settings    = $this->settings->get_settings();
-		$css_setting = current_action() === 'wp_enqueue_scripts' ? 'css' : 'css_backend';
+		$css_setting = is_admin() ? 'css_backend' : 'css';
 
 		$url = $settings[ $css_setting ] === 'core'
 			? $this->url . 'assets/css/ayecode-ui.css'
@@ -203,6 +203,19 @@ class AssetManager {
 		}
 
 		return $block_content;
+	}
+
+	/**
+	 * Mark the page as needing the assets when Super Duper has printed output.
+	 *
+	 * A shortcode or widget never passes through render_block under an AyeCode block
+	 * name, so the block check alone misses them. The flag is picked up by the next
+	 * enqueue_if_detected() pass, in the head or the footer.
+	 *
+	 * @return void
+	 */
+	public function detect_super_duper_output(): void {
+		$this->blocks_detected = true;
 	}
 
 	/**
@@ -265,7 +278,7 @@ class AssetManager {
 		}
 
 		$settings    = $this->settings->get_settings();
-		$css_setting = current_action() === 'wp_enqueue_scripts' ? 'css' : 'css_backend';
+		$css_setting = is_admin() ? 'css_backend' : 'css';
 		$load_fse    = false;
 
 		if ( ! $settings[ $css_setting ] ) {
@@ -349,7 +362,7 @@ class AssetManager {
 		}
 
 		$settings    = $this->settings->get_settings();
-		$js_setting  = current_action() === 'wp_enqueue_scripts' ? 'js' : 'js_backend';
+		$js_setting  = is_admin() ? 'js_backend' : 'js';
 		$load_inline = false;
 
 		if ( $settings[ $js_setting ] === 'core-popper' ) {

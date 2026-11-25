@@ -1,0 +1,15 @@
+// Modal dialog that comes in from below
+//
+// For a dialog placed at the bottom of the screen on a phone, with the utilities
+// align-items-end align-items-sm-center on the .modal-dialog. Add modal-dialog-bottom
+// beside them and the dialog rises into place there, where every other modal scales
+// in. From sm up the dialog is centered again and opens like any other.
+//
+// :not(.show) because the open state resets the transform at the same specificity,
+// and this file loads after it.
+
+@include media-breakpoint-down(sm) {
+  .modal.fade:not(.show) .modal-dialog-bottom {
+    transform: translateY(3rem);
+  }
+}

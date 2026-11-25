@@ -46,6 +46,12 @@ Set images and videos to fit a certain way.
     transition: all .3s ease-in-out;
   }
 
+  // The zoom effect gives its target a transform-only transition, which would let the
+  // darken snap back when the pointer leaves an image that has both.
+  img.hover-effect-target{
+    transition: all .3s ease-in-out;
+  }
+
   &:hover{
     img{
       filter: brightness(75%);

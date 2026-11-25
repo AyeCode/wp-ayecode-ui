@@ -23,10 +23,77 @@
   }
 }
 
-.leaflet-popup-close-button{
-  margin-top: -20px;
-  margin-right: -20px;
-  line-height: 1.6rem !important;
+
+// Popup follows the color mode. Leaflet hardcodes a white wrapper and tip, and
+// the content inside is already themed, so a white wrapper leaves it unreadable
+// in dark mode. Scoped to the container because leaflet.css is loaded with the
+// map, after this file, and would win at equal specificity.
+.leaflet-container {
+  .leaflet-popup-content-wrapper,
+  .leaflet-popup-tip {
+    color: var(--#{$prefix}body-color);
+    background-color: var(--#{$prefix}body-bg);
+  }
+
+  // The skin's zero padding loses to Leaflet's 1px, which loads later. Overflow
+  // is opened up so dropdowns inside the popup, such as business hours, are not
+  // cut off at its edge.
+  .leaflet-popup-content-wrapper {
+    padding: 0;
+    overflow: visible;
+  }
+
+  // The skin sets white text here for a dark card the popup no longer has.
+  // With the wrapper no longer clipping, its radius is handed down to the first
+  // and last blocks of the content, so a top image still gets rounded corners.
+  .leaflet-popup-content-wrapper .leaflet-popup-content {
+    color: inherit;
+    border-radius: inherit;
+
+    > :first-child {
+      border-top-left-radius: inherit;
+      border-top-right-radius: inherit;
+    }
+
+    > :last-child {
+      border-bottom-right-radius: inherit;
+      border-bottom-left-radius: inherit;
+    }
+  }
+
+  // The skin shifts the popup 5px right for its own marker. Ours is anchored at
+  // its center, so the shift leaves the popup and tip off the pin.
+  .leaflet-popup {
+    margin-left: 0;
+  }
+
+  // Close button: a round button centered on the top corner, clear of the badges
+  // and content inside the popup, on its own background so it reads over any map
+  // in either color mode. The extra .leaflet-popup is needed to beat Leaflet's
+  // own rule, which loads later.
+  .leaflet-popup a.leaflet-popup-close-button { // stylelint-disable-line selector-no-qualifying-type
+    top: -.75rem;
+    right: -.75rem;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--#{$prefix}body-color);
+    background-color: var(--#{$prefix}body-bg);
+    border-radius: 50%;
+    @include box-shadow($box-shadow);
+
+    &:hover {
+      color: var(--#{$prefix}emphasis-color);
+      background-color: var(--#{$prefix}tertiary-bg);
+    }
+  }
 }
 
 .map-marker-wrapper{
@@ -43,14 +110,11 @@
     @include box-shadow($box-shadow);
   }
   .leaflet-bar a {
-    background-color: var(--#{$prefix}body-bg);
     font-weight: $font-weight-normal;
     line-height: 26px;
-    color: var(--#{$prefix}body-color);
     transition: $nav-link-transition;
 
     &:first-child {
-      border-bottom-color: $gray-200;
       border-top-left-radius: $border-radius-sm;
       border-top-right-radius: $border-radius-sm;
     }
@@ -58,14 +122,23 @@
       border-bottom-right-radius: $border-radius-sm;
       border-bottom-left-radius: $border-radius-sm;
     }
-    &:hover {
-      color: $gray-900;
-      background-color: $white;
-    }
-    &.leaflet-disabled {
-      color: $gray-400;
-      background-color: $white;
-    }
+  }
+}
+
+// Control buttons (zoom, map type, full window) take their colors from the
+// color mode. Not tied to .leaflet-touch, so they hold on non-touch maps too.
+.leaflet-container .leaflet-bar a {
+  color: var(--#{$prefix}body-color);
+  background-color: var(--#{$prefix}body-bg);
+  border-bottom-color: var(--#{$prefix}border-color);
+
+  &:hover {
+    color: var(--#{$prefix}emphasis-color);
+    background-color: var(--#{$prefix}tertiary-bg);
+  }
+  &.leaflet-disabled {
+    color: var(--#{$prefix}tertiary-color);
+    background-color: var(--#{$prefix}body-bg);
   }
 }
 
@@ -73,12 +146,9 @@
 [data-bs-theme="dark"] {
   .geodir-map-canvas[data-maptype="ROADMAP"],
   .geodir-map-canvas[data-maptype="TERRAIN"]{
-    //.leaflet-popup-close-button,
+    // Control buttons and the popup are left out: they already follow the
+    // color mode through tokens, and inverting them turns them light again.
     .leaflet-layer,
-    .leaflet-control-zoom-in,
-    .leaflet-control-zoom-out,
-    .leaflet-control-maptype,
-    .leaflet-control-fullwindow,
     .map-marker-price,
     .leaflet-control-attribution {
       filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);

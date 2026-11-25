@@ -54,6 +54,7 @@ class Loader {
 
 		// Lazy-loading: detect AyeCode blocks during render and enqueue if found.
 		add_filter( 'render_block', array( AssetManager::instance(), 'detect_ayecode_blocks' ), 10, 2 );
+		add_action( 'wp_super_duper_rendered', array( AssetManager::instance(), 'detect_super_duper_output' ) );
 		add_action( 'wp_head', array( AssetManager::instance(), 'enqueue_if_detected' ), 7 );
 
 		// render_block only fires once the loop is rendering, which is after wp_head has

@@ -1118,7 +1118,8 @@
 		// header
 		if ($type || $title || $title_small) {
 			var header = document.createElement('div');
-			header.className = 'toast-header ' + thClass;
+			// The header's bottom margin is the gap to the body, so with no body it goes.
+			header.className = 'toast-header ' + thClass + ($body ? '' : ' mb-0');
 
 			if (icon) {
 				header.insertAdjacentHTML('beforeend', icon);
@@ -1429,7 +1430,7 @@
 
 		// build the same markup
 		var $body = '';
-		$body += "<h3 class='h4 py-3 text-center text-dark'>" + message + "</h3>";
+		$body += "<h3 class='h4 py-3 text-center'>" + message + "</h3>";
 		$body += "<div class='d-flex'>";
 		$body +=
 			"<button class='btn btn-outline-secondary w-50 btn-round' data-bs-dismiss='modal' " +

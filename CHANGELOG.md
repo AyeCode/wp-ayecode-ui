@@ -3,6 +3,19 @@
 All notable changes to the AyeCode UI will be documented in this file.
 
 ## [3.0.3-beta] - 2026-TBD
+- `modal-dialog-bottom` class: a modal dialog placed at the bottom of the screen on phones rises into place from below - ADDED
+- Map popup follows the color mode: the wrapper and tip take their colors from the theme instead of staying white in dark mode - FIXED
+- Map popup text with no color of its own was white on a white popup - FIXED
+- Map popup content sits flush with the popup edge, without the 1px inset Leaflet adds - FIXED
+- Dropdowns inside the map popup are no longer cut off at the popup edge - FIXED
+- Map popup and its tip sat 5px to the right of the marker; they are centered on it - FIXED
+- Map popup close button is a round button on the top corner that follows the color mode, where it was a faint x outside the popup - CHANGED
+- Map zoom, map type and full window buttons stay dark in dark mode, where they were inverted back to light - FIXED
+- A toast with no body text no longer has extra space under its title - FIXED
+- An image with both the zoom and darken hover effects fades back out of the darken, where it used to snap - FIXED
+- aui_confirm() message follows the color mode instead of staying dark on a dark modal - FIXED
+- Auto load mode loads the CSS and JS for Super Duper shortcodes and widgets, which were missed on any page without an AyeCode block - FIXED
+- CSS and JS loaded from the footer in auto mode read the backend CSS and JS settings instead of the frontend ones - FIXED
 - Test page at /?preview-aui for administrators: every Bootstrap component and AyeCode UI extra inside the active theme, with light, dark and CSS mode switches and the ayecode_ui_preview_sections filter for plugins to add their own, linked from Settings > AyeCode UI > Tools - ADDED
 - aui() input, textarea and select with an input group addon on both sides nested one group inside another, which put the addons above and below the field - FIXED
 - Checked switches showed a tick and no circle, since the wp-admin checkbox tick fix also applied to switches - FIXED
