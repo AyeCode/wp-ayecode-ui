@@ -3,6 +3,7 @@
 All notable changes to the AyeCode UI will be documented in this file.
 
 ## [3.0.3-beta] - 2026-TBD
+- Enhanced selects keep their Choices instance on the element as `select.auiChoices`, so other scripts can change the selection and have the visible label follow - ADDED
 - Toast title and body are limited to the HTML Bootstrap allows in tooltips and popovers (`bootstrap.Tooltip.Default.allowList`) plus `data-*` attributes, with scripts, styles, event handlers and unsafe link targets removed - CHANGED
 - Select fields in wp-admin keep the theme text color on hover and focus, where wp-admin forced dark text that was unreadable in dark mode - FIXED
 - Success and warning buttons, outline buttons on hover and badges have white text again, where they had switched to black - CHANGED

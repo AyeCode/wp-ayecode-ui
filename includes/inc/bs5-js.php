@@ -214,7 +214,8 @@
 
 		selects.forEach((select) => {
 			const config = aui_get_choices_config(select);
-			new Choices(select, config);
+			// Kept on the element so other scripts can change the selection through it.
+			select.auiChoices = new Choices(select, config);
 		});
 	}
 
